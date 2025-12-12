@@ -4,21 +4,40 @@
  * Base64 and hex encoding/decoding powered by Zig via WebAssembly
  */
 
+// Lifecycle
+export { init, isInitialized } from "./base64.ts";
+
+// Async API
 export {
-  // Standard Base64
   decode,
-  // Base64 No Padding
   decodeNoPadding,
-  // URL-safe Base64
   decodeUrl,
-  // URL-safe Base64 No Padding
   decodeUrlNoPadding,
   encode,
   encodeNoPadding,
   encodeUrl,
   encodeUrlNoPadding,
-  // Hex encoding
   hexDecode,
   hexEncode,
 } from "./base64.ts";
+
+// Sync API
+export {
+  decodeNoPaddingSync,
+  decodeSync,
+  decodeUrlNoPaddingSync,
+  decodeUrlSync,
+  encodeNoPaddingSync,
+  encodeSync,
+  encodeUrlNoPaddingSync,
+  encodeUrlSync,
+  hexDecodeSync,
+  hexEncodeSync,
+} from "./base64.ts";
+
+// Types
 export type { Base64WasmExports } from "./types.ts";
+
+// Re-export error for convenience
+export { NotInitializedError } from "@zig-wasm/core";
+export type { InitOptions } from "@zig-wasm/core";

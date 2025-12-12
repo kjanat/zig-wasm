@@ -1,42 +1,83 @@
-import type { WasmLoadResult } from "@zig-wasm/core";
-import { AllocationScope, getEnvironment, loadWasm, WasmMemory } from "@zig-wasm/core";
+/**
+ * Base64 module - base64 and hex encoding/decoding
+ *
+ * Provides both async (lazy-loading) and sync (requires init) APIs.
+ */
 
+import type { AllocationScope as AllocationScopeType, InitOptions } from "@zig-wasm/core";
+import { AllocationScope, getEnvironment, loadWasm, NotInitializedError, WasmMemory } from "@zig-wasm/core";
 import type { Base64WasmExports } from "./types.ts";
 
-// Lazy-loaded module
-let wasmModule: Promise<WasmLoadResult<Base64WasmExports>> | null = null;
-let memory: WasmMemory | null = null;
+// ============================================================================
+// Module initialization
+// ============================================================================
 
-/** Get or load the WASM module */
-async function getModule(): Promise<{
-  exports: Base64WasmExports;
-  memory: WasmMemory;
-}> {
-  if (!wasmModule) {
+let wasmExports: Base64WasmExports | null = null;
+let wasmMemory: WasmMemory | null = null;
+let initPromise: Promise<void> | null = null;
+
+/**
+ * Initialize the base64 module (idempotent, concurrency-safe)
+ */
+export async function init(options?: InitOptions): Promise<void> {
+  if (wasmExports) return;
+
+  if (initPromise) {
+    await initPromise;
+    return;
+  }
+
+  initPromise = (async () => {
     const env = getEnvironment();
+    let result: Awaited<ReturnType<typeof loadWasm<Base64WasmExports>>>;
 
-    if (env.isNode || env.isBun) {
-      // Node.js: load from file
+    if (options?.wasmBytes) {
+      result = await loadWasm<Base64WasmExports>({ wasmBytes: options.wasmBytes, imports: options.imports });
+    } else if (options?.wasmPath) {
+      result = await loadWasm<Base64WasmExports>({ wasmPath: options.wasmPath, imports: options.imports });
+    } else if (options?.wasmUrl) {
+      result = await loadWasm<Base64WasmExports>({ wasmUrl: options.wasmUrl, imports: options.imports });
+    } else if (env.isNode || env.isBun) {
       const { fileURLToPath } = await import("node:url");
       const { dirname, join } = await import("node:path");
       const currentDir = dirname(fileURLToPath(import.meta.url));
       const wasmPath = join(currentDir, "base64.wasm");
-      wasmModule = loadWasm<Base64WasmExports>({ wasmPath });
+      result = await loadWasm<Base64WasmExports>({ wasmPath });
     } else {
-      // Browser: load from URL relative to module
       const wasmUrl = new URL("base64.wasm", import.meta.url);
-      wasmModule = loadWasm<Base64WasmExports>({ wasmUrl: wasmUrl.href });
+      result = await loadWasm<Base64WasmExports>({ wasmUrl: wasmUrl.href });
     }
-  }
 
-  const result = await wasmModule;
-  if (!memory) {
-    memory = new WasmMemory(result.exports);
-  }
-  return { exports: result.exports, memory };
+    wasmExports = result.exports;
+    wasmMemory = new WasmMemory(result.exports);
+  })();
+
+  await initPromise;
 }
 
-/** Convert input to Uint8Array */
+/**
+ * Check if the module is initialized
+ */
+export function isInitialized(): boolean {
+  return wasmExports !== null;
+}
+
+async function ensureInit(): Promise<{ exports: Base64WasmExports; memory: WasmMemory }> {
+  await init();
+  return { exports: wasmExports as Base64WasmExports, memory: wasmMemory as WasmMemory };
+}
+
+function getSyncState(): { exports: Base64WasmExports; memory: WasmMemory } {
+  if (!wasmExports || !wasmMemory) {
+    throw new NotInitializedError("base64");
+  }
+  return { exports: wasmExports, memory: wasmMemory };
+}
+
+// ============================================================================
+// Utilities
+// ============================================================================
+
 function toBytes(data: string | Uint8Array): Uint8Array {
   if (typeof data === "string") {
     return new TextEncoder().encode(data);
@@ -44,207 +85,236 @@ function toBytes(data: string | Uint8Array): Uint8Array {
   return data;
 }
 
+const textDecoder = new TextDecoder();
+
 // ============================================================================
-// Standard Base64
+// Internal implementations
 // ============================================================================
 
-/** Encode data to standard Base64 */
-export async function encode(data: string | Uint8Array): Promise<string> {
-  const { exports, memory: mem } = await getModule();
-  const bytes = toBytes(data);
-
-  const encodedLen = exports.base64_encode_len(bytes.length);
-
-  return AllocationScope.use(mem, (scope) => {
-    const input = scope.allocAndCopy(bytes);
+function encodeImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): string {
+  const encodedLen = exports.base64_encode_len(data.length);
+  return AllocationScope.use(mem, (scope: AllocationScopeType) => {
+    const input = scope.allocAndCopy(data);
     const outputPtr = scope.alloc(encodedLen);
-
     const actualLen = exports.base64_encode(input.ptr, input.len, outputPtr);
-    const encoded = mem.copyOut(outputPtr, actualLen);
-    return new TextDecoder().decode(encoded);
+    return textDecoder.decode(mem.copyOut(outputPtr, actualLen));
   });
 }
 
-/** Decode standard Base64 to bytes */
-export async function decode(str: string): Promise<Uint8Array> {
-  const { exports, memory: mem } = await getModule();
-  const bytes = toBytes(str);
-
-  const decodedLen = exports.base64_decode_len(bytes.length);
-
-  return AllocationScope.use(mem, (scope) => {
-    const input = scope.allocAndCopy(bytes);
+function decodeImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): Uint8Array {
+  const decodedLen = exports.base64_decode_len(data.length);
+  return AllocationScope.use(mem, (scope: AllocationScopeType) => {
+    const input = scope.allocAndCopy(data);
     const outputPtr = scope.alloc(decodedLen);
-
     const actualLen = exports.base64_decode(input.ptr, input.len, outputPtr);
     return mem.copyOut(outputPtr, actualLen);
   });
 }
 
-// ============================================================================
-// Base64 No Padding
-// ============================================================================
-
-/** Encode data to Base64 without padding */
-export async function encodeNoPadding(
-  data: string | Uint8Array,
-): Promise<string> {
-  const { exports, memory: mem } = await getModule();
-  const bytes = toBytes(data);
-
-  const encodedLen = exports.base64_no_pad_encode_len(bytes.length);
-
-  return AllocationScope.use(mem, (scope) => {
-    const input = scope.allocAndCopy(bytes);
+function encodeNoPaddingImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): string {
+  const encodedLen = exports.base64_no_pad_encode_len(data.length);
+  return AllocationScope.use(mem, (scope: AllocationScopeType) => {
+    const input = scope.allocAndCopy(data);
     const outputPtr = scope.alloc(encodedLen);
-
-    const actualLen = exports.base64_no_pad_encode(
-      input.ptr,
-      input.len,
-      outputPtr,
-    );
-    const encoded = mem.copyOut(outputPtr, actualLen);
-    return new TextDecoder().decode(encoded);
+    const actualLen = exports.base64_no_pad_encode(input.ptr, input.len, outputPtr);
+    return textDecoder.decode(mem.copyOut(outputPtr, actualLen));
   });
 }
 
-/** Decode Base64 without padding to bytes */
-export async function decodeNoPadding(str: string): Promise<Uint8Array> {
-  const { exports, memory: mem } = await getModule();
-  const bytes = toBytes(str);
-
-  const decodedLen = exports.base64_no_pad_decode_len(bytes.length);
-
-  return AllocationScope.use(mem, (scope) => {
-    const input = scope.allocAndCopy(bytes);
+function decodeNoPaddingImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): Uint8Array {
+  const decodedLen = exports.base64_no_pad_decode_len(data.length);
+  return AllocationScope.use(mem, (scope: AllocationScopeType) => {
+    const input = scope.allocAndCopy(data);
     const outputPtr = scope.alloc(decodedLen);
-
-    const actualLen = exports.base64_no_pad_decode(
-      input.ptr,
-      input.len,
-      outputPtr,
-    );
+    const actualLen = exports.base64_no_pad_decode(input.ptr, input.len, outputPtr);
     return mem.copyOut(outputPtr, actualLen);
   });
 }
 
-// ============================================================================
-// Base64 URL-safe
-// ============================================================================
-
-/** Encode data to URL-safe Base64 */
-export async function encodeUrl(data: string | Uint8Array): Promise<string> {
-  const { exports, memory: mem } = await getModule();
-  const bytes = toBytes(data);
-
-  const encodedLen = exports.base64_url_encode_len(bytes.length);
-
-  return AllocationScope.use(mem, (scope) => {
-    const input = scope.allocAndCopy(bytes);
+function encodeUrlImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): string {
+  const encodedLen = exports.base64_url_encode_len(data.length);
+  return AllocationScope.use(mem, (scope: AllocationScopeType) => {
+    const input = scope.allocAndCopy(data);
     const outputPtr = scope.alloc(encodedLen);
-
     const actualLen = exports.base64_url_encode(input.ptr, input.len, outputPtr);
-    const encoded = mem.copyOut(outputPtr, actualLen);
-    return new TextDecoder().decode(encoded);
+    return textDecoder.decode(mem.copyOut(outputPtr, actualLen));
   });
 }
 
-/** Decode URL-safe Base64 to bytes */
-export async function decodeUrl(str: string): Promise<Uint8Array> {
-  const { exports, memory: mem } = await getModule();
-  const bytes = toBytes(str);
-
-  const decodedLen = exports.base64_url_decode_len(bytes.length);
-
-  return AllocationScope.use(mem, (scope) => {
-    const input = scope.allocAndCopy(bytes);
+function decodeUrlImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): Uint8Array {
+  const decodedLen = exports.base64_url_decode_len(data.length);
+  return AllocationScope.use(mem, (scope: AllocationScopeType) => {
+    const input = scope.allocAndCopy(data);
     const outputPtr = scope.alloc(decodedLen);
-
     const actualLen = exports.base64_url_decode(input.ptr, input.len, outputPtr);
     return mem.copyOut(outputPtr, actualLen);
   });
 }
 
+function encodeUrlNoPaddingImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): string {
+  const encodedLen = exports.base64_url_no_pad_encode_len(data.length);
+  return AllocationScope.use(mem, (scope: AllocationScopeType) => {
+    const input = scope.allocAndCopy(data);
+    const outputPtr = scope.alloc(encodedLen);
+    const actualLen = exports.base64_url_no_pad_encode(input.ptr, input.len, outputPtr);
+    return textDecoder.decode(mem.copyOut(outputPtr, actualLen));
+  });
+}
+
+function decodeUrlNoPaddingImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): Uint8Array {
+  const decodedLen = exports.base64_url_no_pad_decode_len(data.length);
+  return AllocationScope.use(mem, (scope: AllocationScopeType) => {
+    const input = scope.allocAndCopy(data);
+    const outputPtr = scope.alloc(decodedLen);
+    const actualLen = exports.base64_url_no_pad_decode(input.ptr, input.len, outputPtr);
+    return mem.copyOut(outputPtr, actualLen);
+  });
+}
+
+function hexEncodeImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): string {
+  const encodedLen = exports.hex_encode_len(data.length);
+  return AllocationScope.use(mem, (scope: AllocationScopeType) => {
+    const input = scope.allocAndCopy(data);
+    const outputPtr = scope.alloc(encodedLen);
+    const actualLen = exports.hex_encode(input.ptr, input.len, outputPtr);
+    return textDecoder.decode(mem.copyOut(outputPtr, actualLen));
+  });
+}
+
+function hexDecodeImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): Uint8Array {
+  const decodedLen = exports.hex_decode_len(data.length);
+  return AllocationScope.use(mem, (scope: AllocationScopeType) => {
+    const input = scope.allocAndCopy(data);
+    const outputPtr = scope.alloc(decodedLen);
+    const actualLen = exports.hex_decode(input.ptr, input.len, outputPtr);
+    return mem.copyOut(outputPtr, actualLen);
+  });
+}
+
 // ============================================================================
-// Base64 URL-safe No Padding
+// Async API
 // ============================================================================
+
+/** Encode data to standard Base64 */
+export async function encode(data: string | Uint8Array): Promise<string> {
+  const { exports, memory } = await ensureInit();
+  return encodeImpl(exports, memory, toBytes(data));
+}
+
+/** Decode standard Base64 to bytes */
+export async function decode(str: string): Promise<Uint8Array> {
+  const { exports, memory } = await ensureInit();
+  return decodeImpl(exports, memory, toBytes(str));
+}
+
+/** Encode data to Base64 without padding */
+export async function encodeNoPadding(data: string | Uint8Array): Promise<string> {
+  const { exports, memory } = await ensureInit();
+  return encodeNoPaddingImpl(exports, memory, toBytes(data));
+}
+
+/** Decode Base64 without padding to bytes */
+export async function decodeNoPadding(str: string): Promise<Uint8Array> {
+  const { exports, memory } = await ensureInit();
+  return decodeNoPaddingImpl(exports, memory, toBytes(str));
+}
+
+/** Encode data to URL-safe Base64 */
+export async function encodeUrl(data: string | Uint8Array): Promise<string> {
+  const { exports, memory } = await ensureInit();
+  return encodeUrlImpl(exports, memory, toBytes(data));
+}
+
+/** Decode URL-safe Base64 to bytes */
+export async function decodeUrl(str: string): Promise<Uint8Array> {
+  const { exports, memory } = await ensureInit();
+  return decodeUrlImpl(exports, memory, toBytes(str));
+}
 
 /** Encode data to URL-safe Base64 without padding */
-export async function encodeUrlNoPadding(
-  data: string | Uint8Array,
-): Promise<string> {
-  const { exports, memory: mem } = await getModule();
-  const bytes = toBytes(data);
-
-  const encodedLen = exports.base64_url_no_pad_encode_len(bytes.length);
-
-  return AllocationScope.use(mem, (scope) => {
-    const input = scope.allocAndCopy(bytes);
-    const outputPtr = scope.alloc(encodedLen);
-
-    const actualLen = exports.base64_url_no_pad_encode(
-      input.ptr,
-      input.len,
-      outputPtr,
-    );
-    const encoded = mem.copyOut(outputPtr, actualLen);
-    return new TextDecoder().decode(encoded);
-  });
+export async function encodeUrlNoPadding(data: string | Uint8Array): Promise<string> {
+  const { exports, memory } = await ensureInit();
+  return encodeUrlNoPaddingImpl(exports, memory, toBytes(data));
 }
 
 /** Decode URL-safe Base64 without padding to bytes */
 export async function decodeUrlNoPadding(str: string): Promise<Uint8Array> {
-  const { exports, memory: mem } = await getModule();
-  const bytes = toBytes(str);
-
-  const decodedLen = exports.base64_url_no_pad_decode_len(bytes.length);
-
-  return AllocationScope.use(mem, (scope) => {
-    const input = scope.allocAndCopy(bytes);
-    const outputPtr = scope.alloc(decodedLen);
-
-    const actualLen = exports.base64_url_no_pad_decode(
-      input.ptr,
-      input.len,
-      outputPtr,
-    );
-    return mem.copyOut(outputPtr, actualLen);
-  });
+  const { exports, memory } = await ensureInit();
+  return decodeUrlNoPaddingImpl(exports, memory, toBytes(str));
 }
-
-// ============================================================================
-// Hex Encoding
-// ============================================================================
 
 /** Encode data to hexadecimal string */
 export async function hexEncode(data: string | Uint8Array): Promise<string> {
-  const { exports, memory: mem } = await getModule();
-  const bytes = toBytes(data);
-
-  const encodedLen = exports.hex_encode_len(bytes.length);
-
-  return AllocationScope.use(mem, (scope) => {
-    const input = scope.allocAndCopy(bytes);
-    const outputPtr = scope.alloc(encodedLen);
-
-    const actualLen = exports.hex_encode(input.ptr, input.len, outputPtr);
-    const encoded = mem.copyOut(outputPtr, actualLen);
-    return new TextDecoder().decode(encoded);
-  });
+  const { exports, memory } = await ensureInit();
+  return hexEncodeImpl(exports, memory, toBytes(data));
 }
 
 /** Decode hexadecimal string to bytes */
 export async function hexDecode(str: string): Promise<Uint8Array> {
-  const { exports, memory: mem } = await getModule();
-  const bytes = toBytes(str);
+  const { exports, memory } = await ensureInit();
+  return hexDecodeImpl(exports, memory, toBytes(str));
+}
 
-  const decodedLen = exports.hex_decode_len(bytes.length);
+// ============================================================================
+// Sync API
+// ============================================================================
 
-  return AllocationScope.use(mem, (scope) => {
-    const input = scope.allocAndCopy(bytes);
-    const outputPtr = scope.alloc(decodedLen);
+/** Encode data to standard Base64 (sync) */
+export function encodeSync(data: string | Uint8Array): string {
+  const { exports, memory } = getSyncState();
+  return encodeImpl(exports, memory, toBytes(data));
+}
 
-    const actualLen = exports.hex_decode(input.ptr, input.len, outputPtr);
-    return mem.copyOut(outputPtr, actualLen);
-  });
+/** Decode standard Base64 to bytes (sync) */
+export function decodeSync(str: string): Uint8Array {
+  const { exports, memory } = getSyncState();
+  return decodeImpl(exports, memory, toBytes(str));
+}
+
+/** Encode data to Base64 without padding (sync) */
+export function encodeNoPaddingSync(data: string | Uint8Array): string {
+  const { exports, memory } = getSyncState();
+  return encodeNoPaddingImpl(exports, memory, toBytes(data));
+}
+
+/** Decode Base64 without padding to bytes (sync) */
+export function decodeNoPaddingSync(str: string): Uint8Array {
+  const { exports, memory } = getSyncState();
+  return decodeNoPaddingImpl(exports, memory, toBytes(str));
+}
+
+/** Encode data to URL-safe Base64 (sync) */
+export function encodeUrlSync(data: string | Uint8Array): string {
+  const { exports, memory } = getSyncState();
+  return encodeUrlImpl(exports, memory, toBytes(data));
+}
+
+/** Decode URL-safe Base64 to bytes (sync) */
+export function decodeUrlSync(str: string): Uint8Array {
+  const { exports, memory } = getSyncState();
+  return decodeUrlImpl(exports, memory, toBytes(str));
+}
+
+/** Encode data to URL-safe Base64 without padding (sync) */
+export function encodeUrlNoPaddingSync(data: string | Uint8Array): string {
+  const { exports, memory } = getSyncState();
+  return encodeUrlNoPaddingImpl(exports, memory, toBytes(data));
+}
+
+/** Decode URL-safe Base64 without padding to bytes (sync) */
+export function decodeUrlNoPaddingSync(str: string): Uint8Array {
+  const { exports, memory } = getSyncState();
+  return decodeUrlNoPaddingImpl(exports, memory, toBytes(str));
+}
+
+/** Encode data to hexadecimal string (sync) */
+export function hexEncodeSync(data: string | Uint8Array): string {
+  const { exports, memory } = getSyncState();
+  return hexEncodeImpl(exports, memory, toBytes(data));
+}
+
+/** Decode hexadecimal string to bytes (sync) */
+export function hexDecodeSync(str: string): Uint8Array {
+  const { exports, memory } = getSyncState();
+  return hexDecodeImpl(exports, memory, toBytes(str));
 }

@@ -1,6 +1,7 @@
 # AGENTS.md
 
 ## Commands
+
 - **Build:** `pnpm build` (full), `pnpm build:zig`, `pnpm build:ts`
 - **Lint:** `pnpm lint` (biome), `pnpm lint:fix`
 - **Format:** `pnpm fmt` (dprint)
@@ -9,6 +10,7 @@
 - **Typecheck:** `pnpm typecheck`
 
 ## Code Style
+
 - **Formatting:** dprint handles all formatting; double quotes for strings
 - **Linting:** Biome with recommended rules (formatter disabled)
 - **Imports:** Use `.ts` extension for relative imports; `import type` for type-only

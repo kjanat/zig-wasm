@@ -4,18 +4,10 @@
  * High-performance math functions powered by Zig via WebAssembly
  */
 
-// Basic operations
-// Power and root functions
-// Exponential and logarithmic functions
-// Trigonometric functions
-// Hyperbolic functions
-// Rounding functions
-// Classification functions
-// Constants
-// Bit manipulation
-// Integer math
-// Floating-point utilities
-// Raw exports access
+// Lifecycle
+export { getExports, getExportsSync, init, isInitialized } from "./math.ts";
+
+// Async API
 export {
   abs,
   absF32,
@@ -72,7 +64,6 @@ export {
   fmodF32,
   gcd,
   gcdU64,
-  getExports,
   hypot,
   hypotF32,
   isFinite_ as isFinite,
@@ -130,5 +121,125 @@ export {
   trunc,
   truncF32,
 } from "./math.ts";
+
+// Sync API
+export {
+  absF32Sync,
+  absI32Sync,
+  absI64Sync,
+  absSync,
+  acosF32Sync,
+  acoshF32Sync,
+  acoshSync,
+  acosSync,
+  asinF32Sync,
+  asinhF32Sync,
+  asinhSync,
+  asinSync,
+  atan2F32Sync,
+  atan2Sync,
+  atanF32Sync,
+  atanhF32Sync,
+  atanhSync,
+  atanSync,
+  bswap16Sync,
+  bswap32Sync,
+  bswap64Sync,
+  cbrtF32Sync,
+  cbrtSync,
+  ceilF32Sync,
+  ceilSync,
+  clampF32Sync,
+  clampI32Sync,
+  clampI64Sync,
+  clampSync,
+  clampU32Sync,
+  clampU64Sync,
+  clzSync,
+  clzU64Sync,
+  copysignF32Sync,
+  copysignSync,
+  cosF32Sync,
+  coshF32Sync,
+  coshSync,
+  cosSync,
+  ctzSync,
+  ctzU64Sync,
+  eF32Sync,
+  eSync,
+  exp2F32Sync,
+  exp2Sync,
+  expF32Sync,
+  expm1F32Sync,
+  expm1Sync,
+  expSync,
+  floorF32Sync,
+  floorSync,
+  fmodF32Sync,
+  fmodSync,
+  gcdSync,
+  gcdU64Sync,
+  hypotF32Sync,
+  hypotSync,
+  isFinite_F32Sync as isFiniteF32Sync,
+  isFinite_Sync as isFiniteSync,
+  isInfF32Sync,
+  isInfSync,
+  isNaN_F32Sync as isNaNF32Sync,
+  isNaN_Sync as isNaNSync,
+  ln10Sync,
+  ln2Sync,
+  log10F32Sync,
+  log10Sync,
+  log1pF32Sync,
+  log1pSync,
+  log2F32Sync,
+  log2Sync,
+  logF32Sync,
+  logSync,
+  maxF32Sync,
+  maxI32Sync,
+  maxI64Sync,
+  maxSync,
+  maxU32Sync,
+  maxU64Sync,
+  minF32Sync,
+  minI32Sync,
+  minI64Sync,
+  minSync,
+  minU32Sync,
+  minU64Sync,
+  piF32Sync,
+  piSync,
+  popcountSync,
+  popcountU64Sync,
+  powF32Sync,
+  powSync,
+  rotlSync,
+  rotlU64Sync,
+  rotrSync,
+  rotrU64Sync,
+  roundF32Sync,
+  roundSync,
+  signF32Sync,
+  signSync,
+  sinF32Sync,
+  sinhF32Sync,
+  sinhSync,
+  sinSync,
+  sqrtF32Sync,
+  sqrtSync,
+  tanF32Sync,
+  tanhF32Sync,
+  tanhSync,
+  tanSync,
+  truncF32Sync,
+  truncSync,
+} from "./math.ts";
+
 // Types
 export type { MathWasmExports } from "./types.ts";
+
+// Re-export error for convenience
+export { NotInitializedError } from "@zig-wasm/core";
+export type { InitOptions } from "@zig-wasm/core";
