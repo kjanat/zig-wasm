@@ -13,6 +13,11 @@
     "log",
     "exp"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kjanat/zig-wasm.git",
+    "directory": "packages/math"
+  },
   "license": "MIT",
   "type": "module",
   "exports": {

@@ -12,6 +12,11 @@
     "md5",
     "blake3"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kjanat/zig-wasm.git",
+    "directory": "packages/crypto"
+  },
   "license": "MIT",
   "type": "module",
   "exports": {

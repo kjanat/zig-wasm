@@ -9,6 +9,11 @@
     "std",
     "stdlib"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kjanat/zig-wasm.git",
+    "directory": "packages/std"
+  },
   "license": "MIT",
   "type": "module",
   "exports": {

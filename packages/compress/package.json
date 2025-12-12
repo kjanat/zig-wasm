@@ -11,6 +11,11 @@
     "xz",
     "lzma"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kjanat/zig-wasm.git",
+    "directory": "packages/compress"
+  },
   "license": "MIT",
   "type": "module",
   "exports": {
