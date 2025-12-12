@@ -1,0 +1,43 @@
+{
+  "name": "@zig-wasm/base64",
+  "version": "0.1.0",
+  "description": "Base64 and hex encoding/decoding powered by Zig via WebAssembly",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@zig-wasm/core": "workspace:*"
+  },
+  "keywords": [
+    "zig",
+    "wasm",
+    "webassembly",
+    "base64",
+    "hex",
+    "encoding",
+    "decoding"
+  ],
+  "license": "MIT"
+}
