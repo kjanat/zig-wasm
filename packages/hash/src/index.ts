@@ -4,26 +4,36 @@
  * Fast non-cryptographic hash functions powered by Zig via WebAssembly
  */
 
+// Generic hash functions
+// CRC32 & Adler32
+// xxHash
+// wyHash
+// CityHash
+// MurmurHash
+// FNV-1a
+export {
+  adler32,
+  adler32Hex,
+  cityhash64,
+  cityhash64Hex,
+  crc32,
+  crc32Hex,
+  fnv1a32,
+  fnv1a32Hex,
+  fnv1a64,
+  fnv1a64Hex,
+  hash,
+  hash32,
+  hash64,
+  hashHex,
+  murmur2_64,
+  murmur2_64Hex,
+  wyhash,
+  wyhashHex,
+  xxhash32,
+  xxhash32Hex,
+  xxhash64,
+  xxhash64Hex,
+} from "./hash.js";
 // Types
 export type { Hash32Algorithm, Hash64Algorithm, HashAlgorithm, HashWasmExports } from "./types.js";
-
-// Generic hash functions
-export { hash, hash32, hash64, hashHex } from "./hash.js";
-
-// CRC32 & Adler32
-export { adler32, adler32Hex, crc32, crc32Hex } from "./hash.js";
-
-// xxHash
-export { xxhash32, xxhash32Hex, xxhash64, xxhash64Hex } from "./hash.js";
-
-// wyHash
-export { wyhash, wyhashHex } from "./hash.js";
-
-// CityHash
-export { cityhash64, cityhash64Hex } from "./hash.js";
-
-// MurmurHash
-export { murmur2_64, murmur2_64Hex } from "./hash.js";
-
-// FNV-1a
-export { fnv1a32, fnv1a32Hex, fnv1a64, fnv1a64Hex } from "./hash.js";

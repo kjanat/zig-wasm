@@ -1,5 +1,5 @@
-import { getEnvironment, loadWasm } from "@zig-wasm/core";
 import type { WasmLoadResult } from "@zig-wasm/core";
+import { getEnvironment, loadWasm } from "@zig-wasm/core";
 
 import type { MathWasmExports } from "./types.js";
 

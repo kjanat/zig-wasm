@@ -4,6 +4,13 @@
  * Core utilities for Zig WASM packages
  */
 
+// Environment detection
+export { detectEnvironment, getEnvironment } from "./env.js";
+// Module loading
+export { createModuleLoader, loadWasm, resolveWasmPath } from "./loader.js";
+
+// Memory management
+export { AllocationScope, WasmMemory } from "./memory.js";
 // Types
 export type {
   RuntimeEnvironment,
@@ -15,15 +22,6 @@ export type {
   WasmSlice,
   ZigWasmExports,
 } from "./types.js";
-
-// Environment detection
-export { detectEnvironment, getEnvironment } from "./env.js";
-
-// Memory management
-export { AllocationScope, WasmMemory } from "./memory.js";
-
-// Module loading
-export { createModuleLoader, loadWasm, resolveWasmPath } from "./loader.js";
 
 // Re-export utilities for convenience
 export { compareBytes, concatBytes, fromHex, toHex } from "./utils.js";

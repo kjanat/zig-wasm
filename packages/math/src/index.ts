@@ -4,21 +4,93 @@
  * High-performance math functions powered by Zig via WebAssembly
  */
 
-// Types
-export type { MathWasmExports } from "./types.js";
-
 // Basic operations
+// Power and root functions
+// Exponential and logarithmic functions
+// Trigonometric functions
+// Hyperbolic functions
+// Rounding functions
+// Classification functions
+// Constants
+// Bit manipulation
+// Integer math
+// Floating-point utilities
+// Raw exports access
 export {
   abs,
   absF32,
   absI32,
   absI64,
+  acos,
+  acosF32,
+  acosh,
+  acoshF32,
+  asin,
+  asinF32,
+  asinh,
+  asinhF32,
+  atan,
+  atan2,
+  atan2F32,
+  atanF32,
+  atanh,
+  atanhF32,
+  bswap16,
+  bswap32,
+  bswap64,
+  cbrt,
+  cbrtF32,
+  ceil,
+  ceilF32,
   clamp,
   clampF32,
   clampI32,
   clampI64,
   clampU32,
   clampU64,
+  clz,
+  clzU64,
+  copysign,
+  copysignF32,
+  cos,
+  cosF32,
+  cosh,
+  coshF32,
+  ctz,
+  ctzU64,
+  e,
+  eF32,
+  exp,
+  exp2,
+  exp2F32,
+  expF32,
+  expm1,
+  expm1F32,
+  floor,
+  floorF32,
+  fmod,
+  fmodF32,
+  gcd,
+  gcdU64,
+  getExports,
+  hypot,
+  hypotF32,
+  isFinite_ as isFinite,
+  isFinite_F32 as isFiniteF32,
+  isInf,
+  isInfF32,
+  isNaN_ as isNaN,
+  isNaN_F32 as isNaNF32,
+  ln10,
+  ln2,
+  log,
+  log10,
+  log10F32,
+  log1p,
+  log1pF32,
+  log2,
+  log2F32,
+  logF32,
   max,
   maxF32,
   maxI32,
@@ -31,103 +103,32 @@ export {
   minI64,
   minU32,
   minU64,
-} from "./math.js";
-
-// Power and root functions
-export { cbrt, cbrtF32, hypot, hypotF32, pow, powF32, sqrt, sqrtF32 } from "./math.js";
-
-// Exponential and logarithmic functions
-export {
-  exp,
-  exp2,
-  exp2F32,
-  expF32,
-  expm1,
-  expm1F32,
-  log,
-  log10,
-  log10F32,
-  log1p,
-  log1pF32,
-  log2,
-  log2F32,
-  logF32,
-} from "./math.js";
-
-// Trigonometric functions
-export {
-  acos,
-  acosF32,
-  asin,
-  asinF32,
-  atan,
-  atan2,
-  atan2F32,
-  atanF32,
-  cos,
-  cosF32,
-  sin,
-  sinF32,
-  tan,
-  tanF32,
-} from "./math.js";
-
-// Hyperbolic functions
-export {
-  acosh,
-  acoshF32,
-  asinh,
-  asinhF32,
-  atanh,
-  atanhF32,
-  cosh,
-  coshF32,
-  sinh,
-  sinhF32,
-  tanh,
-  tanhF32,
-} from "./math.js";
-
-// Rounding functions
-export { ceil, ceilF32, floor, floorF32, round, roundF32, trunc, truncF32 } from "./math.js";
-
-// Classification functions
-export {
-  isFinite_ as isFinite,
-  isFinite_F32 as isFiniteF32,
-  isInf,
-  isInfF32,
-  isNaN_ as isNaN,
-  isNaN_F32 as isNaNF32,
-  sign,
-  signF32,
-} from "./math.js";
-
-// Constants
-export { e, eF32, ln10, ln2, pi, piF32 } from "./math.js";
-
-// Bit manipulation
-export {
-  bswap16,
-  bswap32,
-  bswap64,
-  clz,
-  clzU64,
-  ctz,
-  ctzU64,
+  pi,
+  piF32,
   popcount,
   popcountU64,
+  pow,
+  powF32,
   rotl,
   rotlU64,
   rotr,
   rotrU64,
+  round,
+  roundF32,
+  sign,
+  signF32,
+  sin,
+  sinF32,
+  sinh,
+  sinhF32,
+  sqrt,
+  sqrtF32,
+  tan,
+  tanF32,
+  tanh,
+  tanhF32,
+  trunc,
+  truncF32,
 } from "./math.js";
-
-// Integer math
-export { gcd, gcdU64 } from "./math.js";
-
-// Floating-point utilities
-export { copysign, copysignF32, fmod, fmodF32 } from "./math.js";
-
-// Raw exports access
-export { getExports } from "./math.js";
+// Types
+export type { MathWasmExports } from "./types.js";

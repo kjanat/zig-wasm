@@ -4,16 +4,20 @@
  * Cryptographic hash functions powered by Zig's std.crypto via WebAssembly
  */
 
-// Types
-export type { CryptoWasmExports, HashAlgorithm, HmacAlgorithm } from "./types.js";
-
 // Hash functions
+// HMAC functions
+// Utilities
 export {
   blake2b256,
   blake2s256,
   blake3,
+  getHashDigestLength,
   hash,
   hashHex,
+  hmac,
+  hmacHex,
+  hmacSha256,
+  hmacSha512,
   md5,
   sha1,
   sha256,
@@ -22,9 +26,5 @@ export {
   sha3_512,
   sha512,
 } from "./crypto.js";
-
-// HMAC functions
-export { hmac, hmacHex, hmacSha256, hmacSha512 } from "./crypto.js";
-
-// Utilities
-export { getHashDigestLength } from "./crypto.js";
+// Types
+export type { CryptoWasmExports, HashAlgorithm, HmacAlgorithm } from "./types.js";

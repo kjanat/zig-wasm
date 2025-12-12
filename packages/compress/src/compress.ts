@@ -1,5 +1,5 @@
-import { getEnvironment, loadWasm, WasmMemory } from "@zig-wasm/core";
 import type { WasmLoadResult } from "@zig-wasm/core";
+import { getEnvironment, loadWasm, WasmMemory } from "@zig-wasm/core";
 
 import type { CompressWasmExports } from "./types.js";
 

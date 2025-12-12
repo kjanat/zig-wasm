@@ -13,11 +13,14 @@
     "build:zig": "zig build -Doptimize=ReleaseSmall",
     "clean": "pnpm -r clean && rm -rf zig-out .zig-cache",
     "fmt": "dprint fmt",
+    "lint": "biome lint",
+    "lint:fix": "biome chdck --write && pnpm fmt",
     "test": "pnpm -r test",
     "test:quick": "node test.mjs",
     "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.3.8",
     "@types/node": "^25.0.1",
     "dprint": "^0.50.2",
     "tsdown": "^0.17.3",

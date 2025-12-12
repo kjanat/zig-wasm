@@ -1,5 +1,5 @@
-import { AllocationScope, getEnvironment, loadWasm, WasmMemory } from "@zig-wasm/core";
 import type { WasmLoadResult } from "@zig-wasm/core";
+import { AllocationScope, getEnvironment, loadWasm, WasmMemory } from "@zig-wasm/core";
 import type { Hash32Algorithm, Hash64Algorithm, HashAlgorithm, HashWasmExports } from "./types.js";
 
 // Lazy-loaded module
