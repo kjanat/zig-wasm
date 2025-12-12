@@ -2,34 +2,6 @@
   "name": "@zig-wasm/compress",
   "version": "0.1.0",
   "description": "XZ and LZMA decompression powered by Zig's std.compress via WebAssembly",
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
-    }
-  },
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "tsup",
-    "clean": "rm -rf dist",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run"
-  },
-  "dependencies": {
-    "@zig-wasm/core": "workspace:*"
-  },
   "keywords": [
     "zig",
     "wasm",
@@ -39,5 +11,29 @@
     "xz",
     "lzma"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json",
+    "./compress.wasm": "./dist/compress.wasm"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.cts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@zig-wasm/core": "workspace:*"
+  }
 }

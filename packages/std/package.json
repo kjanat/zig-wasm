@@ -2,88 +2,6 @@
   "name": "@zig-wasm/std",
   "version": "0.1.0",
   "description": "Zig standard library for JavaScript via WebAssembly - umbrella package",
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
-    },
-    "./crypto": {
-      "import": {
-        "types": "./dist/crypto.d.ts",
-        "default": "./dist/crypto.js"
-      },
-      "require": {
-        "types": "./dist/crypto.d.cts",
-        "default": "./dist/crypto.cjs"
-      }
-    },
-    "./hash": {
-      "import": {
-        "types": "./dist/hash.d.ts",
-        "default": "./dist/hash.js"
-      },
-      "require": {
-        "types": "./dist/hash.d.cts",
-        "default": "./dist/hash.cjs"
-      }
-    },
-    "./base64": {
-      "import": {
-        "types": "./dist/base64.d.ts",
-        "default": "./dist/base64.js"
-      },
-      "require": {
-        "types": "./dist/base64.d.cts",
-        "default": "./dist/base64.cjs"
-      }
-    },
-    "./math": {
-      "import": {
-        "types": "./dist/math.d.ts",
-        "default": "./dist/math.js"
-      },
-      "require": {
-        "types": "./dist/math.d.cts",
-        "default": "./dist/math.cjs"
-      }
-    },
-    "./compress": {
-      "import": {
-        "types": "./dist/compress.d.ts",
-        "default": "./dist/compress.js"
-      },
-      "require": {
-        "types": "./dist/compress.d.cts",
-        "default": "./dist/compress.cjs"
-      }
-    }
-  },
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "tsup",
-    "clean": "rm -rf dist",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@zig-wasm/core": "workspace:*",
-    "@zig-wasm/crypto": "workspace:*",
-    "@zig-wasm/hash": "workspace:*",
-    "@zig-wasm/base64": "workspace:*",
-    "@zig-wasm/math": "workspace:*",
-    "@zig-wasm/compress": "workspace:*"
-  },
   "keywords": [
     "zig",
     "wasm",
@@ -91,5 +9,57 @@
     "std",
     "stdlib"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    },
+    "./base64": {
+      "require": "./dist/base64.cjs",
+      "import": "./dist/base64.mjs"
+    },
+    "./compress": {
+      "require": "./dist/compress.cjs",
+      "import": "./dist/compress.mjs"
+    },
+    "./crypto": {
+      "require": "./dist/crypto.cjs",
+      "import": "./dist/crypto.mjs"
+    },
+    "./hash": {
+      "require": "./dist/hash.cjs",
+      "import": "./dist/hash.mjs"
+    },
+    "./math": {
+      "require": "./dist/math.cjs",
+      "import": "./dist/math.mjs"
+    },
+    "./package.json": "./package.json",
+    "./crypto.wasm": "@zig-wasm/crypto/crypto.wasm",
+    "./hash.wasm": "@zig-wasm/hash/hash.wasm",
+    "./base64.wasm": "@zig-wasm/base64/base64.wasm",
+    "./math.wasm": "@zig-wasm/math/math.wasm",
+    "./compress.wasm": "@zig-wasm/compress/compress.wasm"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.cts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@zig-wasm/base64": "workspace:*",
+    "@zig-wasm/compress": "workspace:*",
+    "@zig-wasm/core": "workspace:*",
+    "@zig-wasm/crypto": "workspace:*",
+    "@zig-wasm/hash": "workspace:*",
+    "@zig-wasm/math": "workspace:*"
+  }
 }

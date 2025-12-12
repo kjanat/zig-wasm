@@ -45,10 +45,12 @@ fn buildWasmModule(
     // Export all public symbols (functions marked with `export`)
     lib.rdynamic = true;
 
-    // Install to packages/<name>/dist/<name>.wasm
-    const install = b.addInstallArtifact(lib, .{
-        .dest_dir = .{ .override = .{ .custom = b.fmt("packages/{s}/dist", .{name}) } },
-    });
+    // Install directly to packages/<name>/dist/<name>.wasm (no intermediate zig-out)
+    const install = b.addInstallFileWithDir(
+        lib.getEmittedBin(),
+        .{ .custom = b.fmt("../packages/{s}/dist", .{name}) },
+        b.fmt("{s}.wasm", .{name}),
+    );
 
     b.getInstallStep().dependOn(&install.step);
 
