@@ -1,7 +1,7 @@
 import type { WasmLoadResult } from "@zig-wasm/core";
 import { getEnvironment, loadWasm } from "@zig-wasm/core";
 
-import type { MathWasmExports } from "./types.js";
+import type { MathWasmExports } from "./types.ts";
 
 // Lazy-loaded module
 let wasmModule: Promise<WasmLoadResult<MathWasmExports>> | null = null;

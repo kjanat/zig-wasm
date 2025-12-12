@@ -2,7 +2,7 @@
  * Memory utilities for WASM linear memory interaction
  */
 
-import type { WasmMemoryExports, WasmPtr, WasmSize, WasmSlice } from "./types.js";
+import type { WasmMemoryExports, WasmPtr, WasmSize, WasmSlice } from "./types.ts";
 
 /** Text encoder/decoder for string operations */
 const textEncoder = new TextEncoder();

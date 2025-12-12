@@ -5,12 +5,12 @@
  */
 
 // Environment detection
-export { detectEnvironment, getEnvironment } from "./env.js";
+export { detectEnvironment, getEnvironment } from "./env.ts";
 // Module loading
-export { createModuleLoader, loadWasm, resolveWasmPath } from "./loader.js";
+export { createModuleLoader, loadWasm, resolveWasmPath } from "./loader.ts";
 
 // Memory management
-export { AllocationScope, WasmMemory } from "./memory.js";
+export { AllocationScope, WasmMemory } from "./memory.ts";
 // Types
 export type {
   RuntimeEnvironment,
@@ -21,7 +21,7 @@ export type {
   WasmSize,
   WasmSlice,
   ZigWasmExports,
-} from "./types.js";
+} from "./types.ts";
 
 // Re-export utilities for convenience
-export { compareBytes, concatBytes, fromHex, toHex } from "./utils.js";
+export { compareBytes, concatBytes, fromHex, toHex } from "./utils.ts";

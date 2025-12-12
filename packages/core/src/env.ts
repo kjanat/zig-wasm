@@ -2,7 +2,7 @@
  * Runtime environment detection
  */
 
-import type { RuntimeEnvironment } from "./types.js";
+import type { RuntimeEnvironment } from "./types.ts";
 
 /** Detect the current runtime environment */
 export function detectEnvironment(): RuntimeEnvironment {

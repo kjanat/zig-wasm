@@ -5,6 +5,6 @@
  */
 
 // Decompression functions
-export { decompressLzma, decompressXz } from "./compress.js";
+export { decompressLzma, decompressXz } from "./compress.ts";
 // Types
-export type { CompressWasmExports } from "./types.js";
+export type { CompressWasmExports } from "./types.ts";

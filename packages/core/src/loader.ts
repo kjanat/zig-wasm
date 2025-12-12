@@ -2,8 +2,8 @@
  * WASM module loader - handles loading from various sources
  */
 
-import { getEnvironment } from "./env.js";
-import type { WasmLoadOptions, WasmLoadResult, ZigWasmExports } from "./types.js";
+import { getEnvironment } from "./env.ts";
+import type { WasmLoadOptions, WasmLoadResult, ZigWasmExports } from "./types.ts";
 
 /** Default imports provided to all Zig WASM modules */
 function getDefaultImports(): WebAssembly.Imports {

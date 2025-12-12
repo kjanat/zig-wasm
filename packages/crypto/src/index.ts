@@ -25,6 +25,6 @@ export {
   sha3_256,
   sha3_512,
   sha512,
-} from "./crypto.js";
+} from "./crypto.ts";
 // Types
-export type { CryptoWasmExports, HashAlgorithm, HmacAlgorithm } from "./types.js";
+export type { CryptoWasmExports, HashAlgorithm, HmacAlgorithm } from "./types.ts";

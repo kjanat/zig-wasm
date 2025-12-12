@@ -34,6 +34,6 @@ export {
   xxhash32Hex,
   xxhash64,
   xxhash64Hex,
-} from "./hash.js";
+} from "./hash.ts";
 // Types
-export type { Hash32Algorithm, Hash64Algorithm, HashAlgorithm, HashWasmExports } from "./types.js";
+export type { Hash32Algorithm, Hash64Algorithm, HashAlgorithm, HashWasmExports } from "./types.ts";

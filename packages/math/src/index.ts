@@ -129,6 +129,6 @@ export {
   tanhF32,
   trunc,
   truncF32,
-} from "./math.js";
+} from "./math.ts";
 // Types
-export type { MathWasmExports } from "./types.js";
+export type { MathWasmExports } from "./types.ts";

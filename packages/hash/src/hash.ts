@@ -1,6 +1,6 @@
 import type { WasmLoadResult } from "@zig-wasm/core";
 import { AllocationScope, getEnvironment, loadWasm, WasmMemory } from "@zig-wasm/core";
-import type { Hash32Algorithm, Hash64Algorithm, HashAlgorithm, HashWasmExports } from "./types.js";
+import type { Hash32Algorithm, Hash64Algorithm, HashAlgorithm, HashWasmExports } from "./types.ts";
 
 // Lazy-loaded module
 let wasmModule: Promise<WasmLoadResult<HashWasmExports>> | null = null;

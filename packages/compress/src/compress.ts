@@ -1,7 +1,7 @@
 import type { WasmLoadResult } from "@zig-wasm/core";
 import { getEnvironment, loadWasm, WasmMemory } from "@zig-wasm/core";
 
-import type { CompressWasmExports } from "./types.js";
+import type { CompressWasmExports } from "./types.ts";
 
 // Lazy-loaded module
 let wasmModule: Promise<WasmLoadResult<CompressWasmExports>> | null = null;

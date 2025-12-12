@@ -1,6 +1,6 @@
 import type { WasmLoadResult } from "@zig-wasm/core";
 import { AllocationScope, getEnvironment, loadWasm, toHex, WasmMemory } from "@zig-wasm/core";
-import type { CryptoWasmExports, HashAlgorithm, HmacAlgorithm } from "./types.js";
+import type { CryptoWasmExports, HashAlgorithm, HmacAlgorithm } from "./types.ts";
 
 // Lazy-loaded module
 let wasmModule: Promise<WasmLoadResult<CryptoWasmExports>> | null = null;

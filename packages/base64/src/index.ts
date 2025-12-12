@@ -20,5 +20,5 @@ export {
   // Hex encoding
   hexDecode,
   hexEncode,
-} from "./base64.js";
-export type { Base64WasmExports } from "./types.js";
+} from "./base64.ts";
+export type { Base64WasmExports } from "./types.ts";
