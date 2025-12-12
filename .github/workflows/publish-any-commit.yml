@@ -1,0 +1,23 @@
+name: Publish Any Commit
+on: [push, pull_request]
+
+permissions: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - uses: ./.github/actions/setup-pnpm
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Publish
+        run: pnpm dlx pkg-pr-new publish './packages/*'
