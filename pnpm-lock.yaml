@@ -14,12 +14,15 @@ importers:
       '@types/node':
         specifier: ^25.0.1
         version: 25.0.1
+      '@typescript/native-preview':
+        specifier: 7.0.0-dev.20251212.1
+        version: 7.0.0-dev.20251212.1
       dprint:
         specifier: ^0.50.2
         version: 0.50.2
       tsdown:
         specifier: ^0.17.3
-        version: 0.17.3(typescript@5.9.3)
+        version: 0.17.3(@typescript/native-preview@7.0.0-dev.20251212.1)(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -602,6 +605,45 @@ packages:
 
   '@types/node@25.0.1':
     resolution: {integrity: sha512-czWPzKIAXucn9PtsttxmumiQ9N0ok9FrBwgRWrwmVLlp86BrMExzvXRLFYRJ+Ex3g6yqj+KuaxfX1JTgV2lpfg==}
+
+  '@typescript/native-preview-darwin-arm64@7.0.0-dev.20251212.1':
+    resolution: {integrity: sha512-5tof0OT01yPQ0mcoKPeSrGMxQ9Dl//gTjSKCMKwbLr5urrIPxX5bNRWUH0hxWaB4A3mXQvDvxSSrWR5TMOl2aQ==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@typescript/native-preview-darwin-x64@7.0.0-dev.20251212.1':
+    resolution: {integrity: sha512-zUgcCXmDfO2yo5fNZZ3wUCv8hdqc/Qbc1WZUEDYYo3ItnBUL9qp0lUtTwsLtNreL2WmHOCeTQuKWa/JQzdw89g==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@typescript/native-preview-linux-arm64@7.0.0-dev.20251212.1':
+    resolution: {integrity: sha512-0P59bGDFLppvkdpqQ8/kG+kU6R0iCdQiSLFRNrbrLnaflACBfIi40D3Ono3EmeSxqKsHqh/pNRu3BUJvoNGphw==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@typescript/native-preview-linux-arm@7.0.0-dev.20251212.1':
+    resolution: {integrity: sha512-peQCeG2+XqMqs6/Sg6nbQPI3Kae91Esi5Qh1VyDETO4wjMbKeAzVjw8t3Qz5X6RDbWNrCpDmbk6chjukfGeWgQ==}
+    cpu: [arm]
+    os: [linux]
+
+  '@typescript/native-preview-linux-x64@7.0.0-dev.20251212.1':
+    resolution: {integrity: sha512-7QFyqcPe/Sz+IakvzCqh0d5WhQg7A7bKyQil38K7rKSTaPI42LrVwLA6mVtTRfQyS5Sy2XYVinyLNXnWM8ImQQ==}
+    cpu: [x64]
+    os: [linux]
+
+  '@typescript/native-preview-win32-arm64@7.0.0-dev.20251212.1':
+    resolution: {integrity: sha512-Y8mh0dPXAcYYNtSZVZYaNcqAOlxOlbJQopJBVATn+ItCxrY4RqBwygzrBWqg+gUo9xLmFI9XLuDVqm1ZAkAfwg==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@typescript/native-preview-win32-x64@7.0.0-dev.20251212.1':
+    resolution: {integrity: sha512-bUPWJgGhPdsoL3OR+I8nFF81P/+hwfqyMKaAWFxTg1zeRdEl61lVdrEfgNDBI7Px5Gr+uFGELlkCsDzy/7dAyw==}
+    cpu: [x64]
+    os: [win32]
+
+  '@typescript/native-preview@7.0.0-dev.20251212.1':
+    resolution: {integrity: sha512-uNPMu5+ElTN7AZRFJXsTPtSAQ2b7FIXMvpQbU/L0VD5PoBp5nMiQbgO1QFSvbFiIoTTma3I2TX3WSO5olIMTLQ==}
+    hasBin: true
 
   '@vitest/expect@4.0.15':
     resolution: {integrity: sha512-Gfyva9/GxPAWXIWjyGDli9O+waHDC0Q0jaLdFP1qPAUUfo1FEXPXUfUkp3eZA0sSq340vPycSyOlYUeM15Ft1w==}
@@ -1287,6 +1329,37 @@ snapshots:
     dependencies:
       undici-types: 7.16.0
 
+  '@typescript/native-preview-darwin-arm64@7.0.0-dev.20251212.1':
+    optional: true
+
+  '@typescript/native-preview-darwin-x64@7.0.0-dev.20251212.1':
+    optional: true
+
+  '@typescript/native-preview-linux-arm64@7.0.0-dev.20251212.1':
+    optional: true
+
+  '@typescript/native-preview-linux-arm@7.0.0-dev.20251212.1':
+    optional: true
+
+  '@typescript/native-preview-linux-x64@7.0.0-dev.20251212.1':
+    optional: true
+
+  '@typescript/native-preview-win32-arm64@7.0.0-dev.20251212.1':
+    optional: true
+
+  '@typescript/native-preview-win32-x64@7.0.0-dev.20251212.1':
+    optional: true
+
+  '@typescript/native-preview@7.0.0-dev.20251212.1':
+    optionalDependencies:
+      '@typescript/native-preview-darwin-arm64': 7.0.0-dev.20251212.1
+      '@typescript/native-preview-darwin-x64': 7.0.0-dev.20251212.1
+      '@typescript/native-preview-linux-arm': 7.0.0-dev.20251212.1
+      '@typescript/native-preview-linux-arm64': 7.0.0-dev.20251212.1
+      '@typescript/native-preview-linux-x64': 7.0.0-dev.20251212.1
+      '@typescript/native-preview-win32-arm64': 7.0.0-dev.20251212.1
+      '@typescript/native-preview-win32-x64': 7.0.0-dev.20251212.1
+
   '@vitest/expect@4.0.15':
     dependencies:
       '@standard-schema/spec': 1.0.0
@@ -1442,7 +1515,7 @@ snapshots:
 
   resolve-pkg-maps@1.0.0: {}
 
-  rolldown-plugin-dts@0.18.3(rolldown@1.0.0-beta.53)(typescript@5.9.3):
+  rolldown-plugin-dts@0.18.3(@typescript/native-preview@7.0.0-dev.20251212.1)(rolldown@1.0.0-beta.53)(typescript@5.9.3):
     dependencies:
       '@babel/generator': 7.28.5
       '@babel/parser': 7.28.5
@@ -1455,6 +1528,7 @@ snapshots:
       obug: 2.1.1
       rolldown: 1.0.0-beta.53
     optionalDependencies:
+      '@typescript/native-preview': 7.0.0-dev.20251212.1
       typescript: 5.9.3
     transitivePeerDependencies:
       - oxc-resolver
@@ -1529,7 +1603,7 @@ snapshots:
 
   tree-kill@1.2.2: {}
 
-  tsdown@0.17.3(typescript@5.9.3):
+  tsdown@0.17.3(@typescript/native-preview@7.0.0-dev.20251212.1)(typescript@5.9.3):
     dependencies:
       ansis: 4.2.0
       cac: 6.7.14
@@ -1539,7 +1613,7 @@ snapshots:
       import-without-cache: 0.2.3
       obug: 2.1.1
       rolldown: 1.0.0-beta.53
-      rolldown-plugin-dts: 0.18.3(rolldown@1.0.0-beta.53)(typescript@5.9.3)
+      rolldown-plugin-dts: 0.18.3(@typescript/native-preview@7.0.0-dev.20251212.1)(rolldown@1.0.0-beta.53)(typescript@5.9.3)
       semver: 7.7.3
       tinyexec: 1.0.2
       tinyglobby: 0.2.15
