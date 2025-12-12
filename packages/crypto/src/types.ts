@@ -49,7 +49,7 @@ export interface CryptoWasmExports extends WasmMemoryExports {
     keyLen: number,
     dataPtr: number,
     dataLen: number,
-    outPtr: number
+    outPtr: number,
   ) => void;
   hmac_sha256_length: () => number;
 
@@ -58,7 +58,7 @@ export interface CryptoWasmExports extends WasmMemoryExports {
     keyLen: number,
     dataPtr: number,
     dataLen: number,
-    outPtr: number
+    outPtr: number,
   ) => void;
   hmac_sha512_length: () => number;
 }

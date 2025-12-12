@@ -6,30 +6,26 @@ import type { RuntimeEnvironment } from "./types.js";
 
 /** Detect the current runtime environment */
 export function detectEnvironment(): RuntimeEnvironment {
-  const isNode =
-    typeof process !== "undefined" &&
-    process.versions != null &&
-    process.versions.node != null;
+  const isNode = typeof process !== "undefined"
+    && process.versions != null
+    && process.versions.node != null;
 
-  const isBun =
-    typeof process !== "undefined" &&
-    process.versions != null &&
-    process.versions.bun != null;
+  const isBun = typeof process !== "undefined"
+    && process.versions != null
+    && process.versions.bun != null;
 
   const isDeno =
     // @ts-expect-error - Deno global
     typeof Deno !== "undefined" && typeof Deno.version !== "undefined";
 
-  const isBrowser =
-    typeof window !== "undefined" &&
-    typeof document !== "undefined" &&
-    !isNode &&
-    !isDeno &&
-    !isBun;
+  const isBrowser = typeof window !== "undefined"
+    && typeof document !== "undefined"
+    && !isNode
+    && !isDeno
+    && !isBun;
 
-  const supportsStreaming =
-    typeof WebAssembly.instantiateStreaming === "function" &&
-    (isBrowser || isDeno);
+  const supportsStreaming = typeof WebAssembly.instantiateStreaming === "function"
+    && (isBrowser || isDeno);
 
   return {
     isNode,

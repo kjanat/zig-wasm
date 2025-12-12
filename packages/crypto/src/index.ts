@@ -5,22 +5,22 @@
  */
 
 // Types
-export type { HashAlgorithm, HmacAlgorithm, CryptoWasmExports } from "./types.js";
+export type { CryptoWasmExports, HashAlgorithm, HmacAlgorithm } from "./types.js";
 
 // Hash functions
 export {
+  blake2b256,
+  blake2s256,
+  blake3,
   hash,
   hashHex,
   md5,
   sha1,
   sha256,
   sha384,
-  sha512,
   sha3_256,
   sha3_512,
-  blake2b256,
-  blake2s256,
-  blake3,
+  sha512,
 } from "./crypto.js";
 
 // HMAC functions

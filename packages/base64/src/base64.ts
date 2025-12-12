@@ -1,10 +1,5 @@
 import type { WasmLoadResult } from "@zig-wasm/core";
-import {
-  AllocationScope,
-  getEnvironment,
-  loadWasm,
-  WasmMemory,
-} from "@zig-wasm/core";
+import { AllocationScope, getEnvironment, loadWasm, WasmMemory } from "@zig-wasm/core";
 
 import type { Base64WasmExports } from "./types.js";
 
@@ -92,7 +87,7 @@ export async function decode(str: string): Promise<Uint8Array> {
 
 /** Encode data to Base64 without padding */
 export async function encodeNoPadding(
-  data: string | Uint8Array
+  data: string | Uint8Array,
 ): Promise<string> {
   const { exports, memory: mem } = await getModule();
   const bytes = toBytes(data);
@@ -106,7 +101,7 @@ export async function encodeNoPadding(
     const actualLen = exports.base64_no_pad_encode(
       input.ptr,
       input.len,
-      outputPtr
+      outputPtr,
     );
     const encoded = mem.copyOut(outputPtr, actualLen);
     return new TextDecoder().decode(encoded);
@@ -127,7 +122,7 @@ export async function decodeNoPadding(str: string): Promise<Uint8Array> {
     const actualLen = exports.base64_no_pad_decode(
       input.ptr,
       input.len,
-      outputPtr
+      outputPtr,
     );
     return mem.copyOut(outputPtr, actualLen);
   });
@@ -176,7 +171,7 @@ export async function decodeUrl(str: string): Promise<Uint8Array> {
 
 /** Encode data to URL-safe Base64 without padding */
 export async function encodeUrlNoPadding(
-  data: string | Uint8Array
+  data: string | Uint8Array,
 ): Promise<string> {
   const { exports, memory: mem } = await getModule();
   const bytes = toBytes(data);
@@ -190,7 +185,7 @@ export async function encodeUrlNoPadding(
     const actualLen = exports.base64_url_no_pad_encode(
       input.ptr,
       input.len,
-      outputPtr
+      outputPtr,
     );
     const encoded = mem.copyOut(outputPtr, actualLen);
     return new TextDecoder().decode(encoded);
@@ -211,7 +206,7 @@ export async function decodeUrlNoPadding(str: string): Promise<Uint8Array> {
     const actualLen = exports.base64_url_no_pad_decode(
       input.ptr,
       input.len,
-      outputPtr
+      outputPtr,
     );
     return mem.copyOut(outputPtr, actualLen);
   });

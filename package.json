@@ -12,11 +12,10 @@
     "build:ts": "tsdown --workspace",
     "build:zig": "zig build -Doptimize=ReleaseSmall",
     "clean": "pnpm -r clean && rm -rf zig-out .zig-cache",
-    "fmt:pkg": "pnpm dlx sort-package-json **/package.json",
+    "fmt": "dprint fmt",
     "test": "pnpm -r test",
     "test:quick": "node test.mjs",
-    "typecheck": "pnpm -r typecheck",
-    "fmt": "dprint fmt"
+    "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {
     "@types/node": "^25.0.1",

@@ -8,13 +8,13 @@ export interface Base64WasmExports extends WasmMemoryExports {
   base64_encode: (
     srcPtr: number,
     srcLen: number,
-    destPtr: number
+    destPtr: number,
   ) => number;
   base64_encode_len: (srcLen: number) => number;
   base64_decode: (
     srcPtr: number,
     srcLen: number,
-    destPtr: number
+    destPtr: number,
   ) => number;
   base64_decode_len: (srcLen: number) => number;
 
@@ -22,13 +22,13 @@ export interface Base64WasmExports extends WasmMemoryExports {
   base64_no_pad_encode: (
     srcPtr: number,
     srcLen: number,
-    destPtr: number
+    destPtr: number,
   ) => number;
   base64_no_pad_encode_len: (srcLen: number) => number;
   base64_no_pad_decode: (
     srcPtr: number,
     srcLen: number,
-    destPtr: number
+    destPtr: number,
   ) => number;
   base64_no_pad_decode_len: (srcLen: number) => number;
 
@@ -36,13 +36,13 @@ export interface Base64WasmExports extends WasmMemoryExports {
   base64_url_encode: (
     srcPtr: number,
     srcLen: number,
-    destPtr: number
+    destPtr: number,
   ) => number;
   base64_url_encode_len: (srcLen: number) => number;
   base64_url_decode: (
     srcPtr: number,
     srcLen: number,
-    destPtr: number
+    destPtr: number,
   ) => number;
   base64_url_decode_len: (srcLen: number) => number;
 
@@ -50,13 +50,13 @@ export interface Base64WasmExports extends WasmMemoryExports {
   base64_url_no_pad_encode: (
     srcPtr: number,
     srcLen: number,
-    destPtr: number
+    destPtr: number,
   ) => number;
   base64_url_no_pad_encode_len: (srcLen: number) => number;
   base64_url_no_pad_decode: (
     srcPtr: number,
     srcLen: number,
-    destPtr: number
+    destPtr: number,
   ) => number;
   base64_url_no_pad_decode_len: (srcLen: number) => number;
 
@@ -64,13 +64,13 @@ export interface Base64WasmExports extends WasmMemoryExports {
   hex_encode: (
     srcPtr: number,
     srcLen: number,
-    destPtr: number
+    destPtr: number,
   ) => number;
   hex_encode_len: (srcLen: number) => number;
   hex_decode: (
     srcPtr: number,
     srcLen: number,
-    destPtr: number
+    destPtr: number,
   ) => number;
   hex_decode_len: (srcLen: number) => number;
 }

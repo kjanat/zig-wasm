@@ -56,7 +56,7 @@ export async function decompressXz(data: Uint8Array): Promise<Uint8Array> {
     const outputPtr = exports.xz_decompress(
       inputSlice.ptr,
       inputSlice.len,
-      outputLenPtr
+      outputLenPtr,
     );
 
     if (outputPtr === 0) {
@@ -100,7 +100,7 @@ export async function decompressLzma(data: Uint8Array): Promise<Uint8Array> {
     const outputPtr = exports.lzma_decompress(
       inputSlice.ptr,
       inputSlice.len,
-      outputLenPtr
+      outputLenPtr,
     );
 
     if (outputPtr === 0) {

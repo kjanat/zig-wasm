@@ -6,24 +6,24 @@
 
 // Types
 export type {
-  WasmMemoryExports,
-  ZigWasmExports,
+  RuntimeEnvironment,
   WasmLoadOptions,
   WasmLoadResult,
-  RuntimeEnvironment,
+  WasmMemoryExports,
   WasmPtr,
   WasmSize,
   WasmSlice,
+  ZigWasmExports,
 } from "./types.js";
 
 // Environment detection
 export { detectEnvironment, getEnvironment } from "./env.js";
 
 // Memory management
-export { WasmMemory, AllocationScope } from "./memory.js";
+export { AllocationScope, WasmMemory } from "./memory.js";
 
 // Module loading
-export { loadWasm, createModuleLoader, resolveWasmPath } from "./loader.js";
+export { createModuleLoader, loadWasm, resolveWasmPath } from "./loader.js";
 
 // Re-export utilities for convenience
-export { toHex, fromHex, concatBytes, compareBytes } from "./utils.js";
+export { compareBytes, concatBytes, fromHex, toHex } from "./utils.js";

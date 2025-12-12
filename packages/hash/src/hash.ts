@@ -1,16 +1,6 @@
-import {
-  loadWasm,
-  WasmMemory,
-  AllocationScope,
-  getEnvironment,
-} from "@zig-wasm/core";
+import { AllocationScope, getEnvironment, loadWasm, WasmMemory } from "@zig-wasm/core";
 import type { WasmLoadResult } from "@zig-wasm/core";
-import type {
-  HashWasmExports,
-  Hash32Algorithm,
-  Hash64Algorithm,
-  HashAlgorithm,
-} from "./types.js";
+import type { Hash32Algorithm, Hash64Algorithm, HashAlgorithm, HashWasmExports } from "./types.js";
 
 // Lazy-loaded module
 let wasmModule: Promise<WasmLoadResult<HashWasmExports>> | null = null;
@@ -71,7 +61,7 @@ function toHex64(n: bigint): string {
 export async function hash32(
   algorithm: Hash32Algorithm,
   data: string | Uint8Array,
-  seed?: number
+  seed?: number,
 ): Promise<number> {
   const { exports, memory: mem } = await getModule();
   const bytes = toBytes(data);
@@ -98,7 +88,7 @@ export async function hash32(
 export async function hash64(
   algorithm: Hash64Algorithm,
   data: string | Uint8Array,
-  seed?: bigint
+  seed?: bigint,
 ): Promise<bigint> {
   const { exports, memory: mem } = await getModule();
   const bytes = toBytes(data);
@@ -132,7 +122,7 @@ export async function hash64(
 /** Hash data with any algorithm, returns number for 32-bit or bigint for 64-bit */
 export async function hash(
   algorithm: HashAlgorithm,
-  data: string | Uint8Array
+  data: string | Uint8Array,
 ): Promise<number | bigint> {
   if (is32BitAlgorithm(algorithm)) {
     return hash32(algorithm, data);
@@ -143,7 +133,7 @@ export async function hash(
 /** Hash data and return as hex string */
 export async function hashHex(
   algorithm: HashAlgorithm,
-  data: string | Uint8Array
+  data: string | Uint8Array,
 ): Promise<string> {
   if (is32BitAlgorithm(algorithm)) {
     const result = await hash32(algorithm, data);
@@ -155,10 +145,10 @@ export async function hashHex(
 
 function is32BitAlgorithm(algorithm: HashAlgorithm): algorithm is Hash32Algorithm {
   return (
-    algorithm === "crc32" ||
-    algorithm === "adler32" ||
-    algorithm === "xxhash32" ||
-    algorithm === "fnv1a32"
+    algorithm === "crc32"
+    || algorithm === "adler32"
+    || algorithm === "xxhash32"
+    || algorithm === "fnv1a32"
   );
 }
 
@@ -195,7 +185,7 @@ export async function adler32Hex(data: string | Uint8Array): Promise<string> {
 /** Compute xxHash64 */
 export async function xxhash64(
   data: string | Uint8Array,
-  seed?: bigint
+  seed?: bigint,
 ): Promise<bigint> {
   return hash64("xxhash64", data, seed);
 }
@@ -203,7 +193,7 @@ export async function xxhash64(
 /** Compute xxHash64 as hex string */
 export async function xxhash64Hex(
   data: string | Uint8Array,
-  seed?: bigint
+  seed?: bigint,
 ): Promise<string> {
   const result = await xxhash64(data, seed);
   return toHex64(result);
@@ -212,7 +202,7 @@ export async function xxhash64Hex(
 /** Compute xxHash32 */
 export async function xxhash32(
   data: string | Uint8Array,
-  seed?: number
+  seed?: number,
 ): Promise<number> {
   return hash32("xxhash32", data, seed);
 }
@@ -220,7 +210,7 @@ export async function xxhash32(
 /** Compute xxHash32 as hex string */
 export async function xxhash32Hex(
   data: string | Uint8Array,
-  seed?: number
+  seed?: number,
 ): Promise<string> {
   const result = await xxhash32(data, seed);
   return toHex32(result);
@@ -233,7 +223,7 @@ export async function xxhash32Hex(
 /** Compute wyHash */
 export async function wyhash(
   data: string | Uint8Array,
-  seed?: bigint
+  seed?: bigint,
 ): Promise<bigint> {
   return hash64("wyhash", data, seed);
 }
@@ -241,7 +231,7 @@ export async function wyhash(
 /** Compute wyHash as hex string */
 export async function wyhashHex(
   data: string | Uint8Array,
-  seed?: bigint
+  seed?: bigint,
 ): Promise<string> {
   const result = await wyhash(data, seed);
   return toHex64(result);
@@ -254,7 +244,7 @@ export async function wyhashHex(
 /** Compute CityHash64 */
 export async function cityhash64(
   data: string | Uint8Array,
-  seed?: bigint
+  seed?: bigint,
 ): Promise<bigint> {
   return hash64("cityhash64", data, seed);
 }
@@ -262,7 +252,7 @@ export async function cityhash64(
 /** Compute CityHash64 as hex string */
 export async function cityhash64Hex(
   data: string | Uint8Array,
-  seed?: bigint
+  seed?: bigint,
 ): Promise<string> {
   const result = await cityhash64(data, seed);
   return toHex64(result);
@@ -275,7 +265,7 @@ export async function cityhash64Hex(
 /** Compute MurmurHash2-64 */
 export async function murmur2_64(
   data: string | Uint8Array,
-  seed?: bigint
+  seed?: bigint,
 ): Promise<bigint> {
   return hash64("murmur2_64", data, seed);
 }
@@ -283,7 +273,7 @@ export async function murmur2_64(
 /** Compute MurmurHash2-64 as hex string */
 export async function murmur2_64Hex(
   data: string | Uint8Array,
-  seed?: bigint
+  seed?: bigint,
 ): Promise<string> {
   const result = await murmur2_64(data, seed);
   return toHex64(result);

@@ -34,16 +34,7 @@ export {
 } from "./math.js";
 
 // Power and root functions
-export {
-  cbrt,
-  cbrtF32,
-  hypot,
-  hypotF32,
-  pow,
-  powF32,
-  sqrt,
-  sqrtF32,
-} from "./math.js";
+export { cbrt, cbrtF32, hypot, hypotF32, pow, powF32, sqrt, sqrtF32 } from "./math.js";
 
 // Exponential and logarithmic functions
 export {
@@ -98,16 +89,7 @@ export {
 } from "./math.js";
 
 // Rounding functions
-export {
-  ceil,
-  ceilF32,
-  floor,
-  floorF32,
-  round,
-  roundF32,
-  trunc,
-  truncF32,
-} from "./math.js";
+export { ceil, ceilF32, floor, floorF32, round, roundF32, trunc, truncF32 } from "./math.js";
 
 // Classification functions
 export {

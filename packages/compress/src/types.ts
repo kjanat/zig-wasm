@@ -13,7 +13,7 @@ export interface CompressWasmExports extends WasmMemoryExports {
   xz_decompress: (
     inputPtr: number,
     inputLen: number,
-    outputLenPtr: number
+    outputLenPtr: number,
   ) => number;
 
   /**
@@ -26,6 +26,6 @@ export interface CompressWasmExports extends WasmMemoryExports {
   lzma_decompress: (
     inputPtr: number,
     inputLen: number,
-    outputLenPtr: number
+    outputLenPtr: number,
   ) => number;
 }

@@ -4,7 +4,6 @@
  * Base64 and hex encoding/decoding powered by Zig via WebAssembly
  */
 
-export type { Base64WasmExports } from "./types.js";
 export {
   // Standard Base64
   decode,
@@ -22,3 +21,4 @@ export {
   hexDecode,
   hexEncode,
 } from "./base64.js";
+export type { Base64WasmExports } from "./types.js";

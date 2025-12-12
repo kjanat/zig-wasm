@@ -1,10 +1,4 @@
-import {
-  loadWasm,
-  WasmMemory,
-  AllocationScope,
-  toHex,
-  getEnvironment,
-} from "@zig-wasm/core";
+import { AllocationScope, getEnvironment, loadWasm, toHex, WasmMemory } from "@zig-wasm/core";
 import type { WasmLoadResult } from "@zig-wasm/core";
 import type { CryptoWasmExports, HashAlgorithm, HmacAlgorithm } from "./types.js";
 
@@ -19,7 +13,7 @@ async function getModule(): Promise<{
 }> {
   if (!wasmModule) {
     const env = getEnvironment();
-    
+
     if (env.isNode || env.isBun) {
       // Node.js: load from file
       const { fileURLToPath } = await import("node:url");
@@ -56,7 +50,7 @@ function toBytes(data: string | Uint8Array): Uint8Array {
 /** Hash data with the specified algorithm */
 export async function hash(
   algorithm: HashAlgorithm,
-  data: string | Uint8Array
+  data: string | Uint8Array,
 ): Promise<Uint8Array> {
   const { exports, memory: mem } = await getModule();
   const bytes = toBytes(data);
@@ -78,7 +72,7 @@ export async function hash(
 /** Hash data and return as hex string */
 export async function hashHex(
   algorithm: HashAlgorithm,
-  data: string | Uint8Array
+  data: string | Uint8Array,
 ): Promise<string> {
   const result = await hash(algorithm, data);
   return toHex(result);
@@ -86,7 +80,7 @@ export async function hashHex(
 
 function getHashFunction(
   exports: CryptoWasmExports,
-  algorithm: HashAlgorithm
+  algorithm: HashAlgorithm,
 ): (dataPtr: number, dataLen: number, outPtr: number) => void {
   switch (algorithm) {
     case "md5":
@@ -114,7 +108,7 @@ function getHashFunction(
 
 function getDigestLength(
   exports: CryptoWasmExports,
-  algorithm: HashAlgorithm
+  algorithm: HashAlgorithm,
 ): number {
   switch (algorithm) {
     case "md5":
@@ -181,14 +175,14 @@ export async function sha3_512(data: string | Uint8Array): Promise<Uint8Array> {
 
 /** Hash with BLAKE2b-256 */
 export async function blake2b256(
-  data: string | Uint8Array
+  data: string | Uint8Array,
 ): Promise<Uint8Array> {
   return hash("blake2b256", data);
 }
 
 /** Hash with BLAKE2s-256 */
 export async function blake2s256(
-  data: string | Uint8Array
+  data: string | Uint8Array,
 ): Promise<Uint8Array> {
   return hash("blake2s256", data);
 }
@@ -206,18 +200,16 @@ export async function blake3(data: string | Uint8Array): Promise<Uint8Array> {
 export async function hmac(
   algorithm: HmacAlgorithm,
   key: string | Uint8Array,
-  data: string | Uint8Array
+  data: string | Uint8Array,
 ): Promise<Uint8Array> {
   const { exports, memory: mem } = await getModule();
   const keyBytes = toBytes(key);
   const dataBytes = toBytes(data);
 
-  const hmacFn =
-    algorithm === "sha256" ? exports.hmac_sha256 : exports.hmac_sha512;
-  const outputLen =
-    algorithm === "sha256"
-      ? exports.hmac_sha256_length()
-      : exports.hmac_sha512_length();
+  const hmacFn = algorithm === "sha256" ? exports.hmac_sha256 : exports.hmac_sha512;
+  const outputLen = algorithm === "sha256"
+    ? exports.hmac_sha256_length()
+    : exports.hmac_sha512_length();
 
   return AllocationScope.use(mem, (scope) => {
     const keyInput = scope.allocAndCopy(keyBytes);
@@ -234,7 +226,7 @@ export async function hmac(
 export async function hmacHex(
   algorithm: HmacAlgorithm,
   key: string | Uint8Array,
-  data: string | Uint8Array
+  data: string | Uint8Array,
 ): Promise<string> {
   const result = await hmac(algorithm, key, data);
   return toHex(result);
@@ -243,7 +235,7 @@ export async function hmacHex(
 /** Compute HMAC-SHA256 */
 export async function hmacSha256(
   key: string | Uint8Array,
-  data: string | Uint8Array
+  data: string | Uint8Array,
 ): Promise<Uint8Array> {
   return hmac("sha256", key, data);
 }
@@ -251,7 +243,7 @@ export async function hmacSha256(
 /** Compute HMAC-SHA512 */
 export async function hmacSha512(
   key: string | Uint8Array,
-  data: string | Uint8Array
+  data: string | Uint8Array,
 ): Promise<Uint8Array> {
   return hmac("sha512", key, data);
 }
@@ -262,7 +254,7 @@ export async function hmacSha512(
 
 /** Get digest length for a hash algorithm in bytes */
 export async function getHashDigestLength(
-  algorithm: HashAlgorithm
+  algorithm: HashAlgorithm,
 ): Promise<number> {
   const { exports } = await getModule();
   return getDigestLength(exports, algorithm);

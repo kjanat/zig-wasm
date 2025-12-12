@@ -3,11 +3,7 @@
  */
 
 import { getEnvironment } from "./env.js";
-import type {
-  WasmLoadOptions,
-  WasmLoadResult,
-  ZigWasmExports,
-} from "./types.js";
+import type { WasmLoadOptions, WasmLoadResult, ZigWasmExports } from "./types.js";
 
 /** Default imports provided to all Zig WASM modules */
 function getDefaultImports(): WebAssembly.Imports {
@@ -24,7 +20,7 @@ function getDefaultImports(): WebAssembly.Imports {
 /** Merge user imports with defaults */
 function mergeImports(
   defaults: WebAssembly.Imports,
-  custom?: WebAssembly.Imports
+  custom?: WebAssembly.Imports,
 ): WebAssembly.Imports {
   if (!custom) return defaults;
 
@@ -58,7 +54,7 @@ async function loadFromPath(path: string): Promise<ArrayBuffer> {
     const buffer = await fs.readFile(path);
     return buffer.buffer.slice(
       buffer.byteOffset,
-      buffer.byteOffset + buffer.byteLength
+      buffer.byteOffset + buffer.byteLength,
     );
   }
 
@@ -68,14 +64,14 @@ async function loadFromPath(path: string): Promise<ArrayBuffer> {
 /** Load WASM module with streaming if available */
 async function instantiateWasm(
   source: ArrayBuffer | Response | Promise<Response>,
-  imports: WebAssembly.Imports
+  imports: WebAssembly.Imports,
 ): Promise<WebAssembly.WebAssemblyInstantiatedSource> {
   const env = getEnvironment();
 
   // Use streaming instantiation if available and source is Response
   if (
-    env.supportsStreaming &&
-    (source instanceof Response || source instanceof Promise)
+    env.supportsStreaming
+    && (source instanceof Response || source instanceof Promise)
   ) {
     return WebAssembly.instantiateStreaming(source as Response, imports);
   }
@@ -104,7 +100,7 @@ async function instantiateWasm(
  * ```
  */
 export async function loadWasm<T extends ZigWasmExports = ZigWasmExports>(
-  options: WasmLoadOptions
+  options: WasmLoadOptions,
 ): Promise<WasmLoadResult<T>> {
   const defaultImports = getDefaultImports();
   const imports = mergeImports(defaultImports, options.imports);
@@ -113,13 +109,12 @@ export async function loadWasm<T extends ZigWasmExports = ZigWasmExports>(
 
   if (options.wasmBytes) {
     // Direct bytes provided
-    wasmSource =
-      options.wasmBytes instanceof Uint8Array
-        ? (options.wasmBytes.buffer.slice(
-            options.wasmBytes.byteOffset,
-            options.wasmBytes.byteOffset + options.wasmBytes.byteLength
-          ) as ArrayBuffer)
-        : options.wasmBytes;
+    wasmSource = options.wasmBytes instanceof Uint8Array
+      ? (options.wasmBytes.buffer.slice(
+        options.wasmBytes.byteOffset,
+        options.wasmBytes.byteOffset + options.wasmBytes.byteLength,
+      ) as ArrayBuffer)
+      : options.wasmBytes;
   } else if (options.wasmUrl) {
     const env = getEnvironment();
     if (env.supportsStreaming) {
@@ -132,7 +127,7 @@ export async function loadWasm<T extends ZigWasmExports = ZigWasmExports>(
     wasmSource = await loadFromPath(options.wasmPath);
   } else {
     throw new Error(
-      "Must provide one of: wasmBytes, wasmUrl, or wasmPath"
+      "Must provide one of: wasmBytes, wasmUrl, or wasmPath",
     );
   }
 
@@ -155,7 +150,7 @@ export async function loadWasm<T extends ZigWasmExports = ZigWasmExports>(
  * Returns a cached loader that only loads once
  */
 export function createModuleLoader<T extends ZigWasmExports>(
-  getWasmSource: () => WasmLoadOptions
+  getWasmSource: () => WasmLoadOptions,
 ): () => Promise<WasmLoadResult<T>> {
   let cached: Promise<WasmLoadResult<T>> | null = null;
 
@@ -173,7 +168,7 @@ export function createModuleLoader<T extends ZigWasmExports>(
  */
 export function resolveWasmPath(
   importMetaUrl: string,
-  relativePath: string
+  relativePath: string,
 ): string {
   const url = new URL(relativePath, importMetaUrl);
   const env = getEnvironment();
