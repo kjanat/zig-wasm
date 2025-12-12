@@ -6,7 +6,7 @@
   "description": "WebAssembly wrappers for Zig standard library modules",
   "scripts": {
     "build:zig": "zig build -Doptimize=ReleaseSmall",
-    "copy:wasm": "for pkg in crypto hash compress base64 math; do cp zig-out/packages/$pkg/dist/$pkg.wasm packages/$pkg/dist/ 2>/dev/null || true; done",
+    "copy:wasm": "bun ./scripts/copy-wasm.ts",
     "build:ts": "pnpm -r build",
     "build": "pnpm build:zig && pnpm build:ts && pnpm copy:wasm",
     "test": "pnpm -r test",
@@ -14,14 +14,20 @@
     "clean": "rm -rf zig-out .zig-cache && pnpm -r clean",
     "typecheck": "pnpm -r typecheck"
   },
+  "optionalDependencies": {
+    "@types/bun": "^1.3.4"
+  },
   "devDependencies": {
-    "@types/node": "^22.10.2",
-    "typescript": "^5.7.2",
-    "tsup": "^8.3.5",
-    "vitest": "^2.1.8"
+    "@types/node": "^25.0.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
   },
   "engines": {
     "node": ">=18.0.0"
   },
-  "packageManager": "pnpm@10.23.0"
+  "packageManager": "pnpm@10.23.0",
+  "workspaces": [
+    "packages/*"
+  ]
 }
