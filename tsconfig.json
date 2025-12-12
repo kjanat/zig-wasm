@@ -20,5 +20,5 @@
     "allowSyntheticDefaultImports": true,
     "allowImportingTsExtensions": true
   },
-  "exclude": ["node_modules", "dist", "**/dist/**"]
+  "exclude": ["**/node_modules", "**/dist"]
 }
