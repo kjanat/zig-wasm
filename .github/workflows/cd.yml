@@ -153,22 +153,7 @@ jobs:
         uses: ./.github/actions/download-artifacts
         with:
           artifact-name: ${{ needs.build.outputs.artifact-name }}
-          path: .
-
-      - name: Debug - List downloaded artifacts
-        run: |
-          echo "=== Current directory ==="
-          pwd
-          echo "=== Top level contents ==="
-          ls -la
-          echo "=== packages directory ==="
-          ls -la packages/ || echo "packages NOT FOUND"
-          echo "=== packages/core/dist ==="
-          ls -la packages/core/dist/ || echo "NOT FOUND"
-          echo "=== Find all .wasm files ==="
-          find . -name "*.wasm" -type f 2>/dev/null || echo "No wasm files"
-          echo "=== Find all dist directories ==="
-          find . -name "dist" -type d 2>/dev/null || echo "No dist dirs"
+          path: packages
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
@@ -198,7 +183,7 @@ jobs:
         uses: ./.github/actions/download-artifacts
         with:
           artifact-name: ${{ needs.build.outputs.artifact-name }}
-          path: .
+          path: packages
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
@@ -227,7 +212,7 @@ jobs:
         uses: ./.github/actions/download-artifacts
         with:
           artifact-name: ${{ needs.build.outputs.artifact-name }}
-          path: .
+          path: packages
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
@@ -261,7 +246,7 @@ jobs:
         uses: ./.github/actions/download-artifacts
         with:
           artifact-name: ${{ needs.build.outputs.artifact-name }}
-          path: .
+          path: packages
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
@@ -281,7 +266,7 @@ jobs:
         uses: ./.github/actions/download-artifacts
         with:
           artifact-name: ${{ needs.build.outputs.artifact-name }}
-          path: .
+          path: packages
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
