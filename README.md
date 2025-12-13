@@ -1,7 +1,10 @@
 # zig-wasm
 
-Zig standard library modules compiled to WebAssembly for Node.js, bun, deno,
-etc. and browsers.
+[![CI](https://github.com/kjanat/zig-wasm/actions/workflows/ci.yml/badge.svg)](https://github.com/kjanat/zig-wasm/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+Zig standard library modules compiled to WebAssembly for Node.js, Bun, Deno,
+and browsers.
 
 ## Packages
 
@@ -31,22 +34,31 @@ npm install @zig-wasm/std
 ### Crypto
 
 ```ts
-import { blake3, hmacSha256, sha256, sha512 } from "@zig-wasm/crypto";
+import { hashHex, hmacSha256, sha256 } from "@zig-wasm/crypto";
 
-const hash = await sha256("hello world");
+// Async API (auto-initializes WASM module)
+const hash = await sha256("hello world"); // Uint8Array
 const hex = await hashHex("sha256", "hello world");
-// b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9
+// "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
 
 const mac = await hmacSha256("secret-key", "message");
+```
+
+```ts
+// Sync API (requires explicit init)
+import { init, sha256Sync } from "@zig-wasm/crypto";
+
+await init();
+const hash = sha256Sync("hello world");
 ```
 
 ### Hash
 
 ```ts
-import { crc32, xxhash64, wyhash } from '@zig-wasm/hash';
+import { crc32, xxhash64, wyhash } from "@zig-wasm/hash";
 
-const checksum = await crc32('hello world');
-const hash = await xxhash64('data', 0xSEED);
+const checksum = await crc32("hello world");
+const hash = await xxhash64("data", 0n); // seed is bigint
 ```
 
 ### Base64
@@ -93,8 +105,8 @@ const b64 = await base64.encode("hello");
 Requirements:
 
 - Zig 0.15.2+
-- Node.js 18+
-- pnpm
+- Node.js 20+
+- pnpm 10+
 
 ```bash
 # Install dependencies
@@ -184,10 +196,11 @@ zig-wasm/
 **Trigonometry:** `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`\
 **Hyperbolic:** `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`\
 **Exponential:** `exp`, `exp2`, `expm1`, `log`, `log2`, `log10`, `log1p`\
-**Power:** `sqrt`, `cbrt`, `pow`, `hypot` **Rounding:** `floor`, `ceil`,
-`round`, `trunc` **Utility:** `abs`, `min`, `max`, `clamp`, `sign`, `copysign`\
-**Bit ops:** `clz`, `ctz`, `popcount`, `bswap`, `rotl`, `rotr` **Constants:**
-`pi()`, `e()`, `ln2()`, `ln10()`
+**Power:** `sqrt`, `cbrt`, `pow`, `hypot`\
+**Rounding:** `floor`, `ceil`, `round`, `trunc`\
+**Utility:** `abs`, `min`, `max`, `clamp`, `sign`, `copysign`\
+**Bit ops:** `clz`, `ctz`, `popcount`, `bswap`, `rotl`, `rotr`\
+**Constants:** `pi()`, `e()`, `ln2()`, `ln10()`
 
 ### @zig-wasm/compress
 

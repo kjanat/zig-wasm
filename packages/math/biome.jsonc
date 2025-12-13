@@ -1,1 +1,1 @@
-{ "extends": ["@zig-wasm-internal/biome"] }
+{ "extends": ["@zig-wasm/tooling/biome"] }

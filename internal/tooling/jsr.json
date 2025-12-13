@@ -1,0 +1,9 @@
+{
+  "$schema": "https://jsr.io/schema/config-file.v1.json",
+  "name": "@zig-wasm/tooling",
+  "version": "0.0.0",
+  "exports": {
+    "./biome": "./biome.json",
+    "./tsconfig": "./tsconfig.json"
+  }
+}

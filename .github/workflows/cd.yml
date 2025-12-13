@@ -195,9 +195,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Publish to npm
-        run: pnpm publish --access public --filter "@zig-wasm/*" --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          pnpm -r publish \
+            --access public \
+            --no-git-checks \
+            --provenance \
+            --publish-branch master
 
   publish-jsr:
     name: Publish to JSR
@@ -227,8 +230,6 @@ jobs:
 
       - name: Publish to JSR
         run: pnpm dlx jsr publish --allow-dirty
-        env:
-          JSR_TOKEN: ${{ secrets.JSR_TOKEN }}
 
   github-release:
     name: Create GitHub Release

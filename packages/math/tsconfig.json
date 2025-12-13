@@ -1,4 +1,4 @@
 {
-  "extends": "@zig-wasm-internal/tsconfig",
+  "extends": "@zig-wasm/tooling/tsconfig",
   "compilerOptions": {}
 }

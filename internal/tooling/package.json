@@ -1,0 +1,19 @@
+{
+  "name": "@zig-wasm/tooling",
+  "version": "0.0.0",
+  "description": "Shared biome and tsconfig for Zig-Wasm packages",
+  "keywords": ["config", "biome", "tsconfig", "typescript"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kjanat/zig-wasm.git",
+    "directory": "internal/tooling"
+  },
+  "license": "MIT",
+  "author": "Kaj Kowalski <dev@kajkowalski.nl> (https://github.com/kjanat)",
+  "type": "module",
+  "exports": {
+    "./biome": "./biome.json",
+    "./tsconfig": "./tsconfig.json"
+  },
+  "files": ["biome.json", "tsconfig.json"]
+}
