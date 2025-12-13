@@ -48,10 +48,10 @@
     "@zig-wasm/core": "workspace:*"
   },
   "devDependencies": {
-    "dprint": "catalog:",
     "@biomejs/biome": "catalog:",
     "@typescript/native-preview": "catalog:",
     "@zig-wasm-internal/biome": "workspace:*",
-    "@zig-wasm-internal/tsconfig": "workspace:*"
+    "@zig-wasm-internal/tsconfig": "workspace:*",
+    "dprint": "catalog:"
   }
 }

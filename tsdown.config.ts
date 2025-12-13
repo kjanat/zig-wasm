@@ -12,6 +12,8 @@ export const baseConfig: UserConfig = {
   sourcemap: true,
   treeshake: true,
   exports: true,
+  publint: true,
+  unused: true,
 };
 
 /**
