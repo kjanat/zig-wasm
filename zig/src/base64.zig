@@ -86,6 +86,19 @@ export fn base64_no_pad_encode(
     return encoded_len;
 }
 
+/// Get maximum decoded length for base64 without padding
+export fn base64_no_pad_decode_len(input_len: usize) usize {
+    const remainder = input_len % 4;
+    const full_groups = input_len / 4;
+    const extra_bytes: usize = switch (remainder) {
+        0 => 0,
+        2 => 1,
+        3 => 2,
+        else => 0,
+    };
+    return full_groups * 3 + extra_bytes;
+}
+
 /// Decode base64 without padding
 export fn base64_no_pad_decode(
     data_ptr: [*]const u8,
@@ -131,6 +144,11 @@ export fn base64_url_encode(
     return encoded_len;
 }
 
+/// Get maximum decoded length for URL-safe base64
+export fn base64_url_decode_len(input_len: usize) usize {
+    return (input_len / 4) * 3;
+}
+
 /// Decode URL-safe base64
 export fn base64_url_decode(
     data_ptr: [*]const u8,
@@ -168,6 +186,19 @@ export fn base64_url_no_pad_encode(
     const out = out_ptr[0..encoded_len];
     _ = url_safe_no_pad.Encoder.encode(out, data);
     return encoded_len;
+}
+
+/// Get maximum decoded length for URL-safe base64 without padding
+export fn base64_url_no_pad_decode_len(input_len: usize) usize {
+    const remainder = input_len % 4;
+    const full_groups = input_len / 4;
+    const extra_bytes: usize = switch (remainder) {
+        0 => 0,
+        2 => 1,
+        3 => 2,
+        else => 0,
+    };
+    return full_groups * 3 + extra_bytes;
 }
 
 /// Decode URL-safe base64 without padding

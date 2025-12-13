@@ -50,48 +50,45 @@ describe("@zig-wasm/base64 - NotInitializedError behavior", () => {
   });
 });
 
-describe("@zig-wasm/base64 - Sync decode variants (WASM bug documented)", () => {
-  /**
-   * NOTE: base64 decode functions have a bug in the WASM module.
-   * They trigger "unreachable" WASM trap. This is an upstream Zig bug.
-   * These tests document the bug by verifying the error behavior.
-   * Hex decode works correctly.
-   */
-
-  it("decodeSync throws due to WASM bug", async () => {
+describe("@zig-wasm/base64 - Sync decode variants", () => {
+  it("decodeSync works correctly", async () => {
     const base64 = await import("../src/index.ts");
     await base64.init();
 
-    // This should throw "unreachable" due to WASM bug
-    expect(() => base64.decodeSync("aGVsbG8=")).toThrow();
+    const result = base64.decodeSync("aGVsbG8=");
+    expect(new TextDecoder().decode(result)).toBe("hello");
   });
 
-  it("decodeNoPaddingSync throws due to WASM bug", async () => {
+  it("async decode works correctly", async () => {
     const base64 = await import("../src/index.ts");
     await base64.init();
 
-    expect(() => base64.decodeNoPaddingSync("YWJj")).toThrow();
+    const result = await base64.decode("aGVsbG8=");
+    expect(new TextDecoder().decode(result)).toBe("hello");
   });
 
-  it("decodeUrlSync throws due to WASM bug", async () => {
+  it("decodeNoPaddingSync works correctly", async () => {
     const base64 = await import("../src/index.ts");
     await base64.init();
 
-    expect(() => base64.decodeUrlSync("dGVzdA==")).toThrow();
+    const result = base64.decodeNoPaddingSync("YWJj");
+    expect(new TextDecoder().decode(result)).toBe("abc");
   });
 
-  it("decodeUrlNoPaddingSync throws due to WASM bug", async () => {
+  it("decodeUrlSync works correctly", async () => {
     const base64 = await import("../src/index.ts");
     await base64.init();
 
-    expect(() => base64.decodeUrlNoPaddingSync("dGVzdA")).toThrow();
+    const result = base64.decodeUrlSync("dGVzdA==");
+    expect(new TextDecoder().decode(result)).toBe("test");
   });
 
-  it("async decode also throws due to WASM bug", async () => {
+  it("decodeUrlNoPaddingSync works correctly", async () => {
     const base64 = await import("../src/index.ts");
     await base64.init();
 
-    await expect(base64.decode("aGVsbG8=")).rejects.toThrow();
+    const result = base64.decodeUrlNoPaddingSync("dGVzdA");
+    expect(new TextDecoder().decode(result)).toBe("test");
   });
 });
 
