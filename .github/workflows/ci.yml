@@ -41,7 +41,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Lint
         run: pnpm lint
@@ -78,7 +78,6 @@ jobs:
         uses: ./.github/actions/download-artifacts
         with:
           artifact-name: wasm-build
-          path: zig-out
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -102,7 +101,6 @@ jobs:
         uses: ./.github/actions/download-artifacts
         with:
           artifact-name: wasm-build
-          path: zig-out
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -137,7 +135,6 @@ jobs:
         uses: ./.github/actions/download-artifacts
         with:
           artifact-name: wasm-build
-          path: zig-out
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

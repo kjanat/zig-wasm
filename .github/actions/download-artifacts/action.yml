@@ -9,7 +9,7 @@ inputs:
   path:
     description: Path to download artifacts to
     required: false
-    default: zig-out
+    default: "."
 runs:
   using: composite
   steps:
