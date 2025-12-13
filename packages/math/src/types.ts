@@ -175,10 +175,10 @@ export interface MathWasmExports extends WasmMemoryExports {
   bswap_u64: (x: bigint) => bigint;
 
   rotl_u32: (x: number, r: number) => number;
-  rotl_u64: (x: bigint, r: bigint) => bigint;
+  rotl_u64: (x: bigint, r: number) => bigint;
 
   rotr_u32: (x: number, r: number) => number;
-  rotr_u64: (x: bigint, r: bigint) => bigint;
+  rotr_u64: (x: bigint, r: number) => bigint;
 
   // ============================================================================
   // Integer math

@@ -412,13 +412,13 @@ export async function bswap64(x: bigint): Promise<bigint> {
 export async function rotl(x: number, r: number): Promise<number> {
   return (await ensureInit()).rotl_u32(x, r);
 }
-export async function rotlU64(x: bigint, r: bigint): Promise<bigint> {
+export async function rotlU64(x: bigint, r: number): Promise<bigint> {
   return (await ensureInit()).rotl_u64(x, r);
 }
 export async function rotr(x: number, r: number): Promise<number> {
   return (await ensureInit()).rotr_u32(x, r);
 }
-export async function rotrU64(x: bigint, r: bigint): Promise<bigint> {
+export async function rotrU64(x: bigint, r: number): Promise<bigint> {
   return (await ensureInit()).rotr_u64(x, r);
 }
 
@@ -773,13 +773,13 @@ export function bswap64Sync(x: bigint): bigint {
 export function rotlSync(x: number, r: number): number {
   return getSyncExports().rotl_u32(x, r);
 }
-export function rotlU64Sync(x: bigint, r: bigint): bigint {
+export function rotlU64Sync(x: bigint, r: number): bigint {
   return getSyncExports().rotl_u64(x, r);
 }
 export function rotrSync(x: number, r: number): number {
   return getSyncExports().rotr_u32(x, r);
 }
-export function rotrU64Sync(x: bigint, r: bigint): bigint {
+export function rotrU64Sync(x: bigint, r: number): bigint {
   return getSyncExports().rotr_u64(x, r);
 }
 
