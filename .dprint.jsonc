@@ -1,7 +1,7 @@
 {
   "typescript": {},
-  "json": {},
-  "markdown": {},
+  "json": { "trailingCommas": "maintain", "jsonTrailingCommaFiles": ["tsconfig.json", ".zed/settings.json"] },
+  "markdown": { "emphasisKind": "asterisks", "textWrap": "always" },
   "toml": {},
   "dockerfile": {},
   "malva": {},
@@ -13,6 +13,10 @@
       {
         "command": "pnpm dlx sort-package-json --stdin",
         "fileNames": ["package.json"]
+      },
+      {
+        "command": "zig fmt --stdin",
+        "exts": ["zig"]
       }
     ]
   },

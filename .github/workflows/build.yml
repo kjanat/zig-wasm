@@ -1,15 +1,28 @@
 name: Build
 on: [push]
+
+permissions: read-all
+
+env: { pnpm-version: 10, node-version: 20 }
+
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20]
+        node-version: [20, 22, 24]
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout code
+        uses: actions/checkout@v6
+
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
         with:
           node-version: ${{ matrix.node-version }}
-          pnpm-version: 10
+          pnpm-version: ${{ env.pnpm-version }}
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build

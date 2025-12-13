@@ -27,7 +27,7 @@ function mergeImports(
   const result: WebAssembly.Imports = { ...defaults };
   for (const [key, value] of Object.entries(custom)) {
     if (typeof value === "object" && value !== null) {
-      result[key] = { ...(result[key] as object || {}), ...value };
+      result[key] = { ...(result[key] as object), ...value };
     } else {
       result[key] = value;
     }

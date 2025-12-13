@@ -1,5 +1,5 @@
 /**
- * @zig-wasm/compress
+ * @name "@zig-wasm/compress"
  *
  * XZ and LZMA decompression powered by Zig's std.compress via WebAssembly
  */

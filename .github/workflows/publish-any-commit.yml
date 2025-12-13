@@ -1,7 +1,7 @@
 name: Publish Any Commit
 on: [push, pull_request]
 
-permissions: {}
+permissions: read-all
 
 jobs:
   build:
@@ -14,7 +14,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - uses: ./.github/actions/setup-pnpm
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
 
       - name: Build
         run: pnpm run build

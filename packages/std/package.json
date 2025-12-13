@@ -15,6 +15,7 @@
     "directory": "packages/std"
   },
   "license": "MIT",
+  "author": "Kaj Kowalski <dev@kajkowalski.nl> (https://github.com/kjanat)",
   "type": "module",
   "exports": {
     ".": {
@@ -41,12 +42,7 @@
       "require": "./dist/math.cjs",
       "import": "./dist/math.mjs"
     },
-    "./package.json": "./package.json",
-    "./crypto.wasm": "@zig-wasm/crypto/crypto.wasm",
-    "./hash.wasm": "@zig-wasm/hash/hash.wasm",
-    "./base64.wasm": "@zig-wasm/base64/base64.wasm",
-    "./math.wasm": "@zig-wasm/math/math.wasm",
-    "./compress.wasm": "@zig-wasm/compress/compress.wasm"
+    "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -57,7 +53,7 @@
   "scripts": {
     "build": "tsdown",
     "clean": "rm -rf dist",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
     "@zig-wasm/base64": "workspace:*",
@@ -66,5 +62,9 @@
     "@zig-wasm/crypto": "workspace:*",
     "@zig-wasm/hash": "workspace:*",
     "@zig-wasm/math": "workspace:*"
+  },
+  "devDependencies": {
+    "@typescript/native-preview": "catalog:",
+    "@zig-wasm/tsconfig": "workspace:*"
   }
 }

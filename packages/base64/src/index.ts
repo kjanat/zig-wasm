@@ -1,5 +1,5 @@
 /**
- * @zig-wasm/base64
+ * @name "@zig-wasm/base64"
  *
  * Base64 and hex encoding/decoding powered by Zig via WebAssembly
  */
@@ -8,31 +8,19 @@
 export { init, isInitialized } from "./base64.ts";
 
 // Async API
+// dprint-ignore
 export {
-  decode,
-  decodeNoPadding,
-  decodeUrl,
-  decodeUrlNoPadding,
-  encode,
-  encodeNoPadding,
-  encodeUrl,
-  encodeUrlNoPadding,
-  hexDecode,
-  hexEncode,
+  decode, decodeNoPadding, decodeUrl, decodeUrlNoPadding,
+  encode, encodeNoPadding, encodeUrl, encodeUrlNoPadding,
+  hexDecode, hexEncode,
 } from "./base64.ts";
 
 // Sync API
+// dprint-ignore
 export {
-  decodeNoPaddingSync,
-  decodeSync,
-  decodeUrlNoPaddingSync,
-  decodeUrlSync,
-  encodeNoPaddingSync,
-  encodeSync,
-  encodeUrlNoPaddingSync,
-  encodeUrlSync,
-  hexDecodeSync,
-  hexEncodeSync,
+  decodeNoPaddingSync, decodeSync, decodeUrlNoPaddingSync, decodeUrlSync,
+  encodeNoPaddingSync, encodeSync, encodeUrlNoPaddingSync, encodeUrlSync,
+  hexDecodeSync, hexEncodeSync,
 } from "./base64.ts";
 
 // Types

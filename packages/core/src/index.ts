@@ -1,5 +1,5 @@
 /**
- * @zig-wasm/core
+ * @name "@zig-wasm/core"
  *
  * Core utilities for Zig WASM packages
  */

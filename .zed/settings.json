@@ -1,0 +1,12 @@
+{
+  "auto_install_extensions": { "dprint": true },
+  "formatter": { "language_server": { "name": "dprint" } },
+  "lsp": {
+    "dprint": {
+      "binary": {
+        "path": "/usr/bin/dprint",
+        "arguments": ["lsp", "--config", ".dprint.jsonc", "--config-discovery=false"]
+      }
+    }
+  }
+}

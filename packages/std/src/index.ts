@@ -23,16 +23,15 @@
 // Re-export all modules as namespaces
 export * as base64 from "@zig-wasm/base64";
 export * as compress from "@zig-wasm/compress";
+
 // Re-export core utilities
+// dprint-ignore
 export {
-  AllocationScope,
-  compareBytes,
-  concatBytes,
-  fromHex,
+  AllocationScope, WasmMemory,
+  compareBytes, concatBytes,
+  fromHex, toHex,
   getEnvironment,
   loadWasm,
-  toHex,
-  WasmMemory,
 } from "@zig-wasm/core";
 export * as crypto from "@zig-wasm/crypto";
 export * as hash from "@zig-wasm/hash";

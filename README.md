@@ -1,6 +1,7 @@
 # zig-wasm
 
-Zig standard library modules compiled to WebAssembly for Node.js and browsers.
+Zig standard library modules compiled to WebAssembly for Node.js, bun, deno,
+etc. and browsers.
 
 ## Packages
 
@@ -111,7 +112,7 @@ pnpm build:ts
 
 ## Project Structure
 
-```
+```tree
 zig-wasm/
   build.zig              # Zig build configuration
   zig/src/
@@ -180,14 +181,13 @@ zig-wasm/
 
 ### @zig-wasm/math
 
-**Trigonometry:** `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`
-**Hyperbolic:** `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`
-**Exponential:** `exp`, `exp2`, `expm1`, `log`, `log2`, `log10`, `log1p`
-**Power:** `sqrt`, `cbrt`, `pow`, `hypot`
-**Rounding:** `floor`, `ceil`, `round`, `trunc`
-**Utility:** `abs`, `min`, `max`, `clamp`, `sign`, `copysign`
-**Bit ops:** `clz`, `ctz`, `popcount`, `bswap`, `rotl`, `rotr`
-**Constants:** `pi()`, `e()`, `ln2()`, `ln10()`
+**Trigonometry:** `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`\
+**Hyperbolic:** `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`\
+**Exponential:** `exp`, `exp2`, `expm1`, `log`, `log2`, `log10`, `log1p`\
+**Power:** `sqrt`, `cbrt`, `pow`, `hypot` **Rounding:** `floor`, `ceil`,
+`round`, `trunc` **Utility:** `abs`, `min`, `max`, `clamp`, `sign`, `copysign`\
+**Bit ops:** `clz`, `ctz`, `popcount`, `bswap`, `rotl`, `rotr` **Constants:**
+`pi()`, `e()`, `ln2()`, `ln10()`
 
 ### @zig-wasm/compress
 
@@ -196,4 +196,28 @@ zig-wasm/
 
 ## License
 
-MIT
+[MIT][license]
+
+<!--link-definitions-->
+
+[@zig-wasm/base64]: https://www.npmjs.com/package/@zig-wasm/base64
+[@zig-wasm/compress]: https://www.npmjs.com/package/@zig-wasm/compress
+[@zig-wasm/core]: https://www.npmjs.com/package/@zig-wasm/core
+[@zig-wasm/crypto]: https://www.npmjs.com/package/@zig-wasm/crypto
+[@zig-wasm/hash]: https://www.npmjs.com/package/@zig-wasm/hash
+[@zig-wasm/math]: https://www.npmjs.com/package/@zig-wasm/math
+[@zig-wasm/std]: https://www.npmjs.com/package/@zig-wasm/std
+[biome]: https://biomejs.dev/
+[bun]: https://bun.sh/
+[deno]: https://deno.land/
+[dprint]: https://dprint.dev/
+[license]: https://github.com/kjanat/zig-wasm/blob/master/LICENSE
+[node.js]: https://nodejs.org/
+[npm]: https://www.npmjs.com/
+[pnpm]: https://pnpm.io/
+[wasm]: https://webassembly.org/
+[zig]: https://ziglang.org/
+
+<!--end-of-link-definitions-->
+
+<!--markdownlint-disable-file MD053-->

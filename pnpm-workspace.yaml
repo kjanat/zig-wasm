@@ -1,4 +1,12 @@
+# yaml-language-server: $schema=https://www.schemastore.org/pnpm-workspace.json
+---
 packages:
-  - "packages/*"
+  - packages/*
+  - internal/*
+
 onlyBuiltDependencies:
+  - dprint
   - esbuild
+
+catalog:
+  "@typescript/native-preview": 7.0.0-dev.20251212.1

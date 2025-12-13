@@ -1,0 +1,27 @@
+{
+	"name": "@zig-wasm/tsconfig",
+	"version": "0.0.0",
+	"description": "Shared TypeScript config for Zig-Wasm projects",
+	"keywords": [
+		"config",
+		"configuration",
+		"ts",
+		"tsconfig",
+		"typescript"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/kjanat/zig-wasm.git",
+		"directory": "internal/tsconfig"
+	},
+	"license": "MIT",
+	"author": "Kaj Kowalski <dev@kajkowalski.nl> (https://github.com/kjanat)",
+	"sideEffects": false,
+	"exports": "./tsconfig.json",
+	"files": [
+		"tsconfig.json"
+	],
+	"engines": {
+		"node": ">=20"
+	}
+}

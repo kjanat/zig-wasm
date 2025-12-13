@@ -3,58 +3,55 @@ const std = @import("std");
 pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
-    // Build all WASM modules
-    buildWasmModule(b, "crypto", optimize);
-    buildWasmModule(b, "hash", optimize);
-    buildWasmModule(b, "compress", optimize);
-    buildWasmModule(b, "base64", optimize);
-    buildWasmModule(b, "math", optimize);
+    // Fixed wasm target for all modules
+    const wasm_target = b.resolveTargetQuery(.{
+        .cpu_arch = .wasm32,
+        .os_tag = .freestanding,
+    });
+
+    inline for (.{ "crypto", "hash", "compress", "base64", "math" }) |name| {
+        buildWasmModule(b, name, wasm_target, optimize);
+    }
 }
 
 fn buildWasmModule(
     b: *std.Build,
-    name: []const u8,
+    comptime name: []const u8,
+    target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
 ) void {
-    const source_file = b.path(b.fmt("zig/src/{s}.zig", .{name}));
-
-    const lib = b.addExecutable(.{
-        .name = name,
-        .root_module = b.createModule(.{
-            .root_source_file = source_file,
-            .target = b.resolveTargetQuery(.{
-                .cpu_arch = .wasm32,
-                .os_tag = .freestanding,
-            }),
-            .optimize = optimize,
-        }),
+    const module = b.createModule(.{
+        .root_source_file = b.path(b.fmt("zig/src/{s}.zig", .{name})),
+        .target = target,
+        .optimize = optimize,
     });
 
-    // Export memory
-    lib.export_memory = true;
+    const exe = b.addExecutable(.{
+        .name = name,
+        .root_module = module, // preferred root_module API in 0.14+
+    });
 
-    // Set initial memory (2MB = 32 pages of 64KB each)
-    lib.initial_memory = 32 * 65536;
+    // WASM-tuning: library-style module, no _start, export all Zig `export` fns
+    exe.export_memory = true;
+    exe.initial_memory = 32 * 65536; // 2 MiB
+    exe.max_memory = 256 * 65536; // 16 MiB
+    exe.entry = .disabled; // `-fno-entry` equivalent
+    exe.rdynamic = true; // export all symbols
 
-    // Allow memory growth
-    lib.max_memory = 256 * 65536; // 16MB max
+    // Install directly to ../packages/<name>/dist/<name>.wasm
+    const install = b.addInstallArtifact(exe, .{
+        .dest_dir = .{
+            .override = .{
+                .custom = b.fmt("../packages/{s}/dist", .{name}),
+            },
+        },
+        // basename not set: Zig picks the right .wasm name from the artifact
+    });
 
-    // Don't need entry point
-    lib.entry = .disabled;
-
-    // Export all public symbols (functions marked with `export`)
-    lib.rdynamic = true;
-
-    // Install directly to packages/<name>/dist/<name>.wasm (no intermediate zig-out)
-    const install = b.addInstallFileWithDir(
-        lib.getEmittedBin(),
-        .{ .custom = b.fmt("../packages/{s}/dist", .{name}) },
-        b.fmt("{s}.wasm", .{name}),
-    );
-
+    // `zig build` / `zig build install`
     b.getInstallStep().dependOn(&install.step);
 
-    // Individual build step for this module
-    const build_step = b.step(name, b.fmt("Build {s} WASM module", .{name}));
-    build_step.dependOn(&install.step);
+    // Per-module step: `zig build crypto`, `zig build hash`, ...
+    const step = b.step(name, b.fmt("Build {s} WASM module", .{name}));
+    step.dependOn(&install.step);
 }

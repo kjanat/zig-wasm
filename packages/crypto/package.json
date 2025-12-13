@@ -18,6 +18,7 @@
     "directory": "packages/crypto"
   },
   "license": "MIT",
+  "author": "Kaj Kowalski <dev@kajkowalski.nl> (https://github.com/kjanat)",
   "type": "module",
   "exports": {
     ".": {
@@ -37,9 +38,13 @@
     "build": "tsdown",
     "clean": "rm -rf dist",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
     "@zig-wasm/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@typescript/native-preview": "catalog:",
+    "@zig-wasm/tsconfig": "workspace:*"
   }
 }

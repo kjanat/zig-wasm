@@ -4,6 +4,12 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@typescript/native-preview':
+      specifier: 7.0.0-dev.20251212.1
+      version: 7.0.0-dev.20251212.1
+
 importers:
 
   .:
@@ -14,9 +20,6 @@ importers:
       '@types/node':
         specifier: ^25.0.1
         version: 25.0.1
-      '@typescript/native-preview':
-        specifier: 7.0.0-dev.20251212.1
-        version: 7.0.0-dev.20251212.1
       dprint:
         specifier: ^0.50.2
         version: 0.50.2
@@ -34,37 +37,81 @@ importers:
         specifier: ^1.3.4
         version: 1.3.4
 
+  internal/tsconfig: {}
+
   packages/base64:
     dependencies:
       '@zig-wasm/core':
         specifier: workspace:*
         version: link:../core
+    devDependencies:
+      '@typescript/native-preview':
+        specifier: 'catalog:'
+        version: 7.0.0-dev.20251212.1
+      '@zig-wasm/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
 
   packages/compress:
     dependencies:
       '@zig-wasm/core':
         specifier: workspace:*
         version: link:../core
+    devDependencies:
+      '@typescript/native-preview':
+        specifier: 'catalog:'
+        version: 7.0.0-dev.20251212.1
+      '@zig-wasm/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
 
-  packages/core: {}
+  packages/core:
+    devDependencies:
+      '@typescript/native-preview':
+        specifier: 'catalog:'
+        version: 7.0.0-dev.20251212.1
+      '@zig-wasm/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
 
   packages/crypto:
     dependencies:
       '@zig-wasm/core':
         specifier: workspace:*
         version: link:../core
+    devDependencies:
+      '@typescript/native-preview':
+        specifier: 'catalog:'
+        version: 7.0.0-dev.20251212.1
+      '@zig-wasm/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
 
   packages/hash:
     dependencies:
       '@zig-wasm/core':
         specifier: workspace:*
         version: link:../core
+    devDependencies:
+      '@typescript/native-preview':
+        specifier: 'catalog:'
+        version: 7.0.0-dev.20251212.1
+      '@zig-wasm/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
 
   packages/math:
     dependencies:
       '@zig-wasm/core':
         specifier: workspace:*
         version: link:../core
+    devDependencies:
+      '@typescript/native-preview':
+        specifier: 'catalog:'
+        version: 7.0.0-dev.20251212.1
+      '@zig-wasm/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
 
   packages/std:
     dependencies:
@@ -86,6 +133,13 @@ importers:
       '@zig-wasm/math':
         specifier: workspace:*
         version: link:../math
+    devDependencies:
+      '@typescript/native-preview':
+        specifier: 'catalog:'
+        version: 7.0.0-dev.20251212.1
+      '@zig-wasm/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
 
 packages:
 
