@@ -71,6 +71,10 @@ export class WasmMemory {
 
   /** Allocate and copy bytes into WASM memory, returns slice */
   allocateAndCopy(data: Uint8Array): WasmSlice {
+    // Handle empty data - no allocation needed, Zig handles ptr[0..0] correctly
+    if (data.length === 0) {
+      return { ptr: 0, len: 0 };
+    }
     const ptr = this.allocate(data.length);
     this.copyIn(ptr, data);
     return { ptr, len: data.length };
@@ -85,6 +89,7 @@ export class WasmMemory {
 
   /** Encode string to UTF-8 and copy into WASM memory */
   encodeString(str: string): WasmSlice {
+    // Empty string handled by allocateAndCopy
     const bytes = textEncoder.encode(str);
     return this.allocateAndCopy(bytes);
   }

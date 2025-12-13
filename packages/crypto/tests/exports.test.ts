@@ -53,9 +53,7 @@ function bytesToHex(bytes: Uint8Array): string {
 }
 
 describe("@zig-wasm/crypto - MD5 (NIST Test Vectors)", () => {
-  // TODO: Fix empty string handling in WASM implementation
-  // Current implementation fails with "Allocation size must be positive"
-  it.skip("computes MD5 for empty string", async () => {
+  it("computes MD5 for empty string", async () => {
     const result = await crypto.md5("");
     expect(bytesToHex(result)).toBe("d41d8cd98f00b204e9800998ecf8427e");
   });
@@ -82,8 +80,7 @@ describe("@zig-wasm/crypto - MD5 (NIST Test Vectors)", () => {
 });
 
 describe("@zig-wasm/crypto - SHA-1 (NIST FIPS 180-4 Test Vectors)", () => {
-  // TODO: Fix empty string handling in WASM implementation
-  it.skip("computes SHA-1 for empty string", async () => {
+  it("computes SHA-1 for empty string", async () => {
     const result = await crypto.sha1("");
     expect(bytesToHex(result)).toBe("da39a3ee5e6b4b0d3255bfef95601890afd80709");
   });
@@ -100,8 +97,7 @@ describe("@zig-wasm/crypto - SHA-1 (NIST FIPS 180-4 Test Vectors)", () => {
 });
 
 describe("@zig-wasm/crypto - SHA-256 (NIST FIPS 180-4 Test Vectors)", () => {
-  // TODO: Fix empty string handling in WASM implementation
-  it.skip("computes SHA-256 for empty string", async () => {
+  it("computes SHA-256 for empty string", async () => {
     const result = await crypto.sha256("");
     expect(bytesToHex(result)).toBe("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
   });
@@ -130,8 +126,7 @@ describe("@zig-wasm/crypto - SHA-256 (NIST FIPS 180-4 Test Vectors)", () => {
 });
 
 describe("@zig-wasm/crypto - SHA-384 (NIST FIPS 180-4 Test Vectors)", () => {
-  // TODO: Fix empty string handling in WASM implementation
-  it.skip("computes SHA-384 for empty string", async () => {
+  it("computes SHA-384 for empty string", async () => {
     const result = await crypto.sha384("");
     expect(bytesToHex(result)).toBe(
       "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b",
@@ -156,8 +151,7 @@ describe("@zig-wasm/crypto - SHA-384 (NIST FIPS 180-4 Test Vectors)", () => {
 });
 
 describe("@zig-wasm/crypto - SHA-512 (NIST FIPS 180-4 Test Vectors)", () => {
-  // TODO: Fix empty string handling in WASM implementation
-  it.skip("computes SHA-512 for empty string", async () => {
+  it("computes SHA-512 for empty string", async () => {
     const result = await crypto.sha512("");
     expect(bytesToHex(result)).toBe(
       "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e",
@@ -182,8 +176,7 @@ describe("@zig-wasm/crypto - SHA-512 (NIST FIPS 180-4 Test Vectors)", () => {
 });
 
 describe("@zig-wasm/crypto - SHA3-256 (NIST FIPS 202 Test Vectors)", () => {
-  // TODO: Fix empty string handling in WASM implementation
-  it.skip("computes SHA3-256 for empty string", async () => {
+  it("computes SHA3-256 for empty string", async () => {
     const result = await crypto.sha3_256("");
     expect(bytesToHex(result)).toBe("a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a");
   });
@@ -200,8 +193,7 @@ describe("@zig-wasm/crypto - SHA3-256 (NIST FIPS 202 Test Vectors)", () => {
 });
 
 describe("@zig-wasm/crypto - SHA3-512 (NIST FIPS 202 Test Vectors)", () => {
-  // TODO: Fix empty string handling in WASM implementation
-  it.skip("computes SHA3-512 for empty string", async () => {
+  it("computes SHA3-512 for empty string", async () => {
     const result = await crypto.sha3_512("");
     expect(bytesToHex(result)).toBe(
       "a69f73cca23a9ac5c8b567dc185a756e97c982164fe25859e0d1dcc1475c80a615b2123af1f5f94c11e3e9402c3ac558f500199d95b6d3e301758586281dcd26",
@@ -217,8 +209,7 @@ describe("@zig-wasm/crypto - SHA3-512 (NIST FIPS 202 Test Vectors)", () => {
 });
 
 describe("@zig-wasm/crypto - BLAKE2b-256 Test Vectors", () => {
-  // TODO: Fix empty string handling in WASM implementation
-  it.skip("computes BLAKE2b-256 for empty string", async () => {
+  it("computes BLAKE2b-256 for empty string", async () => {
     const result = await crypto.blake2b256("");
     expect(bytesToHex(result)).toBe("0e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8");
   });
@@ -230,8 +221,7 @@ describe("@zig-wasm/crypto - BLAKE2b-256 Test Vectors", () => {
 });
 
 describe("@zig-wasm/crypto - BLAKE2s-256 Test Vectors", () => {
-  // TODO: Fix empty string handling in WASM implementation
-  it.skip("computes BLAKE2s-256 for empty string", async () => {
+  it("computes BLAKE2s-256 for empty string", async () => {
     const result = await crypto.blake2s256("");
     expect(bytesToHex(result)).toBe("69217a3079908094e11121d042354a7c1f55b6482ca1a51e1b250dfd1ed0eef9");
   });
@@ -243,8 +233,7 @@ describe("@zig-wasm/crypto - BLAKE2s-256 Test Vectors", () => {
 });
 
 describe("@zig-wasm/crypto - BLAKE3 Test Vectors", () => {
-  // TODO: Fix empty string handling in WASM implementation
-  it.skip("computes BLAKE3 for empty string", async () => {
+  it("computes BLAKE3 for empty string", async () => {
     const result = await crypto.blake3("");
     expect(bytesToHex(result)).toBe("af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262");
   });
@@ -475,8 +464,7 @@ describe("@zig-wasm/crypto - Binary Data Handling", () => {
 });
 
 describe("@zig-wasm/crypto - Edge Cases", () => {
-  // TODO: Fix empty string handling in WASM implementation
-  it.skip("handles empty input correctly", async () => {
+  it("handles empty input correctly", async () => {
     const result = await crypto.sha256("");
     expect(result).toBeInstanceOf(Uint8Array);
     expect(result.length).toBe(32);
@@ -511,22 +499,19 @@ describe("@zig-wasm/crypto - Edge Cases", () => {
 });
 
 describe("@zig-wasm/crypto - HMAC Edge Cases", () => {
-  // TODO: Fix empty string handling in WASM implementation
-  it.skip("handles empty key", async () => {
+  it("handles empty key", async () => {
     const result = await crypto.hmacSha256("", "data");
     expect(result).toBeInstanceOf(Uint8Array);
     expect(result.length).toBe(32);
   });
 
-  // TODO: Fix empty string handling in WASM implementation
-  it.skip("handles empty data", async () => {
+  it("handles empty data", async () => {
     const result = await crypto.hmacSha256("key", "");
     expect(result).toBeInstanceOf(Uint8Array);
     expect(result.length).toBe(32);
   });
 
-  // TODO: Fix empty string handling in WASM implementation
-  it.skip("handles both empty key and data", async () => {
+  it("handles both empty key and data", async () => {
     const result = await crypto.hmacSha256("", "");
     expect(result).toBeInstanceOf(Uint8Array);
     expect(result.length).toBe(32);
