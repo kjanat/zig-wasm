@@ -20,7 +20,7 @@ function createMockMemory(): WasmMemoryExports {
       allocations.set(ptr, size);
       return ptr;
     }),
-    free: vi.fn((ptr: number, size: number) => {
+    free: vi.fn((ptr: number, _size: number) => {
       allocations.delete(ptr);
       // In real WASM, this would update allocator state
     }),
@@ -324,10 +324,10 @@ describe("WasmMemory", () => {
     it("writes and reads f32", () => {
       const ptr = mem.allocate(4);
       const view = new DataView(mockExports.memory.buffer);
-      view.setFloat32(ptr, 3.14159, true);
+      view.setFloat32(ptr, Math.PI, true);
 
       const value = mem.readF32(ptr);
-      expect(value).toBeCloseTo(3.14159, 5);
+      expect(value).toBeCloseTo(Math.PI, 5);
     });
 
     it("writes and reads f64", () => {
@@ -489,11 +489,10 @@ describe("AllocationScope", () => {
   describe("memory leak prevention", () => {
     it("scope prevents leaks in normal flow", () => {
       const iterations = 100;
-      let lastPtr = 0;
 
       for (let i = 0; i < iterations; i++) {
         AllocationScope.use(mem, (scope) => {
-          lastPtr = scope.alloc(100);
+          scope.alloc(100);
         });
       }
 
@@ -503,14 +502,12 @@ describe("AllocationScope", () => {
 
     it("scope prevents leaks in error flow", () => {
       const iterations = 50;
-      let successCount = 0;
 
       for (let i = 0; i < iterations; i++) {
         try {
           AllocationScope.use(mem, (scope) => {
             scope.alloc(100);
             if (i % 3 === 0) throw new Error("periodic error");
-            successCount++;
           });
         } catch {
           // Expected errors

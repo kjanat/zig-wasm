@@ -226,7 +226,7 @@ describe("getEnvironment", () => {
   });
 
   it("only detects once", () => {
-    const spy = vi.spyOn({ detectEnvironment }, "detectEnvironment");
+    const _spy = vi.spyOn({ detectEnvironment }, "detectEnvironment");
 
     getEnvironment();
     getEnvironment();
@@ -402,7 +402,7 @@ describe("edge cases", () => {
 
   it("result is immutable in practice", () => {
     const env = getEnvironment();
-    const original = { ...env };
+    const _original = { ...env };
 
     // Even if user tries to modify cached result
     (env as { isNode: boolean }).isNode = !env.isNode;

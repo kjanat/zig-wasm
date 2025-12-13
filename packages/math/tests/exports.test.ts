@@ -47,7 +47,7 @@ describe("@zig-wasm/math - Basic Operations", () => {
     });
 
     it("preserves f32 precision", async () => {
-      expect(await math.absF32(-3.14159)).toBeCloseTo(3.14159, 5);
+      expect(await math.absF32(-Math.PI)).toBeCloseTo(Math.PI, 5);
     });
   });
 
@@ -105,7 +105,7 @@ describe("@zig-wasm/math - Power and Root Functions", () => {
     it("computes square root of positive numbers", async () => {
       expect(await math.sqrt(4)).toBe(2);
       expect(await math.sqrt(9)).toBe(3);
-      expect(await math.sqrt(2)).toBeCloseTo(1.41421356, 7);
+      expect(await math.sqrt(2)).toBeCloseTo(Math.SQRT2, 7);
       expect(math.sqrtSync(16)).toBe(4);
     });
 
@@ -118,7 +118,7 @@ describe("@zig-wasm/math - Power and Root Functions", () => {
     });
 
     it("maintains f32 precision", async () => {
-      expect(await math.sqrtF32(2)).toBeCloseTo(1.41421356, 5);
+      expect(await math.sqrtF32(2)).toBeCloseTo(Math.SQRT2, 5);
     });
 
     it("handles very large numbers", async () => {
@@ -241,7 +241,7 @@ describe("@zig-wasm/math - Exponential and Logarithmic Functions", () => {
     it("computes natural logarithm", async () => {
       expect(await math.log(1)).toBe(0);
       expect(await math.log(Math.E)).toBeCloseTo(1, 10);
-      expect(await math.log(10)).toBeCloseTo(2.302585, 5);
+      expect(await math.log(10)).toBeCloseTo(Math.LN10, 5);
       expect(math.logSync(Math.E)).toBeCloseTo(1, 10);
     });
 
