@@ -24,6 +24,7 @@
     "build:zig:small": "pnpm build:zig -Doptimize=ReleaseSmall",
     "clean": "pnpm -r clean && rm -rf zig-out .zig-cache",
     "fmt": "dprint fmt",
+    "fmt:check": "dprint check",
     "lint": "pnpm --filter @zig-wasm/* lint",
     "lint:fix": "pnpm --filter @zig-wasm/* lint:fix",
     "prepare": "pnpm build:zig",

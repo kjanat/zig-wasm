@@ -1,0 +1,161 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: read-all
+
+env:
+  NODE_VERSION: 22
+  ZIG_VERSION: 0.15.2
+
+jobs:
+  config:
+    name: Config
+    runs-on: ubuntu-latest
+    outputs:
+      node-version: ${{ env.NODE_VERSION }}
+      zig-version: ${{ env.ZIG_VERSION }}
+    steps:
+      - run: echo "Exporting config"
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Format check
+        run: pnpm fmt:check
+
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    needs: [build-zig]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+
+      - name: Download WASM artifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: wasm-build
+          path: zig-out
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+  build-zig:
+    name: Build Zig WASM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Zig
+        uses: ./.github/actions/setup-zig
+        with:
+          zig-version: ${{ env.ZIG_VERSION }}
+
+      - name: Build WASM
+        run: zig build -Doptimize=ReleaseSmall
+
+      - name: Upload WASM artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: wasm-build
+          path: zig-out
+          retention-days: 1
+
+  build-ts:
+    name: Build TypeScript
+    runs-on: ubuntu-latest
+    needs: [build-zig]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+
+      - name: Download WASM artifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: wasm-build
+          path: zig-out
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build TypeScript
+        run: pnpm build:ts
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: dist-build
+          path: packages/*/dist
+          retention-days: 1
+
+  test:
+    name: Test (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    needs: [build-zig]
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Download WASM artifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: wasm-build
+          path: zig-out
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build TypeScript
+        run: pnpm build:ts
+
+      - name: Run tests
+        run: pnpm test
+
+  publish-preview:
+    name: Publish Preview
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    needs: [config, build-zig]
+    uses: ./.github/workflows/publish-pkg-pr-new.yml
+    with:
+      node-version: ${{ needs.config.outputs.node-version }}
+      zig-version: ${{ needs.config.outputs.zig-version }}
+    permissions:
+      contents: read
+      pull-requests: write
