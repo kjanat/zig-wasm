@@ -1,0 +1,50 @@
+name: "Build WASM"
+description: "Build Zig WASM modules and optionally upload artifacts"
+inputs:
+  zig-version:
+    description: "Zig version to use"
+    required: false
+    default: "0.15.2"
+  optimize:
+    description: "Optimization level (Debug, ReleaseSafe, ReleaseFast, ReleaseSmall)"
+    required: false
+    default: "ReleaseFast"
+  upload:
+    description: "Upload artifacts after build"
+    required: false
+    default: "true"
+  artifact-name:
+    description: "Name for uploaded artifact"
+    required: false
+    default: "wasm-build"
+  retention-days:
+    description: "Artifact retention days"
+    required: false
+    default: "1"
+runs:
+  using: "composite"
+  steps:
+    - name: Validate optimize input
+      shell: bash
+      run: |
+        case "${{ inputs.optimize }}" in
+          Debug|ReleaseSafe|ReleaseFast|ReleaseSmall) ;;
+          *) echo "::error::Invalid optimize value '${{ inputs.optimize }}'. Must be one of: Debug, ReleaseSafe, ReleaseFast, ReleaseSmall"; exit 1 ;;
+        esac
+
+    - name: Setup Zig
+      uses: mlugg/setup-zig@v2
+      with:
+        version: ${{ inputs.zig-version }}
+
+    - name: Build WASM
+      shell: bash
+      run: zig build -Doptimize=${{ inputs.optimize }}
+
+    - name: Upload WASM artifacts
+      if: inputs.upload == 'true'
+      uses: actions/upload-artifact@v6
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: zig-out
+        retention-days: ${{ inputs.retention-days }}

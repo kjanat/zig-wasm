@@ -1,0 +1,236 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [master]
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      optimize:
+        description: "WASM optimization level"
+        type: choice
+        default: "ReleaseFast"
+        options:
+          - Debug
+          - ReleaseSafe
+          - ReleaseFast
+          - ReleaseSmall
+      publish-npm:
+        description: "Publish to npm"
+        type: boolean
+        default: false
+      publish-jsr:
+        description: "Publish to JSR"
+        type: boolean
+        default: false
+      publish-preview:
+        description: "Publish preview packages"
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  id-token: write
+  pull-requests: write
+
+env:
+  NODE_VERSION: "22"
+  ZIG_VERSION: "0.15.2"
+
+jobs:
+  # Gate: Only proceed if CI passed (or manual/tag trigger)
+  gate:
+    name: Gate
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.should-run }}
+      is-tag: ${{ steps.check.outputs.is-tag }}
+      is-manual: ${{ steps.check.outputs.is-manual }}
+    steps:
+      - name: Check trigger conditions
+        id: check
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          WORKFLOW_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          GIT_REF: ${{ github.ref }}
+        run: |
+          if [[ "$EVENT_NAME" == "workflow_run" ]]; then
+            if [[ "$WORKFLOW_CONCLUSION" == "success" ]]; then
+              echo "should-run=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "should-run=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "should-run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [[ "$GIT_REF" == refs/tags/v* ]]; then
+            echo "is-tag=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is-tag=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            echo "is-manual=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is-manual=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [gate]
+    if: needs.gate.outputs.should-run == 'true'
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build full
+        uses: ./.github/actions/build-full
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          zig-version: ${{ env.ZIG_VERSION }}
+          optimize: ${{ inputs.optimize }}
+          artifact-name: cd-build
+
+  test:
+    name: Test (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    needs: [build]
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Download build artifacts
+        uses: ./.github/actions/download-artifacts
+        with:
+          artifact-name: cd-build
+          path: .
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm test
+
+  publish-preview:
+    name: Publish Preview
+    runs-on: ubuntu-latest
+    needs: [gate, build]
+    if: |
+      needs.gate.outputs.is-tag == 'false' &&
+      (github.event_name == 'workflow_run' || 
+       (github.event_name == 'workflow_dispatch' && inputs.publish-preview))
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download build artifacts
+        uses: ./.github/actions/download-artifacts
+        with:
+          artifact-name: cd-build
+          path: .
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Publish preview
+        run: pnpm dlx pkg-pr-new publish "./packages/*"
+
+  publish-npm:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    needs: [gate, test]
+    if: |
+      needs.gate.outputs.is-tag == 'true' ||
+      (needs.gate.outputs.is-manual == 'true' && inputs.publish-npm)
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download build artifacts
+        uses: ./.github/actions/download-artifacts
+        with:
+          artifact-name: cd-build
+          path: .
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Publish to npm
+        run: pnpm publish --access public --filter "@zig-wasm/*" --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-jsr:
+    name: Publish to JSR
+    runs-on: ubuntu-latest
+    needs: [gate, test]
+    if: |
+      needs.gate.outputs.is-tag == 'true' ||
+      (needs.gate.outputs.is-manual == 'true' && inputs.publish-jsr)
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download build artifacts
+        uses: ./.github/actions/download-artifacts
+        with:
+          artifact-name: cd-build
+          path: .
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Publish to JSR
+        run: pnpm dlx jsr publish --allow-dirty
+        env:
+          JSR_TOKEN: ${{ secrets.JSR_TOKEN }}
+
+  github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [gate, publish-npm, publish-jsr]
+    if: needs.gate.outputs.is-tag == 'true'
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download build artifacts
+        uses: ./.github/actions/download-artifacts
+        with:
+          artifact-name: cd-build
+          path: .
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            zig-out/lib/*.wasm

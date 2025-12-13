@@ -1,0 +1,41 @@
+name: "Setup Project"
+description: "Checkout, setup pnpm/zig, and install dependencies"
+inputs:
+  node-version:
+    description: "Node.js version to use"
+    required: false
+    default: "22"
+  zig-version:
+    description: "Zig version (leave empty to skip Zig setup)"
+    required: false
+    default: ""
+  install-deps:
+    description: "Install pnpm dependencies"
+    required: false
+    default: "true"
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+
+    - name: Setup Zig
+      if: inputs.zig-version != ''
+      uses: mlugg/setup-zig@v2
+      with:
+        version: ${{ inputs.zig-version }}
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+
+    - name: Setup Node.js ${{ inputs.node-version }}
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: "pnpm"
+        registry-url: "https://registry.npmjs.org"
+
+    - name: Install dependencies
+      if: inputs.install-deps == 'true'
+      shell: bash
+      run: pnpm install --frozen-lockfile
