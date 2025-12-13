@@ -3,8 +3,8 @@
 [![CI](https://github.com/kjanat/zig-wasm/actions/workflows/ci.yml/badge.svg)](https://github.com/kjanat/zig-wasm/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Zig standard library modules compiled to WebAssembly for Node.js, Bun, Deno,
-and browsers.
+Zig standard library modules compiled to WebAssembly for Node.js, Bun, Deno, and
+browsers.
 
 ## Packages
 
@@ -55,7 +55,7 @@ const hash = sha256Sync("hello world");
 ### Hash
 
 ```ts
-import { crc32, xxhash64, wyhash } from "@zig-wasm/hash";
+import { crc32, wyhash, xxhash64 } from "@zig-wasm/hash";
 
 const checksum = await crc32("hello world");
 const hash = await xxhash64("data", 0n); // seed is bigint

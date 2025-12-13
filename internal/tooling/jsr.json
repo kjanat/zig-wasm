@@ -3,6 +3,7 @@
   "name": "@zig-wasm/tooling",
   "version": "0.0.0",
   "exports": {
+    ".": "./src/index.ts",
     "./biome": "./biome.json",
     "./tsconfig": "./tsconfig.json"
   }

@@ -1,8 +1,14 @@
 {
   "name": "@zig-wasm/tooling",
   "version": "0.0.0",
-  "description": "Shared biome and tsconfig for Zig-Wasm packages",
-  "keywords": ["config", "biome", "tsconfig", "typescript"],
+  "description": "Shared biome config, tsconfig, and CLI tools for Zig-Wasm packages",
+  "keywords": [
+    "config",
+    "biome",
+    "tsconfig",
+    "typescript",
+    "tooling"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kjanat/zig-wasm.git",
@@ -12,8 +18,35 @@
   "author": "Kaj Kowalski <dev@kajkowalski.nl> (https://github.com/kjanat)",
   "type": "module",
   "exports": {
+    ".": "./src/index.ts",
     "./biome": "./biome.json",
     "./tsconfig": "./tsconfig.json"
   },
-  "files": ["biome.json", "tsconfig.json"]
+  "bin": {
+    "check-published": "./src/check-published.ts",
+    "sync-versions": "./src/sync-versions.ts"
+  },
+  "files": [
+    "biome.json",
+    "tsconfig.json",
+    "src"
+  ],
+  "scripts": {
+    "check-published": "bun ./src/check-published.ts",
+    "fmt": "dprint fmt",
+    "lint": "biome lint",
+    "lint:fix": "biome check --write && pnpm fmt",
+    "sync-versions": "bun ./src/sync-versions.ts",
+    "typecheck": "tsgo --noEmit"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@types/bun": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "dprint": "catalog:",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "typescript": "catalog:"
+  }
 }
