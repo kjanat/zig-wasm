@@ -517,11 +517,10 @@ describe("init with wasmPath option", () => {
 });
 
 describe("init with wasmUrl option", () => {
-  it("accepts wasmUrl option (file:// URL)", async () => {
-    const { writeFileSync, unlinkSync, mkdtempSync } = await import("node:fs");
+  it("accepts wasmUrl option with custom fetchFn", async () => {
+    const { writeFileSync, readFileSync, unlinkSync, mkdtempSync } = await import("node:fs");
     const { join } = await import("node:path");
     const { tmpdir } = await import("node:os");
-    const { pathToFileURL } = await import("node:url");
 
     // Create temp directory and write WASM file
     const tempDir = mkdtempSync(join(tmpdir(), "wasm-url-test-"));
@@ -534,8 +533,14 @@ describe("init with wasmUrl option", () => {
         wasmFileName: "test.wasm",
       });
 
-      const wasmUrl = pathToFileURL(wasmPath).href;
-      await module.init({ wasmUrl });
+      // Custom fetchFn that reads from filesystem
+      // (native fetch doesn't support file:// URLs)
+      const fetchFn = async (_url: string): Promise<ArrayBuffer> => {
+        const bytes = readFileSync(wasmPath);
+        return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+      };
+
+      await module.init({ wasmUrl: "http://test/test.wasm", fetchFn });
 
       expect(module.isInitialized()).toBe(true);
       expect(module.getExports().memory).toBeInstanceOf(WebAssembly.Memory);
