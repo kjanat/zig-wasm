@@ -3,9 +3,8 @@ name: Build WASM
 description: Build Zig WASM modules and optionally upload artifacts
 inputs:
   zig-version:
-    description: Zig version to use
+    description: Zig version to use (overrides config)
     required: false
-    default: "0.15.2"
   optimize:
     description: Optimization level
     required: false
@@ -22,6 +21,22 @@ inputs:
     description: Artifact retention days
     required: false
     default: "1"
+outputs:
+  artifact-id:
+    description: ID of the uploaded artifact
+    value: ${{ steps.upload.outputs.artifact-id }}
+  artifact-url:
+    description: URL to download the artifact
+    value: ${{ steps.upload.outputs.artifact-url }}
+  artifact-name:
+    description: Name of the uploaded artifact
+    value: ${{ inputs.artifact-name }}
+  zig-version:
+    description: Zig version used for build
+    value: ${{ steps.resolve-version.outputs.zig-version }}
+  wasm-path:
+    description: Path pattern where WASM files are located
+    value: ${{ steps.config.outputs.wasm-path }}
 runs:
   using: composite
   steps:
@@ -39,19 +54,34 @@ runs:
             ;;
         esac
 
+    - name: Read config
+      id: config
+      uses: ./.github/actions/read-config
+
+    - name: Resolve Zig version
+      id: resolve-version
+      shell: bash
+      run: |
+        if [[ -n "${{ inputs.zig-version }}" ]]; then
+          echo "zig-version=${{ inputs.zig-version }}" >> "$GITHUB_OUTPUT"
+        else
+          echo "zig-version=${{ steps.config.outputs.zig-version }}" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: Setup Zig
       uses: mlugg/setup-zig@v2
       with:
-        version: ${{ inputs.zig-version }}
+        version: ${{ steps.resolve-version.outputs.zig-version }}
 
     - name: Build WASM
       shell: bash
       run: zig build -Doptimize=${{ inputs.optimize }}
 
     - name: Upload WASM artifacts
+      id: upload
       if: inputs.upload == 'true'
       uses: actions/upload-artifact@v6
       with:
         name: ${{ inputs.artifact-name }}
-        path: packages/*/wasm/*.wasm
+        path: ${{ steps.config.outputs.wasm-path }}/*.wasm
         retention-days: ${{ inputs.retention-days }}

@@ -10,10 +10,15 @@ inputs:
     description: Path to download artifacts to
     required: false
     default: "."
+outputs:
+  download-path:
+    description: Path where artifacts were downloaded
+    value: ${{ steps.download.outputs.download-path }}
 runs:
   using: composite
   steps:
     - name: Download artifacts
+      id: download
       uses: actions/download-artifact@v7
       with:
         name: ${{ inputs.artifact-name }}

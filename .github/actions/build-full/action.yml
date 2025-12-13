@@ -3,13 +3,11 @@ name: Build Full
 description: "Full build pipeline: WASM + TypeScript (requires checkout first)"
 inputs:
   node-version:
-    description: Node.js version to use
+    description: Node.js version to use (overrides config)
     required: false
-    default: "22"
   zig-version:
-    description: Zig version to use
+    description: Zig version to use (overrides config)
     required: false
-    default: "0.15.2"
   optimize:
     description: WASM optimization level
     required: false
@@ -26,6 +24,28 @@ inputs:
     description: Artifact retention days
     required: false
     default: "1"
+outputs:
+  artifact-id:
+    description: ID of the uploaded artifact
+    value: ${{ steps.upload.outputs.artifact-id }}
+  artifact-url:
+    description: URL to download the artifact
+    value: ${{ steps.upload.outputs.artifact-url }}
+  artifact-name:
+    description: Name of the uploaded artifact
+    value: ${{ inputs.artifact-name }}
+  node-version:
+    description: Node.js version used for build
+    value: ${{ steps.resolve-versions.outputs.node-version }}
+  zig-version:
+    description: Zig version used for build
+    value: ${{ steps.resolve-versions.outputs.zig-version }}
+  wasm-path:
+    description: Path pattern where WASM files are located
+    value: ${{ steps.config.outputs.wasm-path }}
+  dist-path:
+    description: Path pattern where dist files are located
+    value: ${{ steps.config.outputs.dist-path }}
 runs:
   using: composite
   steps:
@@ -43,18 +63,38 @@ runs:
             ;;
         esac
 
+    - name: Read config
+      id: config
+      uses: ./.github/actions/read-config
+
+    - name: Resolve versions
+      id: resolve-versions
+      shell: bash
+      run: |
+        if [[ -n "${{ inputs.zig-version }}" ]]; then
+          echo "zig-version=${{ inputs.zig-version }}" >> "$GITHUB_OUTPUT"
+        else
+          echo "zig-version=${{ steps.config.outputs.zig-version }}" >> "$GITHUB_OUTPUT"
+        fi
+
+        if [[ -n "${{ inputs.node-version }}" ]]; then
+          echo "node-version=${{ inputs.node-version }}" >> "$GITHUB_OUTPUT"
+        else
+          echo "node-version=${{ steps.config.outputs.node-default }}" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: Setup Zig
       uses: mlugg/setup-zig@v2
       with:
-        version: ${{ inputs.zig-version }}
+        version: ${{ steps.resolve-versions.outputs.zig-version }}
 
     - name: Install pnpm
       uses: pnpm/action-setup@v4
 
-    - name: Setup Node.js ${{ inputs.node-version }}
+    - name: Setup Node.js ${{ steps.resolve-versions.outputs.node-version }}
       uses: actions/setup-node@v6
       with:
-        node-version: ${{ inputs.node-version }}
+        node-version: ${{ steps.resolve-versions.outputs.node-version }}
         cache: pnpm
         registry-url: https://registry.npmjs.org
 
@@ -71,11 +111,12 @@ runs:
       run: pnpm build:ts
 
     - name: Upload build artifacts
+      id: upload
       if: inputs.upload == 'true'
       uses: actions/upload-artifact@v6
       with:
         name: ${{ inputs.artifact-name }}
         path: |
-          packages/*/dist
-          zig-out
+          ${{ steps.config.outputs.wasm-path }}
+          ${{ steps.config.outputs.dist-path }}
         retention-days: ${{ inputs.retention-days }}

@@ -53,6 +53,21 @@
     "test": "pnpm -r test",
     "typecheck": "pnpm --filter @zig-wasm/* typecheck"
   },
+  "config": {
+    "ci": {
+      "paths": {
+        "wasm": "packages/*/wasm",
+        "dist": "packages/*/dist"
+      },
+      "nodeVersions": [
+        20,
+        22,
+        24
+      ],
+      "nodeDefault": 22,
+      "zigVersion": "0.15.2"
+    }
+  },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@types/node": "catalog:",

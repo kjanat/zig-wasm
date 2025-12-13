@@ -1,0 +1,57 @@
+---
+name: Read Config
+description: Read CI/CD configuration from package.json and expose as outputs
+outputs:
+  wasm-path:
+    description: Path pattern for WASM files
+    value: ${{ steps.config.outputs.wasm-path }}
+  dist-path:
+    description: Path pattern for dist files
+    value: ${{ steps.config.outputs.dist-path }}
+  full-paths:
+    description: Combined paths for full build artifacts (newline-separated)
+    value: ${{ steps.config.outputs.full-paths }}
+  node-versions:
+    description: JSON array of Node.js versions for matrix
+    value: ${{ steps.config.outputs.node-versions }}
+  node-default:
+    description: Default Node.js version
+    value: ${{ steps.config.outputs.node-default }}
+  zig-version:
+    description: Zig version to use
+    value: ${{ steps.config.outputs.zig-version }}
+runs:
+  using: composite
+  steps:
+    - name: Read config from package.json
+      id: config
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          const ci = pkg.config?.ci;
+
+          if (!ci) {
+            core.setFailed('Missing config.ci in package.json');
+            return;
+          }
+
+          const { paths, nodeVersions, nodeDefault, zigVersion } = ci;
+
+          // Path outputs
+          core.setOutput('wasm-path', paths.wasm);
+          core.setOutput('dist-path', paths.dist);
+          core.setOutput('full-paths', `${paths.wasm}\n${paths.dist}`);
+
+          // Version outputs
+          core.setOutput('node-versions', JSON.stringify(nodeVersions));
+          core.setOutput('node-default', String(nodeDefault));
+          core.setOutput('zig-version', zigVersion);
+
+          // Log for debugging
+          core.info(`WASM path: ${paths.wasm}`);
+          core.info(`Dist path: ${paths.dist}`);
+          core.info(`Node versions: ${JSON.stringify(nodeVersions)}`);
+          core.info(`Node default: ${nodeDefault}`);
+          core.info(`Zig version: ${zigVersion}`);

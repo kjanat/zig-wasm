@@ -50,10 +50,6 @@ permissions:
   id-token: write
   pull-requests: write
 
-env:
-  NODE_VERSION: "22"
-  ZIG_VERSION: "0.15.2"
-
 jobs:
   # Gate: Only proceed if CI passed (or manual/tag trigger)
   gate:
@@ -93,31 +89,58 @@ jobs:
             echo "is-manual=false" >> "$GITHUB_OUTPUT"
           fi
 
-  build:
-    name: Build
+  setup:
+    name: Setup
     runs-on: ubuntu-latest
     needs: [gate]
     if: needs.gate.outputs.should-run == 'true'
+    outputs:
+      node-versions: ${{ steps.config.outputs.node-versions }}
+      node-default: ${{ steps.config.outputs.node-default }}
+      zig-version: ${{ steps.config.outputs.zig-version }}
+      wasm-path: ${{ steps.config.outputs.wasm-path }}
+      dist-path: ${{ steps.config.outputs.dist-path }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Read config
+        id: config
+        uses: ./.github/actions/read-config
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [gate, setup]
+    if: needs.gate.outputs.should-run == 'true'
+    outputs:
+      artifact-id: ${{ steps.build.outputs.artifact-id }}
+      artifact-url: ${{ steps.build.outputs.artifact-url }}
+      artifact-name: ${{ steps.build.outputs.artifact-name }}
+      node-version: ${{ steps.build.outputs.node-version }}
+      zig-version: ${{ steps.build.outputs.zig-version }}
+      wasm-path: ${{ steps.build.outputs.wasm-path }}
+      dist-path: ${{ steps.build.outputs.dist-path }}
     steps:
       - uses: actions/checkout@v6
 
       - name: Build full
+        id: build
         uses: ./.github/actions/build-full
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          zig-version: ${{ env.ZIG_VERSION }}
+          node-version: ${{ needs.setup.outputs.node-default }}
+          zig-version: ${{ needs.setup.outputs.zig-version }}
           optimize: ${{ inputs.optimize || 'ReleaseFast' }}
           artifact-name: cd-build
 
   test:
     name: Test (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [setup, build]
     if: ${{ !inputs.skip-tests }}
     strategy:
       fail-fast: false
       matrix:
-        node-version: [20, 22, 24]
+        node-version: ${{ fromJSON(needs.setup.outputs.node-versions) }}
     steps:
       - uses: actions/checkout@v6
 
@@ -129,7 +152,7 @@ jobs:
       - name: Download build artifacts
         uses: ./.github/actions/download-artifacts
         with:
-          artifact-name: cd-build
+          artifact-name: ${{ needs.build.outputs.artifact-name }}
           path: .
 
       - name: Install dependencies
@@ -141,7 +164,7 @@ jobs:
   publish-preview:
     name: Publish Preview
     runs-on: ubuntu-latest
-    needs: [gate, build, test]
+    needs: [gate, setup, build, test]
     if: >
       !inputs.dry-run &&
       needs.gate.outputs.is-tag == 'false' &&
@@ -154,12 +177,12 @@ jobs:
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ needs.setup.outputs.node-default }}
 
       - name: Download build artifacts
         uses: ./.github/actions/download-artifacts
         with:
-          artifact-name: cd-build
+          artifact-name: ${{ needs.build.outputs.artifact-name }}
           path: .
 
       - name: Install dependencies
@@ -171,7 +194,7 @@ jobs:
   publish-npm:
     name: Publish to npm
     runs-on: ubuntu-latest
-    needs: [gate, build, test]
+    needs: [gate, setup, build, test]
     if: >
       !inputs.dry-run &&
       (needs.test.result == 'success' || needs.test.result == 'skipped') &&
@@ -183,12 +206,12 @@ jobs:
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ needs.setup.outputs.node-default }}
 
       - name: Download build artifacts
         uses: ./.github/actions/download-artifacts
         with:
-          artifact-name: cd-build
+          artifact-name: ${{ needs.build.outputs.artifact-name }}
           path: .
 
       - name: Install dependencies
@@ -205,7 +228,7 @@ jobs:
   publish-jsr:
     name: Publish to JSR
     runs-on: ubuntu-latest
-    needs: [gate, build, test]
+    needs: [gate, setup, build, test]
     if: >
       !inputs.dry-run &&
       (needs.test.result == 'success' || needs.test.result == 'skipped') &&
@@ -217,12 +240,12 @@ jobs:
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ needs.setup.outputs.node-default }}
 
       - name: Download build artifacts
         uses: ./.github/actions/download-artifacts
         with:
-          artifact-name: cd-build
+          artifact-name: ${{ needs.build.outputs.artifact-name }}
           path: .
 
       - name: Install dependencies
@@ -234,7 +257,7 @@ jobs:
   github-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [gate, publish-npm, publish-jsr]
+    needs: [gate, setup, build, publish-npm, publish-jsr]
     if: ${{ !inputs.dry-run && needs.gate.outputs.is-tag == 'true' }}
     steps:
       - uses: actions/checkout@v6
@@ -242,7 +265,7 @@ jobs:
       - name: Download build artifacts
         uses: ./.github/actions/download-artifacts
         with:
-          artifact-name: cd-build
+          artifact-name: ${{ needs.build.outputs.artifact-name }}
           path: .
 
       - name: Create Release
@@ -250,4 +273,4 @@ jobs:
         with:
           generate_release_notes: true
           files: |
-            packages/*/wasm/*.wasm
+            ${{ needs.setup.outputs.wasm-path }}/*.wasm
