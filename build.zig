@@ -38,11 +38,11 @@ fn buildWasmModule(
     exe.entry = .disabled; // `-fno-entry` equivalent
     exe.rdynamic = true; // export all symbols
 
-    // Install directly to ../packages/<name>/dist/<name>.wasm
+    // Install directly to ../packages/<name>/wasm/<name>.wasm
     const install = b.addInstallArtifact(exe, .{
         .dest_dir = .{
             .override = .{
-                .custom = b.fmt("../packages/{s}/dist", .{name}),
+                .custom = b.fmt("../packages/{s}/wasm", .{name}),
             },
         },
         // basename not set: Zig picks the right .wasm name from the artifact

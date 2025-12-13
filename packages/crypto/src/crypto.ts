@@ -53,10 +53,10 @@ export async function init(options?: InitOptions): Promise<void> {
       const { fileURLToPath } = await import("node:url");
       const { dirname, join } = await import("node:path");
       const currentDir = dirname(fileURLToPath(import.meta.url));
-      const wasmPath = join(currentDir, "crypto.wasm");
+      const wasmPath = join(currentDir, "../wasm/crypto.wasm");
       result = await loadWasm<CryptoWasmExports>({ wasmPath });
     } else {
-      const wasmUrl = new URL("crypto.wasm", import.meta.url);
+      const wasmUrl = new URL("../wasm/crypto.wasm", import.meta.url);
       result = await loadWasm<CryptoWasmExports>({ wasmUrl: wasmUrl.href });
     }
 

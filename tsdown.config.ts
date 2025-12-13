@@ -25,7 +25,7 @@ export function wasmConfig(wasmName: string): UserConfig {
     ...baseConfig,
     exports: {
       customExports(pkg) {
-        pkg[`./${wasmName}.wasm`] = `./dist/${wasmName}.wasm`;
+        pkg[`./${wasmName}.wasm`] = `./wasm/${wasmName}.wasm`;
         return pkg;
       },
     },

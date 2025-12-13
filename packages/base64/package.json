@@ -25,13 +25,14 @@
       "import": "./dist/index.mjs"
     },
     "./package.json": "./package.json",
-    "./base64.wasm": "./dist/base64.wasm"
+    "./base64.wasm": "./wasm/base64.wasm"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.cts",
   "files": [
-    "dist"
+    "dist",
+    "wasm"
   ],
   "scripts": {
     "build": "tsdown",

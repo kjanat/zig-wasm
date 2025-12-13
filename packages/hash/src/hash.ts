@@ -41,10 +41,10 @@ export async function init(options?: InitOptions): Promise<void> {
       const { fileURLToPath } = await import("node:url");
       const { dirname, join } = await import("node:path");
       const currentDir = dirname(fileURLToPath(import.meta.url));
-      const wasmPath = join(currentDir, "hash.wasm");
+      const wasmPath = join(currentDir, "../wasm/hash.wasm");
       result = await loadWasm<HashWasmExports>({ wasmPath });
     } else {
-      const wasmUrl = new URL("hash.wasm", import.meta.url);
+      const wasmUrl = new URL("../wasm/hash.wasm", import.meta.url);
       result = await loadWasm<HashWasmExports>({ wasmUrl: wasmUrl.href });
     }
 

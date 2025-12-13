@@ -41,10 +41,10 @@ export async function init(options?: InitOptions): Promise<void> {
       const { fileURLToPath } = await import("node:url");
       const { dirname, join } = await import("node:path");
       const currentDir = dirname(fileURLToPath(import.meta.url));
-      const wasmPath = join(currentDir, "base64.wasm");
+      const wasmPath = join(currentDir, "../wasm/base64.wasm");
       result = await loadWasm<Base64WasmExports>({ wasmPath });
     } else {
-      const wasmUrl = new URL("base64.wasm", import.meta.url);
+      const wasmUrl = new URL("../wasm/base64.wasm", import.meta.url);
       result = await loadWasm<Base64WasmExports>({ wasmUrl: wasmUrl.href });
     }
 

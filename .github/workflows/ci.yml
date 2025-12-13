@@ -88,6 +88,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
+      - name: Build TypeScript
+        run: pnpm build:ts
+
       - name: Typecheck
         run: pnpm typecheck
 
@@ -108,13 +111,6 @@ jobs:
         with:
           artifact-name: wasm-build
           path: packages
-
-      - name: Debug - List downloaded files
-        run: |
-          echo "=== All .wasm files ==="
-          find . -name "*.wasm" -type f 2>/dev/null || echo "No .wasm files found"
-          echo "=== packages/*/dist contents ==="
-          ls -la packages/*/dist/ 2>/dev/null || echo "No dist directories"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts

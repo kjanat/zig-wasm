@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it } from "vitest";
 import * as hash from "../src/index.ts";
 
-const wasmPath = join(dirname(fileURLToPath(import.meta.url)), "../dist/hash.wasm");
+const wasmPath = join(dirname(fileURLToPath(import.meta.url)), "../wasm/hash.wasm");
 
 describe("@zig-wasm/hash", () => {
   beforeAll(async () => {
