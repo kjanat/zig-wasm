@@ -157,10 +157,18 @@ jobs:
 
       - name: Debug - List downloaded artifacts
         run: |
+          echo "=== Current directory ==="
+          pwd
+          echo "=== Top level contents ==="
+          ls -la
+          echo "=== packages directory ==="
+          ls -la packages/ || echo "packages NOT FOUND"
           echo "=== packages/core/dist ==="
           ls -la packages/core/dist/ || echo "NOT FOUND"
-          echo "=== packages/*/wasm ==="
-          ls -la packages/*/wasm/ || echo "NOT FOUND"
+          echo "=== Find all .wasm files ==="
+          find . -name "*.wasm" -type f 2>/dev/null || echo "No wasm files"
+          echo "=== Find all dist directories ==="
+          find . -name "dist" -type d 2>/dev/null || echo "No dist dirs"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
