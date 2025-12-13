@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://json.schemastore.org/lefthook.json
+
+# Lefthook configuration for zig-wasm monorepo
+# https://github.com/evilmartians/lefthook
+---
+pre-commit:
+  parallel: true
+  commands:
+    format-check:
+      glob: "*.{ts,tsx,js,jsx,json,md,zig}"
+      run: pnpm fmt:staged {staged_files}
+      stage_fixed: true
+
+    lint:
+      glob: "*.{ts,tsx,js,jsx}"
+      run: pnpm lint
+
+    typecheck:
+      glob: "*.{ts,tsx}"
+      run: pnpm typecheck
+
+pre-push:
+  parallel: true
+  commands:
+    test:
+      run: pnpm test
