@@ -16,11 +16,11 @@ export function fromHex(hex: string): Uint8Array {
   }
   const bytes = new Uint8Array(hex.length / 2);
   for (let i = 0; i < bytes.length; i++) {
-    const byte = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
-    if (Number.isNaN(byte)) {
+    const pair = hex.slice(i * 2, i * 2 + 2);
+    if (!/^[0-9a-fA-F]{2}$/.test(pair)) {
       throw new Error(`Invalid hex character at position ${i * 2}`);
     }
-    bytes[i] = byte;
+    bytes[i] = parseInt(pair, 16);
   }
   return bytes;
 }

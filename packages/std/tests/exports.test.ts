@@ -114,7 +114,7 @@ describe("@zig-wasm/std exports", () => {
 
       it("throws on invalid hex characters", () => {
         expect(() => std.fromHex("abcg")).toThrow(/Invalid hex character/);
-        expect(() => std.fromHex("12 34")).toThrow(/Invalid hex character/);
+        expect(() => std.fromHex("1234  ")).toThrow(/Invalid hex character/);
         expect(() => std.fromHex("xy")).toThrow(/Invalid hex character/);
       });
 
@@ -290,7 +290,11 @@ describe("@zig-wasm/std exports", () => {
   describe("Environment Detection", () => {
     it("getEnvironment returns valid environment", () => {
       const env = std.getEnvironment();
-      expect(["node", "browser", "deno", "bun", "worker", "unknown"]).toContain(env);
+      expect(env).toHaveProperty("isNode");
+      expect(env).toHaveProperty("isBrowser");
+      expect(env).toHaveProperty("isDeno");
+      expect(env).toHaveProperty("isBun");
+      expect(env).toHaveProperty("supportsStreaming");
     });
 
     it("getEnvironment is consistent across calls", () => {

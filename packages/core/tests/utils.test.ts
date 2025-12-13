@@ -82,19 +82,12 @@ describe("fromHex", () => {
     expect(() => fromHex("12345")).toThrow("Hex string must have even length");
   });
 
-  it("parses invalid hex partially (parseInt behavior)", () => {
-    // Note: parseInt("0g", 16) returns 0 (stops at 'g'), not NaN
-    // So fromHex("0g") = [0] not an error
-    // Only "zz" will throw because parseInt("zz", 16) returns NaN
+  it("rejects all invalid hex characters", () => {
+    // Unlike parseInt which partially parses, fromHex validates strictly
     expect(() => fromHex("zz")).toThrow(/Invalid hex character/);
-
-    // These don't throw due to parseInt partial parsing behavior
-    const result1 = fromHex("0g"); // parseInt("0g", 16) = 0
-    expect(result1).toEqual(new Uint8Array([0]));
-
-    // Space is treated as hex 0 by parseInt(" 3", 16)
-    const result2 = fromHex("12 3"); // Note: odd length would throw
-    // This will throw on odd length, so let's test valid cases
+    expect(() => fromHex("0g")).toThrow(/Invalid hex character/);
+    expect(() => fromHex("g0")).toThrow(/Invalid hex character/);
+    expect(() => fromHex("  ")).toThrow(/Invalid hex character/);
   });
 
   it("provides position in error for truly invalid hex", () => {
