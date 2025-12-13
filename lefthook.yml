@@ -4,20 +4,24 @@
 # https://github.com/evilmartians/lefthook
 ---
 pre-commit:
-  parallel: true
+  piped: true
   commands:
-    format-check:
+    lint:
+      glob: "*.{ts,tsx,js,jsx}"
+      run: pnpm lint:fix
+      stage_fixed: true
+      priority: 1
+
+    format:
       glob: "*.{ts,tsx,js,jsx,json,md,zig}"
       run: pnpm fmt:staged {staged_files}
       stage_fixed: true
-
-    lint:
-      glob: "*.{ts,tsx,js,jsx}"
-      run: pnpm lint
+      priority: 2
 
     typecheck:
       glob: "*.{ts,tsx}"
       run: pnpm typecheck
+      priority: 3
 
 pre-push:
   parallel: true

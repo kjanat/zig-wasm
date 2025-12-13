@@ -85,7 +85,7 @@ jobs:
           artifact-name: wasm-build
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Typecheck
         run: pnpm typecheck
@@ -108,7 +108,7 @@ jobs:
           artifact-name: wasm-build
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build TypeScript
         run: pnpm build:ts
@@ -142,7 +142,7 @@ jobs:
           artifact-name: wasm-build
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build TypeScript
         run: pnpm build:ts

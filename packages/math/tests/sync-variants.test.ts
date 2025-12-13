@@ -366,7 +366,7 @@ describe("@zig-wasm/math - Sync 32-bit bit manipulation", () => {
 
     it("rotrSync rotates right", () => {
       expect(math.rotrSync(0b00000010, 1)).toBe(0b00000001);
-      expect((math.rotrSync(0b00000001, 1) >>> 0)).toBe(0x80000000);
+      expect(math.rotrSync(0b00000001, 1) >>> 0).toBe(0x80000000);
       expect(math.rotrSync(8, 1)).toBe(4);
     });
   });

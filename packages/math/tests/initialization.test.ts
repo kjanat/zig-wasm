@@ -1,8 +1,8 @@
 /**
  * Tests for module initialization, lifecycle, and error handling
  */
-import { describe, expect, it } from "vitest";
 import { NotInitializedError } from "@zig-wasm/core";
+import { describe, expect, it } from "vitest";
 
 // We need to test initialization behavior, so we use dynamic imports
 // to get fresh module instances

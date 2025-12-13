@@ -1,8 +1,8 @@
 /**
  * Tests for base64 module initialization, lifecycle, and sync API error handling
  */
-import { describe, expect, it } from "vitest";
 import { NotInitializedError } from "@zig-wasm/core";
+import { describe, expect, it } from "vitest";
 
 describe("@zig-wasm/base64 - Concurrent Initialization", () => {
   it("handles concurrent init calls safely", async () => {
