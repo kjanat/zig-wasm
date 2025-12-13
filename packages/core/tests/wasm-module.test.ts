@@ -487,3 +487,61 @@ describe("WasmMemory integration", () => {
     expect(view[100]).toBe(42);
   });
 });
+
+describe("init with wasmPath option", () => {
+  it("accepts wasmPath option", async () => {
+    const { writeFileSync, unlinkSync, mkdtempSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const { tmpdir } = await import("node:os");
+
+    // Create temp directory and write WASM file
+    const tempDir = mkdtempSync(join(tmpdir(), "wasm-test-"));
+    const wasmPath = join(tempDir, "test.wasm");
+    writeFileSync(wasmPath, createMinimalWasmWithMemory());
+
+    try {
+      const module = createWasmModule<TestExports>({
+        name: "path-test",
+        wasmFileName: "test.wasm",
+      });
+
+      await module.init({ wasmPath });
+
+      expect(module.isInitialized()).toBe(true);
+      expect(module.getExports().memory).toBeInstanceOf(WebAssembly.Memory);
+    } finally {
+      // Cleanup
+      unlinkSync(wasmPath);
+    }
+  });
+});
+
+describe("init with wasmUrl option", () => {
+  it("accepts wasmUrl option (file:// URL)", async () => {
+    const { writeFileSync, unlinkSync, mkdtempSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const { tmpdir } = await import("node:os");
+    const { pathToFileURL } = await import("node:url");
+
+    // Create temp directory and write WASM file
+    const tempDir = mkdtempSync(join(tmpdir(), "wasm-url-test-"));
+    const wasmPath = join(tempDir, "test.wasm");
+    writeFileSync(wasmPath, createMinimalWasmWithMemory());
+
+    try {
+      const module = createWasmModule<TestExports>({
+        name: "url-test",
+        wasmFileName: "test.wasm",
+      });
+
+      const wasmUrl = pathToFileURL(wasmPath).href;
+      await module.init({ wasmUrl });
+
+      expect(module.isInitialized()).toBe(true);
+      expect(module.getExports().memory).toBeInstanceOf(WebAssembly.Memory);
+    } finally {
+      // Cleanup
+      unlinkSync(wasmPath);
+    }
+  });
+});
