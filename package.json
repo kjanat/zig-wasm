@@ -13,31 +13,28 @@
   "author": "Kaj Kowalski <dev@kajkowalski.nl> (https://github.com/kjanat)",
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "internal/*"
   ],
   "scripts": {
     "build": "pnpm clean && pnpm build:zig && pnpm build:ts",
     "build:ts": "tsdown --workspace",
     "build:zig": "zig build -Doptimize=ReleaseSmall",
     "clean": "pnpm -r clean && rm -rf zig-out .zig-cache",
-    "fmt": "dprint fmt --config .dprint.jsonc --config-discovery=false --allow-no-files",
-    "lint": "biome lint",
-    "lint:fix": "biome check --write && pnpm fmt",
+    "fmt": "dprint fmt",
+    "lint": "pnpm -r lint",
+    "lint:fix": "pnpm -r lint:fix",
     "prepare": "pnpm build:zig",
     "test": "pnpm -r test",
-    "test:quick": "node test.mjs",
     "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.8",
-    "@types/node": "^25.0.1",
-    "dprint": "^0.50.2",
-    "tsdown": "^0.17.3",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.15"
-  },
-  "optionalDependencies": {
-    "@types/bun": "^1.3.4"
+    "@biomejs/biome": "catalog:",
+    "@types/node": "catalog:",
+    "dprint": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "packageManager": "pnpm@10.23.0",
   "engines": {

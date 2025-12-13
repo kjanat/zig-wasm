@@ -1,5 +1,5 @@
 /**
- * @zig-wasm/hash
+ * @name "@zig-wasm/hash"
  *
  * Fast non-cryptographic hash functions powered by Zig via WebAssembly
  */

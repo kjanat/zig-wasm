@@ -9,4 +9,10 @@ onlyBuiltDependencies:
   - esbuild
 
 catalog:
-  "@typescript/native-preview": 7.0.0-dev.20251212.1
+  "@typescript/native-preview": latest
+  typescript: ^5
+  "@biomejs/biome": 2.3.8
+  dprint: latest
+  vitest: ~4.0.15
+  tsdown: ~0.17.3
+  "@types/node": ^25

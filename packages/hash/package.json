@@ -38,7 +38,10 @@
   ],
   "scripts": {
     "build": "tsdown",
+    "fmt": "dprint fmt",
     "clean": "rm -rf dist",
+    "lint": "biome lint",
+    "lint:fix": "biome check --write && pnpm fmt",
     "test": "vitest run",
     "typecheck": "tsgo --noEmit"
   },
@@ -46,7 +49,10 @@
     "@zig-wasm/core": "workspace:*"
   },
   "devDependencies": {
+    "dprint": "catalog:",
+    "@biomejs/biome": "catalog:",
     "@typescript/native-preview": "catalog:",
-    "@zig-wasm/tsconfig": "workspace:*"
+    "@zig-wasm-internal/biome": "workspace:*",
+    "@zig-wasm-internal/tsconfig": "workspace:*"
   }
 }

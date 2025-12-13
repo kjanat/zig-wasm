@@ -1,28 +1,24 @@
 {
-	"name": "@zig-wasm-internal/tsconfig",
+	"name": "@zig-wasm-internal/biome",
 	"version": "0.0.0",
 	"description": "Shared TypeScript config for Zig-Wasm projects",
 	"keywords": [
 		"config",
 		"configuration",
-		"ts",
-		"tsconfig",
-		"typescript"
+		"lint",
+		"biome",
+		"biomejs"
 	],
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/kjanat/zig-wasm.git",
-		"directory": "internal/tsconfig"
+		"directory": "internal/biome"
 	},
 	"license": "MIT",
 	"author": "Kaj Kowalski <dev@kajkowalski.nl> (https://github.com/kjanat)",
-	"sideEffects": false,
 	"type": "module",
-	"exports": "./tsconfig.json",
+	"exports": "./biome.json",
 	"files": [
-		"tsconfig.json"
-	],
-	"engines": {
-		"node": ">=20"
-	}
+		"biome.json"
+	]
 }

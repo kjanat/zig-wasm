@@ -1,0 +1,1 @@
+{ "extends": ["@zig-wasm-internal/biome"] }

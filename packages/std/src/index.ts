@@ -1,5 +1,5 @@
 /**
- * @zig-wasm/std
+ * @name "@zig-wasm/std"
  *
  * Zig standard library for JavaScript via WebAssembly
  *

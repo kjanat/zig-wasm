@@ -1,7 +1,10 @@
 {
   "typescript": {},
-  "json": { "trailingCommas": "maintain", "jsonTrailingCommaFiles": ["tsconfig.json", ".zed/settings.json"] },
-  "markdown": { "emphasisKind": "asterisks", "textWrap": "always" },
+  "json": {
+    "trailingCommas": "maintain",
+    "jsonTrailingCommaFiles": ["**/tsconfig.json", "${originConfigDir}/.zed/settings.json"]
+  },
+  "markdown": { "emphasisKind": "asterisks", "textWrap": "always", "locked": true },
   "toml": {},
   "dockerfile": {},
   "malva": {},
@@ -15,6 +18,7 @@
         "fileNames": ["package.json"]
       },
       {
+        "cwd": "${originConfigDir}",
         "command": "zig fmt --stdin",
         "exts": ["zig"]
       }

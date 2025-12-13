@@ -1,5 +1,5 @@
 /**
- * @zig-wasm/crypto
+ * @name "@zig-wasm/crypto"
  *
  * Cryptographic hash functions powered by Zig's std.crypto via WebAssembly
  */

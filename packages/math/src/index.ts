@@ -1,5 +1,5 @@
 /**
- * @zig-wasm/math
+ * @name "@zig-wasm/math"
  *
  * High-performance math functions powered by Zig via WebAssembly
  */
