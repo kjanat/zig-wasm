@@ -184,7 +184,7 @@ jobs:
         run: pnpm build:ts
 
       - name: Run tests
-        run: pnpm test -- --coverage
+        run: pnpm -r test --coverage
 
       - name: Upload coverage to Codecov
         if: matrix.node-version == fromJSON(needs.setup.outputs.node-default)
@@ -194,11 +194,13 @@ jobs:
           slug: kjanat/zig-wasm
           flags: unit
           name: coverage-node-${{ matrix.node-version }}
+          directory: packages
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() && matrix.node-version == fromJSON(needs.setup.outputs.node-default) }}
-        uses: codecov/test-results-action@v1
+        uses: codecov/test-results-action@v1.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unit
           name: test-results-node-${{ matrix.node-version }}
+          directory: packages
