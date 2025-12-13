@@ -158,9 +158,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Build TypeScript
-        run: pnpm build:ts
-
       - name: Run tests
         run: pnpm test
 
