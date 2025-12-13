@@ -1,12 +1,13 @@
-name: "Setup Zig"
-description: "Installs Zig with caching"
+---
+name: Setup Zig
+description: Installs Zig with caching
 inputs:
   zig-version:
-    description: "Zig version to install"
+    description: Zig version to install
     required: false
     default: "0.15.2"
 runs:
-  using: "composite"
+  using: composite
   steps:
     - name: Setup Zig
       uses: mlugg/setup-zig@v2

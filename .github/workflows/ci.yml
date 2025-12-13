@@ -1,6 +1,7 @@
+---
 name: CI
 
-on:
+"on":
   push:
     branches: [master]
   pull_request:
@@ -8,9 +9,9 @@ on:
   workflow_dispatch:
     inputs:
       optimize:
-        description: "WASM optimization level"
+        description: WASM optimization level
         type: choice
-        default: "ReleaseSmall"
+        default: ReleaseSmall
         options:
           - Debug
           - ReleaseSafe

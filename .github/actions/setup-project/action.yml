@@ -1,20 +1,21 @@
-name: "Setup Project"
-description: "Checkout, setup pnpm/zig, and install dependencies"
+---
+name: Setup Project
+description: Checkout, setup pnpm/zig, and install dependencies
 inputs:
   node-version:
-    description: "Node.js version to use"
+    description: Node.js version to use
     required: false
     default: "22"
   zig-version:
-    description: "Zig version (leave empty to skip Zig setup)"
+    description: Zig version (leave empty to skip Zig setup)
     required: false
     default: ""
   install-deps:
-    description: "Install pnpm dependencies"
+    description: Install pnpm dependencies
     required: false
     default: "true"
 runs:
-  using: "composite"
+  using: composite
   steps:
     - name: Checkout
       uses: actions/checkout@v6
@@ -32,8 +33,8 @@ runs:
       uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.node-version }}
-        cache: "pnpm"
-        registry-url: "https://registry.npmjs.org"
+        cache: pnpm
+        registry-url: https://registry.npmjs.org
 
     - name: Install dependencies
       if: inputs.install-deps == 'true'

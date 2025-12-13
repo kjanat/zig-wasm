@@ -1,16 +1,17 @@
-name: "Download Artifacts"
-description: "Download build artifacts from a previous job"
+---
+name: Download Artifacts
+description: Download build artifacts from a previous job
 inputs:
   artifact-name:
-    description: "Name of the artifact to download"
+    description: Name of the artifact to download
     required: false
-    default: "wasm-build"
+    default: wasm-build
   path:
-    description: "Path to download artifacts to"
+    description: Path to download artifacts to
     required: false
-    default: "zig-out"
+    default: zig-out
 runs:
-  using: "composite"
+  using: composite
   steps:
     - name: Download artifacts
       uses: actions/download-artifact@v7

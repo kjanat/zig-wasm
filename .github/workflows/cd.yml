@@ -1,6 +1,7 @@
+---
 name: CD
 
-on:
+"on":
   workflow_run:
     workflows: [CI]
     types: [completed]
@@ -11,24 +12,24 @@ on:
   workflow_dispatch:
     inputs:
       optimize:
-        description: "WASM optimization level"
+        description: WASM optimization level
         type: choice
-        default: "ReleaseFast"
+        default: ReleaseFast
         options:
           - Debug
           - ReleaseSafe
           - ReleaseFast
           - ReleaseSmall
       publish-npm:
-        description: "Publish to npm"
+        description: Publish to npm
         type: boolean
         default: false
       publish-jsr:
-        description: "Publish to JSR"
+        description: Publish to JSR
         type: boolean
         default: false
       publish-preview:
-        description: "Publish preview packages"
+        description: Publish preview packages
         type: boolean
         default: false
 
@@ -132,9 +133,9 @@ jobs:
     name: Publish Preview
     runs-on: ubuntu-latest
     needs: [gate, build]
-    if: |
+    if: >
       needs.gate.outputs.is-tag == 'false' &&
-      (github.event_name == 'workflow_run' || 
+      (github.event_name == 'workflow_run' ||
        (github.event_name == 'workflow_dispatch' && inputs.publish-preview))
     steps:
       - uses: actions/checkout@v6
@@ -160,7 +161,7 @@ jobs:
     name: Publish to npm
     runs-on: ubuntu-latest
     needs: [gate, test]
-    if: |
+    if: >
       needs.gate.outputs.is-tag == 'true' ||
       (needs.gate.outputs.is-manual == 'true' && inputs.publish-npm)
     steps:
@@ -189,7 +190,7 @@ jobs:
     name: Publish to JSR
     runs-on: ubuntu-latest
     needs: [gate, test]
-    if: |
+    if: >
       needs.gate.outputs.is-tag == 'true' ||
       (needs.gate.outputs.is-manual == 'true' && inputs.publish-jsr)
     steps:
