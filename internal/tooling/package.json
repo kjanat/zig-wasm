@@ -1,6 +1,6 @@
 {
   "name": "@zig-wasm/tooling",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Shared biome config, tsconfig, and CLI tools for Zig-Wasm packages",
   "keywords": [
     "config",

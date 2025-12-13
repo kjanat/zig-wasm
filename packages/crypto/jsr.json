@@ -2,5 +2,6 @@
   "$schema": "https://jsr.io/schema/config-file.v1.json",
   "name": "@zig-wasm/crypto",
   "version": "0.1.0",
+  "license": "MIT",
   "exports": "./src/index.ts"
 }

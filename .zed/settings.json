@@ -5,7 +5,7 @@
     "dprint": {
       "binary": {
         "path": "/usr/bin/dprint",
-        "arguments": ["lsp", "--config", "dprint.jsonc", "--config-discovery=false"]
+        "arguments": ["lsp", "--config", "dprint.jsonc"]
       }
     }
   }

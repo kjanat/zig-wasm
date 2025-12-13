@@ -1,7 +1,8 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow
 ---
 name: CI
 
-"on":
+on:
   push:
     branches: [master]
   pull_request:
@@ -187,7 +188,6 @@ jobs:
         run: pnpm -r test --coverage
 
       - name: Upload coverage to Codecov
-        if: matrix.node-version == fromJSON(needs.setup.outputs.node-default)
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -197,8 +197,8 @@ jobs:
           directory: packages
 
       - name: Upload test results to Codecov
-        if: ${{ !cancelled() && matrix.node-version == fromJSON(needs.setup.outputs.node-default) }}
-        uses: codecov/test-results-action@v1.1.1
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unit

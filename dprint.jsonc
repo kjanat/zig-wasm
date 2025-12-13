@@ -15,7 +15,7 @@
     "commands": [
       {
         "command": "pnpm dlx sort-package-json --stdin",
-        "fileNames": ["package.json"]
+        "fileNames": ["package.json", "jsr.json"]
       },
       {
         "cwd": "${originConfigDir}",
