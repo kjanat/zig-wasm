@@ -22,8 +22,9 @@ Thumbs.db
 *.log
 npm-debug.log*
 
-# Test coverage
+# Test coverage & results
 coverage/
+test-results/
 
 # Env files
 .env

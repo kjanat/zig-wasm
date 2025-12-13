@@ -140,6 +140,8 @@ jobs:
         run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build TypeScript
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: pnpm build:ts
 
       - name: Upload dist artifacts
@@ -179,4 +181,21 @@ jobs:
         run: pnpm build:ts
 
       - name: Run tests
-        run: pnpm test
+        run: pnpm test -- --coverage
+
+      - name: Upload coverage to Codecov
+        if: matrix.node-version == fromJSON(needs.setup.outputs.node-default)
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: kjanat/zig-wasm
+          flags: unit
+          name: coverage-node-${{ matrix.node-version }}
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() && matrix.node-version == fromJSON(needs.setup.outputs.node-default) }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: unit
+          name: test-results-node-${{ matrix.node-version }}

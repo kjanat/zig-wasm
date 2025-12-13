@@ -1,4 +1,21 @@
+import { codecovRollupPlugin } from "@codecov/rollup-plugin";
 import { defineConfig, type UserConfig } from "tsdown";
+
+/**
+ * Get Codecov bundle analysis plugin if token is available.
+ */
+export function getCodecovPlugin(bundleName: string) {
+  const token = process.env.CODECOV_TOKEN;
+  if (!token) return [];
+
+  return [
+    codecovRollupPlugin({
+      enableBundleAnalysis: true,
+      bundleName,
+      uploadToken: token,
+    }),
+  ];
+}
 
 /**
  * Shared build options for all packages.
@@ -18,17 +35,28 @@ export const baseConfig: UserConfig = {
 
 /**
  * Config for packages with WASM files.
- * Adds .wasm to exports field.
+ * Adds .wasm to exports field and codecov plugin.
  */
-export function wasmConfig(wasmName: string): UserConfig {
+export function wasmConfig(packageName: string): UserConfig {
   return {
     ...baseConfig,
+    plugins: getCodecovPlugin(`@zig-wasm/${packageName}`),
     exports: {
       customExports(pkg) {
-        pkg[`./${wasmName}.wasm`] = `./wasm/${wasmName}.wasm`;
+        pkg[`./${packageName}.wasm`] = `./wasm/${packageName}.wasm`;
         return pkg;
       },
     },
+  };
+}
+
+/**
+ * Config for non-WASM packages with codecov plugin.
+ */
+export function packageConfig(packageName: string): UserConfig {
+  return {
+    ...baseConfig,
+    plugins: getCodecovPlugin(`@zig-wasm/${packageName}`),
   };
 }
 

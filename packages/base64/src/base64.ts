@@ -106,7 +106,7 @@ function decodeImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Arra
   return AllocationScope.use(mem, (scope: AllocationScopeType) => {
     const input = scope.allocAndCopy(data);
     const outputPtr = scope.alloc(decodedLen);
-    const actualLen = exports.base64_decode(input.ptr, input.len, outputPtr);
+    const actualLen = exports.base64_decode(input.ptr, input.len, outputPtr, decodedLen);
     return mem.copyOut(outputPtr, actualLen);
   });
 }
@@ -126,7 +126,7 @@ function decodeNoPaddingImpl(exports: Base64WasmExports, mem: WasmMemory, data: 
   return AllocationScope.use(mem, (scope: AllocationScopeType) => {
     const input = scope.allocAndCopy(data);
     const outputPtr = scope.alloc(decodedLen);
-    const actualLen = exports.base64_no_pad_decode(input.ptr, input.len, outputPtr);
+    const actualLen = exports.base64_no_pad_decode(input.ptr, input.len, outputPtr, decodedLen);
     return mem.copyOut(outputPtr, actualLen);
   });
 }
@@ -146,7 +146,7 @@ function decodeUrlImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8A
   return AllocationScope.use(mem, (scope: AllocationScopeType) => {
     const input = scope.allocAndCopy(data);
     const outputPtr = scope.alloc(decodedLen);
-    const actualLen = exports.base64_url_decode(input.ptr, input.len, outputPtr);
+    const actualLen = exports.base64_url_decode(input.ptr, input.len, outputPtr, decodedLen);
     return mem.copyOut(outputPtr, actualLen);
   });
 }
@@ -166,7 +166,7 @@ function decodeUrlNoPaddingImpl(exports: Base64WasmExports, mem: WasmMemory, dat
   return AllocationScope.use(mem, (scope: AllocationScopeType) => {
     const input = scope.allocAndCopy(data);
     const outputPtr = scope.alloc(decodedLen);
-    const actualLen = exports.base64_url_no_pad_decode(input.ptr, input.len, outputPtr);
+    const actualLen = exports.base64_url_no_pad_decode(input.ptr, input.len, outputPtr, decodedLen);
     return mem.copyOut(outputPtr, actualLen);
   });
 }

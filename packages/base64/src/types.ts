@@ -15,6 +15,7 @@ export interface Base64WasmExports extends WasmMemoryExports {
     srcPtr: number,
     srcLen: number,
     destPtr: number,
+    destLen: number,
   ) => number;
   base64_decode_len: (srcLen: number) => number;
 
@@ -29,6 +30,7 @@ export interface Base64WasmExports extends WasmMemoryExports {
     srcPtr: number,
     srcLen: number,
     destPtr: number,
+    destLen: number,
   ) => number;
   base64_no_pad_decode_len: (srcLen: number) => number;
 
@@ -43,6 +45,7 @@ export interface Base64WasmExports extends WasmMemoryExports {
     srcPtr: number,
     srcLen: number,
     destPtr: number,
+    destLen: number,
   ) => number;
   base64_url_decode_len: (srcLen: number) => number;
 
@@ -57,6 +60,7 @@ export interface Base64WasmExports extends WasmMemoryExports {
     srcPtr: number,
     srcLen: number,
     destPtr: number,
+    destLen: number,
   ) => number;
   base64_url_no_pad_decode_len: (srcLen: number) => number;
 
