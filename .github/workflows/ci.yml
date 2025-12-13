@@ -59,7 +59,7 @@ jobs:
         uses: ./.github/actions/build-wasm
         with:
           zig-version: ${{ env.ZIG_VERSION }}
-          optimize: ${{ inputs.optimize }}
+          optimize: ${{ inputs.optimize || 'ReleaseSmall' }}
           artifact-name: wasm-build
 
   typecheck:
