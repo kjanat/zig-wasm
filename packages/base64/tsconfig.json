@@ -1,4 +1,5 @@
 {
-  "extends": "@zig-wasm/tooling/tsconfig",
-  "compilerOptions": {}
+  "extends": "../../tsconfig.base.json",
+  "include": ["./src/**/*.ts"],
+  "exclude": ["./node_modules", "./dist"]
 }

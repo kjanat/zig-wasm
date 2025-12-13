@@ -13,17 +13,31 @@
   "license": "MIT",
   "author": "Kaj Kowalski <dev@kajkowalski.nl> (https://github.com/kjanat)",
   "type": "module",
-  "workspaces": [
-    "packages/*",
-    "internal/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "internal/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "@biomejs/biome": "2.3.8",
+      "@types/bun": "^1.3.4",
+      "@types/node": "^25",
+      "@typescript/native-preview": "latest",
+      "dprint": "latest",
+      "publint": "^0.3.16",
+      "tsdown": "~0.17.3",
+      "typescript": "5.9.3",
+      "unplugin-unused": "^0.5.6",
+      "vitest": "~4.0.15"
+    }
+  },
   "scripts": {
     "build": "pnpm clean && pnpm build:zig && pnpm build:ts",
     "build:ts": "tsdown --workspace",
     "build:zig": "zig build",
     "build:zig:small": "pnpm build:zig -Doptimize=ReleaseSmall",
     "clean": "pnpm -r clean && rm -rf zig-out .zig-cache",
-    "fmt": "dprint fmt",
+    "fmt": "dprint fmt && pnpm -r fmt",
     "fmt:check": "dprint check",
     "lint": "pnpm --filter @zig-wasm/* lint",
     "lint:fix": "pnpm --filter @zig-wasm/* lint:fix",
@@ -33,7 +47,7 @@
     "publish:dry": "pnpm run publish --dry-run",
     "publish:jsr": "pnpm dlx jsr publish",
     "publish:jsr:dry": "pnpm --filter @zig-wasm/* exec jsr publish --dry-run",
-    "test": "pnpm --filter @zig-wasm/* test",
+    "test": "pnpm -r test",
     "typecheck": "pnpm --filter @zig-wasm/* typecheck"
   },
   "devDependencies": {

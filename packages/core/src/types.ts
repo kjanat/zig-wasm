@@ -14,6 +14,9 @@ export interface ZigWasmExports extends WasmMemoryExports {
   [key: string]: unknown;
 }
 
+/** Function type for fetching WASM bytes */
+export type FetchWasmFn = (url: string) => Promise<ArrayBuffer>;
+
 /** Options for loading a WASM module */
 export interface WasmLoadOptions {
   /** Pre-loaded WASM bytes (ArrayBuffer or Uint8Array) */
@@ -24,6 +27,8 @@ export interface WasmLoadOptions {
   wasmPath?: string;
   /** Custom imports to provide to the WASM module */
   imports?: WebAssembly.Imports;
+  /** Custom fetch function for loading WASM (overrides default fetch) */
+  fetchFn?: FetchWasmFn;
 }
 
 /** Result of loading a WASM module */

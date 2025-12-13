@@ -51,27 +51,29 @@ export async function checkPublished(pkgPath: string): Promise<CheckPublishedRes
 
 // CLI entry point
 if (import.meta.main) {
-  const pkgPath = Bun.argv[2];
+  (async () => {
+    const pkgPath = Bun.argv[2];
 
-  if (!pkgPath) {
-    console.error("Usage: check-published <package-path-or-name>");
-    console.error("Examples: check-published crypto, check-published @zig-wasm/crypto");
-    process.exit(1);
-  }
-
-  console.log(`Checking if package is published...`);
-
-  try {
-    const result = await checkPublished(pkgPath);
-    if (result.published) {
-      console.log(`\u2713 ${result.name}@${result.version} is published on npm`);
-      process.exit(0);
-    } else {
-      console.log(`\u2717 ${result.name}@${result.version} is NOT published on npm`);
+    if (!pkgPath) {
+      console.error("Usage: check-published <package-path-or-name>");
+      console.error("Examples: check-published crypto, check-published @zig-wasm/crypto");
       process.exit(1);
     }
-  } catch (error) {
-    console.error("Failed to check npm registry:", error);
-    process.exit(2);
-  }
+
+    console.log(`Checking if package is published...`);
+
+    try {
+      const result = await checkPublished(pkgPath);
+      if (result.published) {
+        console.log(`\u2713 ${result.name}@${result.version} is published on npm`);
+        process.exit(0);
+      } else {
+        console.log(`\u2717 ${result.name}@${result.version} is NOT published on npm`);
+        process.exit(1);
+      }
+    } catch (error) {
+      console.error("Failed to check npm registry:", error);
+      process.exit(2);
+    }
+  })();
 }

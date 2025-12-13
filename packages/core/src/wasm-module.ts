@@ -3,22 +3,13 @@
  */
 
 import { getEnvironment } from "./env.ts";
+import { NotInitializedError } from "./errors.ts";
 import { loadWasm } from "./loader.ts";
 import { WasmMemory } from "./memory.ts";
-import type { WasmLoadOptions, WasmLoadResult, ZigWasmExports } from "./types.ts";
+import type { FetchWasmFn, WasmLoadOptions, WasmLoadResult, ZigWasmExports } from "./types.ts";
 
-/**
- * Error thrown when attempting to use sync API before calling init()
- */
-export class NotInitializedError extends Error {
-  constructor(moduleName: string) {
-    super(
-      `${moduleName} WASM module not initialized. `
-        + `Call init() first or use the async API.`,
-    );
-    this.name = "NotInitializedError";
-  }
-}
+// Re-export for backwards compatibility
+export { NotInitializedError } from "./errors.ts";
 
 /**
  * Options for initializing a WASM module
@@ -32,6 +23,8 @@ export interface InitOptions {
   wasmBytes?: ArrayBuffer | Uint8Array;
   /** Custom imports to provide to the WASM module */
   imports?: WebAssembly.Imports;
+  /** Custom fetch function for loading WASM (overrides default fetch) */
+  fetchFn?: FetchWasmFn;
 }
 
 /**
@@ -147,15 +140,20 @@ export function createWasmModule<TExports extends ZigWasmExports>(
  * Build load options from InitOptions and default paths
  */
 function buildLoadOptions(wasmFileName: string, options?: InitOptions): WasmLoadOptions {
+  const baseOpts = {
+    imports: options?.imports,
+    fetchFn: options?.fetchFn,
+  };
+
   // If explicit options provided, use them
   if (options?.wasmBytes) {
-    return { wasmBytes: options.wasmBytes, imports: options.imports };
+    return { ...baseOpts, wasmBytes: options.wasmBytes };
   }
   if (options?.wasmUrl) {
-    return { wasmUrl: options.wasmUrl, imports: options.imports };
+    return { ...baseOpts, wasmUrl: options.wasmUrl };
   }
   if (options?.wasmPath) {
-    return { wasmPath: options.wasmPath, imports: options.imports };
+    return { ...baseOpts, wasmPath: options.wasmPath };
   }
 
   // Default: detect environment and build appropriate path
@@ -164,11 +162,11 @@ function buildLoadOptions(wasmFileName: string, options?: InitOptions): WasmLoad
   if (env.isNode || env.isBun) {
     // Will be resolved by the package's loader
     // This is a placeholder - each package overrides this
-    return { wasmPath: wasmFileName, imports: options?.imports };
+    return { ...baseOpts, wasmPath: wasmFileName };
   }
 
   // Browser/Deno: use URL relative to module
-  return { wasmUrl: wasmFileName, imports: options?.imports };
+  return { ...baseOpts, wasmUrl: wasmFileName };
 }
 
 /**

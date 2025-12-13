@@ -13,7 +13,7 @@ export const baseConfig: UserConfig = {
   treeshake: true,
   exports: true,
   publint: true,
-  unused: true,
+  external: ["@zig-wasm/tooling"], // Don't bundle tooling into packages
 };
 
 /**

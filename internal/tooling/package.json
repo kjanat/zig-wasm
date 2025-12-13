@@ -37,6 +37,7 @@
     "lint": "biome lint",
     "lint:fix": "biome check --write && pnpm fmt",
     "sync-versions": "bun ./src/sync-versions.ts",
+    "test": "vitest run",
     "typecheck": "tsgo --noEmit"
   },
   "devDependencies": {
@@ -44,7 +45,8 @@
     "@types/bun": "catalog:",
     "@typescript/native-preview": "catalog:",
     "dprint": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "typescript": "catalog:"

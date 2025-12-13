@@ -3,7 +3,20 @@
  */
 
 import { getEnvironment } from "./env.ts";
-import type { WasmLoadOptions, WasmLoadResult, ZigWasmExports } from "./types.ts";
+import { WasmLoadError } from "./errors.ts";
+import type { FetchWasmFn, WasmLoadOptions, WasmLoadResult, ZigWasmExports } from "./types.ts";
+
+/**
+ * Default fetch function for loading WASM from URLs
+ * Can be overridden via InitOptions.fetchFn for custom loaders (e.g., Node.js)
+ */
+export async function defaultFetchFn(url: string): Promise<ArrayBuffer> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch WASM: ${response.status} ${response.statusText}`);
+  }
+  return response.arrayBuffer();
+}
 
 /** Default imports provided to all Zig WASM modules */
 function getDefaultImports(): WebAssembly.Imports {
@@ -36,20 +49,19 @@ function mergeImports(
 }
 
 /** Load WASM bytes from URL (browser/Deno) */
-async function loadFromUrl(url: string | URL): Promise<ArrayBuffer> {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch WASM: ${response.status} ${response.statusText}`);
+async function loadFromUrl(url: string | URL, fetchFn?: FetchWasmFn): Promise<ArrayBuffer> {
+  const urlStr = url instanceof URL ? url.href : url;
+  if (fetchFn) {
+    return fetchFn(urlStr);
   }
-  return response.arrayBuffer();
+  return defaultFetchFn(urlStr);
 }
 
-/** Load WASM bytes from file path (Node.js) */
+/** Load WASM bytes from file path (Node.js/Bun) */
 async function loadFromPath(path: string): Promise<ArrayBuffer> {
   const env = getEnvironment();
 
   if (env.isNode || env.isBun) {
-    // Dynamic import for Node.js fs
     const fs = await import("node:fs/promises");
     const buffer = await fs.readFile(path);
     return buffer.buffer.slice(
@@ -58,7 +70,7 @@ async function loadFromPath(path: string): Promise<ArrayBuffer> {
     );
   }
 
-  throw new Error("File path loading only supported in Node.js/Bun");
+  throw new WasmLoadError("unknown", new Error("File path loading only supported in Node.js/Bun"));
 }
 
 /** Load WASM module with streaming if available */
@@ -107,42 +119,47 @@ export async function loadWasm<T extends ZigWasmExports = ZigWasmExports>(
 
   let wasmSource: ArrayBuffer | Response | Promise<Response>;
 
-  if (options.wasmBytes) {
-    // Direct bytes provided
-    wasmSource = options.wasmBytes instanceof Uint8Array
-      ? (options.wasmBytes.buffer.slice(
-        options.wasmBytes.byteOffset,
-        options.wasmBytes.byteOffset + options.wasmBytes.byteLength,
-      ) as ArrayBuffer)
-      : options.wasmBytes;
-  } else if (options.wasmUrl) {
-    const env = getEnvironment();
-    if (env.supportsStreaming) {
-      // Use streaming for browsers
-      wasmSource = fetch(options.wasmUrl);
+  try {
+    if (options.wasmBytes) {
+      // Direct bytes provided
+      wasmSource = options.wasmBytes instanceof Uint8Array
+        ? (options.wasmBytes.buffer.slice(
+          options.wasmBytes.byteOffset,
+          options.wasmBytes.byteOffset + options.wasmBytes.byteLength,
+        ) as ArrayBuffer)
+        : options.wasmBytes;
+    } else if (options.wasmUrl) {
+      const env = getEnvironment();
+      // Use streaming only if no custom fetchFn and browser supports it
+      if (env.supportsStreaming && !options.fetchFn) {
+        wasmSource = fetch(options.wasmUrl);
+      } else {
+        wasmSource = await loadFromUrl(options.wasmUrl, options.fetchFn);
+      }
+    } else if (options.wasmPath) {
+      wasmSource = await loadFromPath(options.wasmPath);
     } else {
-      wasmSource = await loadFromUrl(options.wasmUrl);
+      throw new WasmLoadError("unknown", new Error("Must provide one of: wasmBytes, wasmUrl, or wasmPath"));
     }
-  } else if (options.wasmPath) {
-    wasmSource = await loadFromPath(options.wasmPath);
-  } else {
-    throw new Error(
-      "Must provide one of: wasmBytes, wasmUrl, or wasmPath",
-    );
+
+    const { instance } = await instantiateWasm(wasmSource, imports);
+    const exports = instance.exports as T;
+
+    if (!exports.memory) {
+      throw new WasmLoadError("unknown", new Error("WASM module must export 'memory'"));
+    }
+
+    return {
+      instance,
+      exports,
+      memory: exports.memory,
+    };
+  } catch (error) {
+    if (error instanceof WasmLoadError) {
+      throw error;
+    }
+    throw new WasmLoadError("unknown", error);
   }
-
-  const { instance } = await instantiateWasm(wasmSource, imports);
-  const exports = instance.exports as T;
-
-  if (!exports.memory) {
-    throw new Error("WASM module must export 'memory'");
-  }
-
-  return {
-    instance,
-    exports,
-    memory: exports.memory,
-  };
 }
 
 /**

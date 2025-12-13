@@ -116,7 +116,9 @@ export async function syncVersions(options: SyncVersionsOptions = {}): Promise<S
 
 // CLI entry point
 if (import.meta.main) {
-  const checkOnly = Bun.argv.includes("--check");
-  const result = await syncVersions({ checkOnly });
-  process.exit(result.success ? 0 : 1);
+  (async () => {
+    const checkOnly = Bun.argv.includes("--check");
+    const result = await syncVersions({ checkOnly });
+    process.exit(result.success ? 0 : 1);
+  })();
 }

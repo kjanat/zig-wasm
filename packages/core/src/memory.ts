@@ -2,6 +2,7 @@
  * Memory utilities for WASM linear memory interaction
  */
 
+import { WasmMemoryError } from "./errors.ts";
 import type { WasmMemoryExports, WasmPtr, WasmSize, WasmSlice } from "./types.ts";
 
 /** Text encoder/decoder for string operations */
@@ -36,11 +37,11 @@ export class WasmMemory {
   /** Allocate memory in WASM and return pointer */
   allocate(size: WasmSize): WasmPtr {
     if (size <= 0) {
-      throw new Error("Allocation size must be positive");
+      throw new WasmMemoryError("Allocation size must be positive");
     }
     const ptr = this.alloc(size);
     if (ptr === 0) {
-      throw new Error(`Failed to allocate ${size} bytes in WASM memory`);
+      throw new WasmMemoryError(`Failed to allocate ${size} bytes in WASM memory`);
     }
     return ptr;
   }

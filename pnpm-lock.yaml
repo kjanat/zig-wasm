@@ -83,6 +83,9 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.0.15(@types/node@25.0.1)
 
   packages/base64:
     dependencies:
