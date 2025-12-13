@@ -83,6 +83,7 @@ jobs:
         uses: ./.github/actions/download-artifacts
         with:
           artifact-name: wasm-build
+          path: packages
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
@@ -106,6 +107,7 @@ jobs:
         uses: ./.github/actions/download-artifacts
         with:
           artifact-name: wasm-build
+          path: packages
 
       - name: Debug - List downloaded files
         run: |
@@ -147,6 +149,7 @@ jobs:
         uses: ./.github/actions/download-artifacts
         with:
           artifact-name: wasm-build
+          path: packages
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
