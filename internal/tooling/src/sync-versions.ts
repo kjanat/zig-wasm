@@ -91,7 +91,7 @@ export async function syncVersions(options: SyncVersionsOptions = {}): Promise<S
           console.log(`\u2713 ${packageJson.name}@${npmVersion} is in sync`);
         }
       } catch (error) {
-        if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+        if ((error as ErrnoException).code !== "ENOENT") {
           console.error(`Error processing ${dir}:`, error);
         }
       }

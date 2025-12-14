@@ -167,8 +167,8 @@ describe("createWasmModule", () => {
       const results = await Promise.all(promises);
 
       // All should return the same exports
-      expect(results[0].exports).toBe(results[1].exports);
-      expect(results[1].exports).toBe(results[2].exports);
+      expect(results[0]!.exports).toBe(results[1]!.exports);
+      expect(results[1]!.exports).toBe(results[2]!.exports);
     });
   });
 

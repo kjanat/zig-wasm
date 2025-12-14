@@ -1,5 +1,9 @@
 {
-  "extends": "../../tsconfig.base.json",
-  "include": ["./src/**/*.ts"],
-  "exclude": ["./node_modules", "./dist"]
+  "extends": "@zig-wasm/tooling/tsconfig",
+  "compilerOptions": {
+    "paths": {
+      "~/*": ["./src/*"],
+      "zig-wasm/tsdown": ["../../tsdown.config.ts"]
+    }
+  }
 }

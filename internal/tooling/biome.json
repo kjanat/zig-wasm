@@ -33,11 +33,31 @@
   },
   "overrides": [
     {
+      "includes": ["**/*.test.ts", "**/*.spec.ts", "**/tests/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noNonNullAssertion": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["**/index.ts"],
       "assist": {
         "actions": {
           "source": {
             "organizeImports": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.config.ts"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "useImportExtensions": "off"
           }
         }
       }

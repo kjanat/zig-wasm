@@ -43,6 +43,7 @@
     "fmt": "dprint fmt",
     "lint": "biome lint",
     "lint:fix": "biome check --write && pnpm fmt",
+    "publish:jsr": "pnpm dlx jsr publish --allow-dirty",
     "test": "vitest run",
     "typecheck": "tsgo --noEmit"
   },

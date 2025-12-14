@@ -23,7 +23,7 @@ Thumbs.db
 npm-debug.log*
 
 # Test coverage & results
-coverage/
+**/coverage/
 test-results/
 
 # Env files

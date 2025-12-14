@@ -20,7 +20,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./biome": "./biome.json",
-    "./tsconfig": "./tsconfig.json"
+    "./tsconfig": "./tsconfig.base.json"
   },
   "bin": {
     "check-published": "./src/check-published.ts",
@@ -28,7 +28,7 @@
   },
   "files": [
     "biome.json",
-    "tsconfig.json",
+    "tsconfig.base.json",
     "src"
   ],
   "scripts": {
@@ -36,6 +36,7 @@
     "fmt": "dprint fmt",
     "lint": "biome lint",
     "lint:fix": "biome check --write && pnpm fmt",
+    "publish:jsr": "pnpm dlx jsr publish --allow-dirty",
     "sync-versions": "bun ./src/sync-versions.ts",
     "test": "vitest run",
     "typecheck": "tsgo --noEmit"

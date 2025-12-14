@@ -201,6 +201,9 @@ jobs:
         uses: ./.github/actions/setup-pnpm
         with:
           node-version: ${{ needs.setup.outputs.node-default }}
+          registry-url: https://registry.npmjs.org/
+          registry-auth-token: ${{ secrets.NPM_TOKEN }}
+          latest-npm: true
 
       - name: Download build artifacts
         uses: ./.github/actions/download-artifacts
@@ -215,9 +218,17 @@ jobs:
         run: |
           pnpm -r publish \
             --access public \
-            --no-git-checks \
             --provenance \
-            --publish-branch master
+            --report-summary
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Upload pnpm publish summary
+        uses: actions/upload-artifact@v6
+        with:
+          name: pnpm-publish-summary
+          path: pnpm-publish-summary.json
+          retention-days: 7
 
   publish-jsr:
     name: Publish to JSR
@@ -249,7 +260,7 @@ jobs:
         run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Publish to JSR
-        run: pnpm dlx jsr publish --allow-dirty
+        run: pnpm run publish:jsr --provenance
 
   github-release:
     name: Create GitHub Release

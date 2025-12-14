@@ -6,6 +6,6 @@
   "exports": {
     ".": "./src/index.ts",
     "./biome": "./biome.json",
-    "./tsconfig": "./tsconfig.json"
+    "./tsconfig": "./tsconfig.base.json"
   }
 }

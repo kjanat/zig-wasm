@@ -17,11 +17,12 @@ catalog:
   unplugin-unused: ^0.5.6
   vitest: ~4.0.15
 
+gitChecks: false
+publishBranch: master
+
 onlyBuiltDependencies:
   - dprint
   - esbuild
   - lefthook
   - publint
   - unplugin-unused
-
-publishBranch: master

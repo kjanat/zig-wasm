@@ -46,12 +46,12 @@
     "lint:fix": "pnpm --filter @zig-wasm/* lint:fix",
     "prepare": "pnpm build:zig",
     "prepublishOnly": "pnpm clean && pnpm build:zig -Doptimize=ReleaseFast && pnpm build:ts",
-    "publish": "pnpm publish --access public --filter @zig-wasm/*",
-    "publish:dry": "pnpm run publish --dry-run",
-    "publish:jsr": "pnpm dlx jsr publish",
-    "publish:jsr:dry": "pnpm --filter @zig-wasm/* exec jsr publish --dry-run",
+    "publish": "pnpm -r publish --access public",
+    "publish:dry": "pnpm -r publish --dry-run",
+    "publish:jsr": "pnpm -r publish:jsr",
+    "publish:jsr:dry": "pnpm -r publish:jsr --dry-run",
     "test": "pnpm -r test",
-    "typecheck": "pnpm --filter @zig-wasm/* typecheck"
+    "typecheck": "pnpm -r typecheck"
   },
   "config": {
     "ci": {

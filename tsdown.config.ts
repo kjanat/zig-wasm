@@ -1,4 +1,6 @@
 import { codecovRollupPlugin } from "@codecov/rollup-plugin";
+import { readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { defineConfig, type UserConfig } from "tsdown";
 
 /**
@@ -36,8 +38,26 @@ export const baseConfig: UserConfig = {
 /**
  * Config for packages with WASM files.
  * Adds .wasm to exports field and codecov plugin.
+ * Also updates jsr.json to include wasm exports.
  */
 export function wasmConfig(packageName: string): UserConfig {
+  // Update jsr.json with wasm exports
+  const jsrPath = join(process.cwd(), "jsr.json");
+  try {
+    const jsrContent = readFileSync(jsrPath, "utf-8");
+    const jsrConfig = JSON.parse(jsrContent);
+
+    // Convert exports to object format if it's a string
+    jsrConfig.exports = {
+      ".": typeof jsrConfig.exports === "string" ? jsrConfig.exports : "./src/index.ts",
+      [`./${packageName}.wasm`]: `./wasm/${packageName}.wasm`,
+    };
+
+    writeFileSync(jsrPath, JSON.stringify(jsrConfig, null, 2) + "\n");
+  } catch (err) {
+    console.warn(`Failed to update jsr.json for ${packageName}:`, err);
+  }
+
   return {
     ...baseConfig,
     plugins: getCodecovPlugin(`@zig-wasm/${packageName}`),

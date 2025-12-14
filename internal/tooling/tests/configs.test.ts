@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 // Root tsconfig.base.json is the shared base config for all packages
-const rootTsconfigPath = resolve(import.meta.dirname, "../../../tsconfig.base.json");
+const rootTsconfigPath = resolve(import.meta.dirname, "../tsconfig.base.json");
 
 describe("Configuration Files", () => {
   describe("biome.json", () => {
@@ -161,27 +161,14 @@ describe("Configuration Files", () => {
       expect(() => JSON.parse(content)).not.toThrow();
     });
 
-    it("extends root tsconfig.base.json", () => {
+    it("extends local tsconfig.base.json", () => {
       const configPath = resolve(import.meta.dirname, "../tsconfig.json");
       const config = JSON.parse(readFileSync(configPath, "utf-8"));
 
-      expect(config.extends).toBe("../../tsconfig.base.json");
+      expect(config.extends).toBe("./tsconfig.base.json");
     });
 
-    it("has include for src directory", () => {
-      const configPath = resolve(import.meta.dirname, "../tsconfig.json");
-      const config = JSON.parse(readFileSync(configPath, "utf-8"));
-
-      expect(config.include).toContain("./src/**/*.ts");
-    });
-
-    it("excludes node_modules and dist", () => {
-      const configPath = resolve(import.meta.dirname, "../tsconfig.json");
-      const config = JSON.parse(readFileSync(configPath, "utf-8"));
-
-      expect(config.exclude).toContain("./node_modules");
-      expect(config.exclude).toContain("./dist");
-    });
+    // Note: tooling's tsconfig.json only has "extends", inheriting include/exclude from base
   });
 
   describe("package.json", () => {
@@ -207,7 +194,7 @@ describe("Configuration Files", () => {
 
       expect(pkg.exports["."]).toBe("./src/index.ts");
       expect(pkg.exports["./biome"]).toBe("./biome.json");
-      expect(pkg.exports["./tsconfig"]).toBe("./tsconfig.json");
+      expect(pkg.exports["./tsconfig"]).toBe("./tsconfig.base.json");
     });
 
     it("defines CLI binaries", () => {
@@ -223,7 +210,7 @@ describe("Configuration Files", () => {
       const pkg = JSON.parse(readFileSync(configPath, "utf-8"));
 
       expect(pkg.files).toContain("biome.json");
-      expect(pkg.files).toContain("tsconfig.json");
+      expect(pkg.files).toContain("tsconfig.base.json");
       expect(pkg.files).toContain("src");
     });
 
@@ -298,15 +285,14 @@ describe("Configuration Files", () => {
       expect(config.compilerOptions.strict).toBe(true);
     });
 
-    it("all package tsconfigs extend root base", () => {
+    it("all package tsconfigs extend tooling base", () => {
       const packages = ["core", "hash", "math", "base64", "compress", "crypto", "std"];
 
       for (const pkg of packages) {
         const pkgTsconfigPath = resolve(import.meta.dirname, `../../../packages/${pkg}/tsconfig.json`);
         const config = JSON.parse(readFileSync(pkgTsconfigPath, "utf-8"));
 
-        expect(config.extends).toBe("../../tsconfig.base.json");
-        expect(config.include).toContain("./src/**/*.ts");
+        expect(config.extends).toBe("@zig-wasm/tooling/tsconfig");
       }
     });
   });

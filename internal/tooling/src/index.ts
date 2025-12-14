@@ -1,5 +1,6 @@
 /**
- * @zig-wasm/tooling - Shared configs and CLI tools for zig-wasm development
+ * @name "@zig-wasm/tooling"
+ * @description Shared configs and CLI tools for zig-wasm development
  *
  * Config exports:
  *   - @zig-wasm/tooling/biome - Biome linter config

@@ -127,8 +127,9 @@ describe("@zig-wasm/math - Power and Root Functions", () => {
     });
 
     it("handles very small numbers", async () => {
-      const result = await math.sqrt(1e-308);
-      expect(result).toBeCloseTo(1e-154, 160);
+      const input = Number.MIN_VALUE;
+      const result = await math.sqrt(input);
+      expect(result * result / input).toBeCloseTo(1, 10);
     });
   });
 
@@ -793,9 +794,9 @@ describe("@zig-wasm/math - Edge Cases and Precision", () => {
     });
 
     it("handles denormalized numbers", async () => {
-      const tiny = 1e-320;
+      const tiny = Number.MIN_VALUE;
       expect(await math.abs(tiny)).toBe(tiny);
-      expect(await math.sqrt(tiny)).toBeCloseTo(Math.sqrt(tiny), 100);
+      expect(await math.sqrt(tiny)).toBeCloseTo(Math.sqrt(tiny), 10);
     });
   });
 

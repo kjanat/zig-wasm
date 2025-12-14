@@ -146,7 +146,7 @@ describe("loadWasm", () => {
         wasmBytes,
         imports: {
           global: globalThis,
-        } as WebAssembly.Imports,
+        } as unknown as WebAssembly.Imports,
       });
 
       expect(result.instance).toBeInstanceOf(WebAssembly.Instance);

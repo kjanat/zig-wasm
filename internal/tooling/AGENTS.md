@@ -1,4 +1,4 @@
-# @zig-wasm/tooling – Agent Notes
+# `@zig-wasm/tooling` – Agent Notes
 
 ## Commands
 

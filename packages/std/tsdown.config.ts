@@ -1,5 +1,5 @@
 import { defineConfig } from "tsdown";
-import { baseConfig, getCodecovPlugin } from "../../tsdown.config.ts";
+import { baseConfig, getCodecovPlugin } from "zig-wasm/tsdown";
 
 // Umbrella package with multiple entry points for subpath exports
 export default defineConfig({

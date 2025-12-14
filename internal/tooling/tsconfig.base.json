@@ -20,5 +20,6 @@
     "noImplicitOverride": true,
     "allowSyntheticDefaultImports": true,
     "allowImportingTsExtensions": true
-  }
+  },
+  "exclude": ["**/node_modules", "**/dist"]
 }
