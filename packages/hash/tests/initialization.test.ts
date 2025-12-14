@@ -8,6 +8,7 @@
  * - NotInitializedError thrown by sync functions
  */
 
+import { NotInitializedError } from "@zig-wasm/core";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -99,17 +100,21 @@ describe("@zig-wasm/hash - Initialization Paths", () => {
   });
 
   describe("NotInitializedError", () => {
+    // Helper to check error name matches imported class (avoids instanceof issues across module boundaries)
+    const expectNotInitializedError = (fn: () => void) => {
+      try {
+        fn();
+        expect.fail("Should have thrown");
+      } catch (error) {
+        expect((error as Error).name).toBe(NotInitializedError.name);
+      }
+    };
+
     it("throws NotInitializedError when sync functions called before init", async () => {
       vi.resetModules();
       const hashModule = await import("../src/hash.ts");
 
-      // Should throw NotInitializedError (check by name due to module isolation)
-      try {
-        hashModule.crc32Sync("test");
-        expect.fail("Should have thrown");
-      } catch (error) {
-        expect((error as Error).name).toBe("NotInitializedError");
-      }
+      expectNotInitializedError(() => hashModule.crc32Sync("test"));
     });
 
     it("throws with correct module name in error", async () => {
@@ -120,7 +125,7 @@ describe("@zig-wasm/hash - Initialization Paths", () => {
         hashModule.crc32Sync("test");
         expect.fail("Should have thrown");
       } catch (error) {
-        expect((error as Error).name).toBe("NotInitializedError");
+        expect((error as Error).name).toBe(NotInitializedError.name);
         expect((error as Error).message).toContain("hash");
       }
     });
@@ -130,37 +135,37 @@ describe("@zig-wasm/hash - Initialization Paths", () => {
       const hashModule = await import("../src/hash.ts");
 
       // 32-bit sync functions
-      expect(() => hashModule.hash32Sync("crc32", "test")).toThrowError(/not initialized/i);
-      expect(() => hashModule.adler32Sync("test")).toThrowError(/not initialized/i);
-      expect(() => hashModule.xxhash32Sync("test")).toThrowError(/not initialized/i);
-      expect(() => hashModule.fnv1a32Sync("test")).toThrowError(/not initialized/i);
+      expectNotInitializedError(() => hashModule.hash32Sync("crc32", "test"));
+      expectNotInitializedError(() => hashModule.adler32Sync("test"));
+      expectNotInitializedError(() => hashModule.xxhash32Sync("test"));
+      expectNotInitializedError(() => hashModule.fnv1a32Sync("test"));
 
       // 64-bit sync functions
-      expect(() => hashModule.hash64Sync("xxhash64", "test")).toThrowError(/not initialized/i);
-      expect(() => hashModule.xxhash64Sync("test")).toThrowError(/not initialized/i);
-      expect(() => hashModule.wyhashSync("test")).toThrowError(/not initialized/i);
-      expect(() => hashModule.cityhash64Sync("test")).toThrowError(/not initialized/i);
-      expect(() => hashModule.murmur2_64Sync("test")).toThrowError(/not initialized/i);
-      expect(() => hashModule.fnv1a64Sync("test")).toThrowError(/not initialized/i);
+      expectNotInitializedError(() => hashModule.hash64Sync("xxhash64", "test"));
+      expectNotInitializedError(() => hashModule.xxhash64Sync("test"));
+      expectNotInitializedError(() => hashModule.wyhashSync("test"));
+      expectNotInitializedError(() => hashModule.cityhash64Sync("test"));
+      expectNotInitializedError(() => hashModule.murmur2_64Sync("test"));
+      expectNotInitializedError(() => hashModule.fnv1a64Sync("test"));
 
       // Generic sync functions
-      expect(() => hashModule.hashSync("crc32", "test")).toThrowError(/not initialized/i);
-      expect(() => hashModule.hashHexSync("crc32", "test")).toThrowError(/not initialized/i);
+      expectNotInitializedError(() => hashModule.hashSync("crc32", "test"));
+      expectNotInitializedError(() => hashModule.hashHexSync("crc32", "test"));
     });
 
     it("throws for hex sync functions before init", async () => {
       vi.resetModules();
       const hashModule = await import("../src/hash.ts");
 
-      expect(() => hashModule.crc32HexSync("test")).toThrowError(/not initialized/i);
-      expect(() => hashModule.adler32HexSync("test")).toThrowError(/not initialized/i);
-      expect(() => hashModule.xxhash32HexSync("test")).toThrowError(/not initialized/i);
-      expect(() => hashModule.xxhash64HexSync("test")).toThrowError(/not initialized/i);
-      expect(() => hashModule.wyhashHexSync("test")).toThrowError(/not initialized/i);
-      expect(() => hashModule.cityhash64HexSync("test")).toThrowError(/not initialized/i);
-      expect(() => hashModule.murmur2_64HexSync("test")).toThrowError(/not initialized/i);
-      expect(() => hashModule.fnv1a32HexSync("test")).toThrowError(/not initialized/i);
-      expect(() => hashModule.fnv1a64HexSync("test")).toThrowError(/not initialized/i);
+      expectNotInitializedError(() => hashModule.crc32HexSync("test"));
+      expectNotInitializedError(() => hashModule.adler32HexSync("test"));
+      expectNotInitializedError(() => hashModule.xxhash32HexSync("test"));
+      expectNotInitializedError(() => hashModule.xxhash64HexSync("test"));
+      expectNotInitializedError(() => hashModule.wyhashHexSync("test"));
+      expectNotInitializedError(() => hashModule.cityhash64HexSync("test"));
+      expectNotInitializedError(() => hashModule.murmur2_64HexSync("test"));
+      expectNotInitializedError(() => hashModule.fnv1a32HexSync("test"));
+      expectNotInitializedError(() => hashModule.fnv1a64HexSync("test"));
     });
   });
 
