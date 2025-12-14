@@ -19,6 +19,7 @@ export default defineConfig({
         ? ["text", "lcov", "json"]
         : ["text"],
       reportsDirectory: "coverage",
+      exclude: ["package.json"],
     },
   },
 });
