@@ -1,24 +1,121 @@
 #!/usr/bin/env bun
 /**
- * Check if a package version is already published on npm
+ * Check if a package version is already published on npm.
  *
- * Usage:
- *   CLI: `bun check-published @zig-wasm/crypto`
- *   Programmatic: `import { checkPublished } from "@zig-wasm/tooling"`
+ * This module provides both a CLI tool and programmatic API to verify
+ * whether a specific package version exists on the npm registry.
+ * Useful in CI/CD pipelines to prevent duplicate publishing attempts.
+ *
+ * ## CLI Usage
+ *
+ * ```bash
+ * # Using scoped package name
+ * bun check-published @zig-wasm/crypto
+ *
+ * # Using short name (resolves to packages/crypto)
+ * bun check-published crypto
+ *
+ * # Using relative path
+ * bun check-published ./packages/crypto
+ * ```
+ *
+ * Exit codes:
+ * - `0` - Package version is published
+ * - `1` - Package version is NOT published
+ * - `2` - Error occurred (e.g., network failure)
+ *
+ * ## Programmatic Usage
+ *
+ * @example Basic usage
+ * ```ts
+ * import { checkPublished } from "@zig-wasm/tooling";
+ *
+ * const result = await checkPublished("@zig-wasm/crypto");
+ * console.log(result);
+ * // { name: "@zig-wasm/crypto", version: "1.0.0", published: true }
+ * ```
+ *
+ * @example CI/CD integration
+ * ```ts
+ * import { checkPublished } from "@zig-wasm/tooling";
+ *
+ * const { name, version, published } = await checkPublished("crypto");
+ * if (published) {
+ *   console.log(`Skipping publish: ${name}@${version} already exists`);
+ *   process.exit(0);
+ * }
+ * // Proceed with publishing...
+ * ```
+ *
+ * @example Error handling
+ * ```ts
+ * import { checkPublished } from "@zig-wasm/tooling";
+ *
+ * try {
+ *   const result = await checkPublished("nonexistent");
+ * } catch (error) {
+ *   console.error("Package not found or network error");
+ * }
+ * ```
+ *
+ * @module check-published
  */
 
 import { resolve } from "node:path";
 
+/**
+ * Result returned by {@link checkPublished}.
+ *
+ * @example
+ * ```ts
+ * import type { CheckPublishedResult } from "@zig-wasm/tooling";
+ *
+ * const result: CheckPublishedResult = {
+ *   name: "@zig-wasm/crypto",
+ *   version: "1.0.0",
+ *   published: true
+ * };
+ * ```
+ */
 export interface CheckPublishedResult {
+  /** The full package name from package.json (e.g., "@zig-wasm/crypto") */
   name: string;
+  /** The version string from package.json (e.g., "1.0.0") */
   version: string;
+  /** Whether this exact version exists on the npm registry */
   published: boolean;
 }
 
 /**
- * Check if a package version is already published on npm
- * @param pkgPath - Package path or name (e.g., "crypto", "@zig-wasm/crypto", "./packages/crypto")
- * @returns Object with name, version, and published status
+ * Check if a package version is already published on npm.
+ *
+ * Reads the package.json from the specified path, extracts the name and version,
+ * then queries the npm registry to check if that exact version exists.
+ *
+ * @param pkgPath - Package identifier in one of these formats:
+ *   - Scoped name: `"@zig-wasm/crypto"` - resolves to `packages/crypto`
+ *   - Short name: `"crypto"` - resolves to `packages/crypto`
+ *   - Relative path: `"./packages/crypto"` - used as-is
+ * @returns Promise resolving to {@link CheckPublishedResult} with name, version, and published status
+ * @throws Error if package.json cannot be read or parsed
+ *
+ * @example Using scoped package name
+ * ```ts
+ * const result = await checkPublished("@zig-wasm/crypto");
+ * // Reads from: packages/crypto/package.json
+ * ```
+ *
+ * @example Using short name
+ * ```ts
+ * const result = await checkPublished("crypto");
+ * // Reads from: packages/crypto/package.json
+ * ```
+ *
+ * @example Using relative path
+ * ```ts
+ * const result = await checkPublished("./internal/tooling");
+ * // Reads from: ./internal/tooling/package.json
+ * ```
  */
 export async function checkPublished(pkgPath: string): Promise<CheckPublishedResult> {
   // Resolve path - support both @scope/name and relative paths

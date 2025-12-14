@@ -1,14 +1,65 @@
 /**
- * @name "@zig-wasm/tooling"
- * @description Shared configs and CLI tools for zig-wasm development
+ * Internal tooling package for zig-wasm monorepo development.
  *
- * Config exports:
- *   - @zig-wasm/tooling/biome - Biome linter config
- *   - @zig-wasm/tooling/tsconfig - TypeScript config
+ * This package provides shared configurations and CLI tools used across
+ * the zig-wasm monorepo for consistent linting, type-checking, and release management.
  *
- * CLI tools:
- *   - check-published: Check if a package version is published on npm
- *   - sync-versions: Sync versions between package.json and jsr.json
+ * ## Config Exports
+ *
+ * Extend these configs in your package:
+ *
+ * - `@zig-wasm/tooling/biome` - Biome linter configuration
+ * - `@zig-wasm/tooling/tsconfig` - Strict TypeScript configuration
+ *
+ * ## CLI Tools
+ *
+ * - {@link checkPublished} - Check if a package version is published on npm
+ * - {@link syncVersions} - Sync versions between package.json and jsr.json
+ *
+ * ## Types
+ *
+ * - {@link CheckPublishedResult} - Result from {@link checkPublished}
+ * - {@link SyncVersionsOptions} - Options for {@link syncVersions}
+ * - {@link SyncVersionsResult} - Result from {@link syncVersions}
+ *
+ * @example Check npm publishing status
+ * ```ts
+ * import { checkPublished } from "@zig-wasm/tooling";
+ *
+ * const result = await checkPublished("@zig-wasm/crypto");
+ * if (result.published) {
+ *   console.log(`${result.name}@${result.version} is already on npm`);
+ * } else {
+ *   console.log("Ready to publish!");
+ * }
+ * ```
+ *
+ * @example Sync package versions
+ * ```ts
+ * import { syncVersions } from "@zig-wasm/tooling";
+ *
+ * // Check for mismatches without modifying files
+ * const result = await syncVersions({ checkOnly: true });
+ * console.log(`Found ${result.mismatches} mismatches`);
+ *
+ * // Actually sync versions
+ * await syncVersions();
+ * ```
+ *
+ * @example CLI usage
+ * ```bash
+ * # Check if package is published
+ * bun check-published @zig-wasm/crypto
+ * bun check-published crypto
+ *
+ * # Sync versions (check only)
+ * bun sync-versions --check
+ *
+ * # Sync versions (apply changes)
+ * bun sync-versions
+ * ```
+ *
+ * @module tooling
  */
 
 import pkg from "../package.json" with { type: "json" };

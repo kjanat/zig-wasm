@@ -1,42 +1,166 @@
 #!/usr/bin/env bun
 /**
- * Sync versions between package.json and jsr.json for all packages
+ * Sync versions between package.json and jsr.json for all packages.
  *
- * Usage:
- *   CLI: `bun sync-versions [--check]`
- *   Programmatic: `import { syncVersions } from "@zig-wasm/tooling"`
+ * This module ensures version consistency across the monorepo by synchronizing
+ * versions from package.json (npm source of truth) to jsr.json (JSR config).
+ * It scans both `packages/` and `internal/` directories.
+ *
+ * ## Why This Exists
+ *
+ * The zig-wasm monorepo publishes to both npm and JSR. Since npm is the primary
+ * registry, package.json is the source of truth for versions. This tool ensures
+ * jsr.json files stay in sync, preventing version drift and failed JSR publishes.
+ *
+ * ## CLI Usage
+ *
+ * ```bash
+ * # Check for mismatches (CI-friendly, exits non-zero on mismatch)
+ * bun sync-versions --check
+ *
+ * # Sync versions (updates jsr.json files)
+ * bun sync-versions
+ * ```
+ *
+ * Exit codes:
+ * - `0` - All versions in sync (or successfully synced)
+ * - `1` - Mismatches found (with --check) or sync failed
+ *
+ * ## Programmatic Usage
+ *
+ * @example Check for mismatches without modifying files
+ * ```ts
+ * import { syncVersions } from "@zig-wasm/tooling";
+ *
+ * const result = await syncVersions({ checkOnly: true });
+ * if (!result.success) {
+ *   console.error(`Found ${result.mismatches} version mismatches`);
+ *   process.exit(1);
+ * }
+ * ```
+ *
+ * @example Sync versions and report changes
+ * ```ts
+ * import { syncVersions } from "@zig-wasm/tooling";
+ *
+ * const result = await syncVersions();
+ * if (result.synced.length > 0) {
+ *   console.log("Updated packages:", result.synced.join(", "));
+ * }
+ * ```
+ *
+ * @example Custom working directory
+ * ```ts
+ * import { syncVersions } from "@zig-wasm/tooling";
+ *
+ * const result = await syncVersions({
+ *   cwd: "/path/to/zig-wasm",
+ *   checkOnly: false
+ * });
+ * ```
+ *
+ * @module sync-versions
  */
 
 import { readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 
+/**
+ * Internal representation of package.json structure.
+ * @internal
+ */
 interface PackageJson {
   name: string;
   version: string;
   [key: string]: unknown;
 }
 
+/**
+ * Internal representation of jsr.json structure.
+ * @internal
+ */
 interface JsrJson {
   name: string;
   version: string;
   [key: string]: unknown;
 }
 
+/**
+ * Options for {@link syncVersions}.
+ *
+ * @example
+ * ```ts
+ * import type { SyncVersionsOptions } from "@zig-wasm/tooling";
+ *
+ * const options: SyncVersionsOptions = {
+ *   checkOnly: true,  // Don't modify files
+ *   cwd: process.cwd()
+ * };
+ * ```
+ */
 export interface SyncVersionsOptions {
-  /** Only report differences without modifying files */
+  /**
+   * Only report differences without modifying files.
+   * Useful for CI checks.
+   * @default false
+   */
   checkOnly?: boolean;
-  /** Base directory (defaults to process.cwd()) */
+  /**
+   * Base directory containing `packages/` and `internal/` folders.
+   * @default process.cwd()
+   */
   cwd?: string;
 }
 
+/**
+ * Result returned by {@link syncVersions}.
+ *
+ * @example
+ * ```ts
+ * import type { SyncVersionsResult } from "@zig-wasm/tooling";
+ *
+ * const result: SyncVersionsResult = {
+ *   success: true,
+ *   mismatches: 2,
+ *   synced: ["@zig-wasm/crypto", "@zig-wasm/hash"]
+ * };
+ * ```
+ */
 export interface SyncVersionsResult {
+  /**
+   * Whether the operation succeeded.
+   * - With `checkOnly: true`: true if no mismatches found
+   * - With `checkOnly: false`: true if all mismatches were synced
+   */
   success: boolean;
+  /** Number of version mismatches found between package.json and jsr.json */
   mismatches: number;
+  /** List of package names that were synced (empty if checkOnly) */
   synced: string[];
 }
 
 /**
- * Sync versions between package.json and jsr.json for all packages
+ * Sync versions between package.json and jsr.json for all packages.
+ *
+ * Scans `packages/` and `internal/` directories, comparing versions in
+ * package.json and jsr.json. When mismatches are found:
+ * - With `checkOnly: true`: Reports mismatches and returns failure
+ * - With `checkOnly: false`: Updates jsr.json to match package.json
+ *
+ * @param options - Configuration options (see {@link SyncVersionsOptions})
+ * @returns Promise resolving to {@link SyncVersionsResult}
+ *
+ * @example Basic sync
+ * ```ts
+ * const result = await syncVersions();
+ * console.log(`Synced ${result.synced.length} packages`);
+ * ```
+ *
+ * @example CI check mode
+ * ```ts
+ * const result = await syncVersions({ checkOnly: true });
+ * process.exit(result.success ? 0 : 1);
+ * ```
  */
 export async function syncVersions(options: SyncVersionsOptions = {}): Promise<SyncVersionsResult> {
   const { checkOnly = false, cwd = process.cwd() } = options;

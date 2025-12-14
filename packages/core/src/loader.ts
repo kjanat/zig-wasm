@@ -1,5 +1,78 @@
 /**
- * WASM module loader - handles loading from various sources
+ * WASM module loader for various source types.
+ *
+ * This module provides flexible loading of WebAssembly modules from:
+ * - **Bytes**: Pre-loaded `ArrayBuffer` or `Uint8Array` via `wasmBytes`
+ * - **URLs**: Fetch from URL (browser/Deno) via `wasmUrl`
+ * - **File paths**: Read from filesystem (Node.js/Bun) via `wasmPath`
+ *
+ * The loader automatically:
+ * - Detects the runtime environment to choose the best loading strategy
+ * - Uses streaming instantiation when available (browser/Deno)
+ * - Provides default imports for Zig's panic handler
+ * - Validates that the module exports required `memory`, `alloc`, and `free`
+ *
+ * For a higher-level abstraction with init/sync patterns, see
+ * {@link createWasmModule} in the `wasm-module` module.
+ *
+ * @example Loading from bytes
+ * ```ts
+ * import { loadWasm } from "@zig-wasm/core";
+ *
+ * const wasmBytes = await fetch("/my-module.wasm").then(r => r.arrayBuffer());
+ * const { exports, memory } = await loadWasm({ wasmBytes });
+ * ```
+ *
+ * @example Loading from URL (browser/Deno)
+ * ```ts
+ * import { loadWasm } from "@zig-wasm/core";
+ *
+ * const { exports } = await loadWasm({
+ *   wasmUrl: "/wasm/my-module.wasm"
+ * });
+ * ```
+ *
+ * @example Loading from file path (Node.js/Bun)
+ * ```ts
+ * import { loadWasm } from "@zig-wasm/core";
+ *
+ * const { exports } = await loadWasm({
+ *   wasmPath: "./dist/my-module.wasm"
+ * });
+ * ```
+ *
+ * @example Custom fetch function
+ * ```ts
+ * import { loadWasm } from "@zig-wasm/core";
+ *
+ * const { exports } = await loadWasm({
+ *   wasmUrl: "https://example.com/module.wasm",
+ *   fetchFn: async (url) => {
+ *     const response = await fetch(url, {
+ *       headers: { "Authorization": "Bearer token" }
+ *     });
+ *     return response.arrayBuffer();
+ *   }
+ * });
+ * ```
+ *
+ * @example Custom imports
+ * ```ts
+ * import { loadWasm } from "@zig-wasm/core";
+ *
+ * const { exports } = await loadWasm({
+ *   wasmPath: "./module.wasm",
+ *   imports: {
+ *     env: {
+ *       consoleLog: (ptr: number, len: number) => {
+ *         // Custom logging from WASM
+ *       }
+ *     }
+ *   }
+ * });
+ * ```
+ *
+ * @module loader
  */
 
 import { getEnvironment } from "./env.ts";
@@ -7,8 +80,23 @@ import { WasmLoadError } from "./errors.ts";
 import type { FetchWasmFn, WasmLoadOptions, WasmLoadResult, ZigWasmExports } from "./types.ts";
 
 /**
- * Default fetch function for loading WASM from URLs
- * Can be overridden via InitOptions.fetchFn for custom loaders (e.g., Node.js)
+ * Default fetch function for loading WASM from URLs.
+ *
+ * Uses the global `fetch` API to retrieve WASM bytes. Can be overridden
+ * via {@link WasmLoadOptions.fetchFn} for custom loaders (e.g., authenticated
+ * requests, custom caching).
+ *
+ * @param url - The URL to fetch WASM from
+ * @returns A Promise resolving to the WASM bytes as an ArrayBuffer
+ * @throws Error if the fetch fails or returns a non-OK status
+ *
+ * @example
+ * ```ts
+ * import { defaultFetchFn } from "@zig-wasm/core";
+ *
+ * const bytes = await defaultFetchFn("/my-module.wasm");
+ * console.log("Loaded", bytes.byteLength, "bytes");
+ * ```
  */
 export async function defaultFetchFn(url: string): Promise<ArrayBuffer> {
   const response = await fetch(url);
@@ -94,21 +182,64 @@ async function instantiateWasm(
 }
 
 /**
- * Load a Zig WASM module
+ * Load a Zig WASM module from various sources.
  *
- * @param options - Loading options (bytes, url, or path)
- * @returns Promise resolving to instance, exports, and memory
+ * This is the primary function for loading WebAssembly modules. It handles:
+ * - Source detection (bytes, URL, or file path)
+ * - Environment-appropriate loading (streaming for browser, file read for Node)
+ * - Import merging (your custom imports + default Zig panic handler)
+ * - Validation of required exports (`memory`, `alloc`, `free`)
  *
- * @example
+ * You must provide exactly one of: `wasmBytes`, `wasmUrl`, or `wasmPath`.
+ *
+ * @typeParam T - The type of the WASM module's exports (extends {@link ZigWasmExports})
+ * @param options - Loading options specifying the source and optional configuration
+ * @returns A Promise resolving to a {@link WasmLoadResult} with instance, exports, and memory
+ * @throws {@link WasmLoadError} if loading fails for any reason
+ *
+ * @example Loading from pre-fetched bytes
  * ```ts
- * // From bytes
- * const result = await loadWasm({ wasmBytes: myBytes });
+ * import { loadWasm } from "@zig-wasm/core";
  *
- * // From URL (browser)
- * const result = await loadWasm({ wasmUrl: '/my-module.wasm' });
+ * const response = await fetch("/my-module.wasm");
+ * const wasmBytes = await response.arrayBuffer();
  *
- * // From path (Node.js)
- * const result = await loadWasm({ wasmPath: './my-module.wasm' });
+ * const { exports, memory } = await loadWasm({ wasmBytes });
+ * ```
+ *
+ * @example Loading from URL with streaming (browser/Deno)
+ * ```ts
+ * import { loadWasm } from "@zig-wasm/core";
+ *
+ * // Streaming instantiation is used automatically when available
+ * const { exports } = await loadWasm({
+ *   wasmUrl: "/wasm/my-module.wasm"
+ * });
+ * ```
+ *
+ * @example Loading from file path (Node.js/Bun)
+ * ```ts
+ * import { loadWasm } from "@zig-wasm/core";
+ *
+ * const { exports } = await loadWasm({
+ *   wasmPath: "./dist/my-module.wasm"
+ * });
+ * ```
+ *
+ * @example With typed exports
+ * ```ts
+ * import { loadWasm, ZigWasmExports } from "@zig-wasm/core";
+ *
+ * interface MyModuleExports extends ZigWasmExports {
+ *   add: (a: number, b: number) => number;
+ *   multiply: (a: number, b: number) => number;
+ * }
+ *
+ * const { exports } = await loadWasm<MyModuleExports>({
+ *   wasmPath: "./math.wasm"
+ * });
+ *
+ * console.log(exports.add(2, 3)); // 5
  * ```
  */
 export async function loadWasm<T extends ZigWasmExports = ZigWasmExports>(
@@ -163,8 +294,37 @@ export async function loadWasm<T extends ZigWasmExports = ZigWasmExports>(
 }
 
 /**
- * Create a module loader for a specific WASM file
- * Returns a cached loader that only loads once
+ * Create a cached module loader for a specific WASM file.
+ *
+ * Returns a loader function that loads the WASM module on first call
+ * and returns the cached result on subsequent calls. This is useful
+ * for ensuring a module is only loaded once, even if multiple parts
+ * of your application request it.
+ *
+ * @typeParam T - The type of the WASM module's exports
+ * @param getWasmSource - A function that returns the loading options
+ * @returns A function that returns a Promise resolving to the load result
+ *
+ * @example
+ * ```ts
+ * import { createModuleLoader, ZigWasmExports } from "@zig-wasm/core";
+ *
+ * interface MathExports extends ZigWasmExports {
+ *   add: (a: number, b: number) => number;
+ * }
+ *
+ * // Create a cached loader
+ * const loadMathModule = createModuleLoader<MathExports>(() => ({
+ *   wasmPath: "./math.wasm"
+ * }));
+ *
+ * // First call loads the module
+ * const result1 = await loadMathModule();
+ *
+ * // Subsequent calls return cached result
+ * const result2 = await loadMathModule();
+ * console.log(result1 === result2); // true
+ * ```
  */
 export function createModuleLoader<T extends ZigWasmExports>(
   getWasmSource: () => WasmLoadOptions,
@@ -180,8 +340,28 @@ export function createModuleLoader<T extends ZigWasmExports>(
 }
 
 /**
- * Helper to get WASM path relative to a module
- * Works with import.meta.url
+ * Resolve a WASM path relative to a module's URL.
+ *
+ * Works with `import.meta.url` to resolve paths relative to the
+ * current module. Automatically converts `file://` URLs to paths
+ * in Node.js/Bun environments.
+ *
+ * @param importMetaUrl - The `import.meta.url` of the calling module
+ * @param relativePath - The relative path to the WASM file
+ * @returns The resolved path (filesystem path for Node/Bun, URL for browser/Deno)
+ *
+ * @example
+ * ```ts
+ * import { resolveWasmPath, loadWasm } from "@zig-wasm/core";
+ *
+ * // In your module file:
+ * const wasmPath = resolveWasmPath(import.meta.url, "./my-module.wasm");
+ *
+ * // In Node.js: returns "/absolute/path/to/my-module.wasm"
+ * // In browser: returns "https://example.com/path/to/my-module.wasm"
+ *
+ * const { exports } = await loadWasm({ wasmPath });
+ * ```
  */
 export function resolveWasmPath(
   importMetaUrl: string,

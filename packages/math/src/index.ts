@@ -1,7 +1,80 @@
 /**
- * @name "@zig-wasm/math"
+ * High-performance math functions powered by Zig via WebAssembly.
  *
- * High-performance math functions powered by Zig via WebAssembly
+ * This module provides a comprehensive set of mathematical operations implemented
+ * in Zig and compiled to WebAssembly for near-native performance in JavaScript/TypeScript.
+ *
+ * ## Function Categories
+ *
+ * - **Trigonometric**: {@link sin}, {@link cos}, {@link tan}, {@link asin}, {@link acos}, {@link atan}, {@link atan2}
+ * - **Hyperbolic**: {@link sinh}, {@link cosh}, {@link tanh}, {@link asinh}, {@link acosh}, {@link atanh}
+ * - **Exponential/Logarithmic**: {@link exp}, {@link exp2}, {@link log}, {@link log2}, {@link log10}, {@link pow}
+ * - **Rounding**: {@link floor}, {@link ceil}, {@link round}, {@link trunc}
+ * - **Bit Manipulation**: {@link clz}, {@link ctz}, {@link popcount}, {@link bswap16}, {@link rotl}, {@link rotr}
+ * - **Utilities**: {@link abs}, {@link min}, {@link max}, {@link clamp}, {@link sqrt}, {@link cbrt}, {@link hypot}
+ * - **Constants**: {@link pi}, {@link e}, {@link ln2}, {@link ln10}
+ * - **Classification**: {@link isNaN}, {@link isInf}, {@link isFinite}, {@link sign}
+ *
+ * ## Precision Variants
+ *
+ * Most functions have F32 variants (e.g., {@link sinF32}, {@link sqrtF32}) for single-precision
+ * (32-bit) floating-point operations. The default functions use f64 (64-bit double precision).
+ * Integer variants (I32, I64, U32, U64) are available where applicable.
+ *
+ * ## API Styles
+ *
+ * - **Async API**: Functions like {@link sin}, {@link cos} auto-initialize the WASM module on first call
+ * - **Sync API**: Functions like {@link sinSync}, {@link cosSync} require explicit {@link init} call first
+ *
+ * @example Basic trigonometry (async)
+ * ```ts
+ * import { sin, cos, sqrt, clamp, pi } from "@zig-wasm/math";
+ *
+ * // Trigonometry - async API auto-initializes
+ * const angle = await pi() / 4;
+ * const sinVal = await sin(angle);  // ~0.707
+ * const cosVal = await cos(angle);  // ~0.707
+ *
+ * // Clamping values to a range
+ * const clamped = await clamp(150, 0, 100); // 100
+ *
+ * // Square root
+ * const root = await sqrt(16); // 4
+ * ```
+ *
+ * @example Sync API for performance-critical code
+ * ```ts
+ * import { init, sinSync, cosSync, sqrtSync, piSync } from "@zig-wasm/math";
+ *
+ * // Must initialize before using sync functions
+ * await init();
+ *
+ * // Now sync functions work without await overhead
+ * const angle = piSync() / 4;
+ * const sinVal = sinSync(angle);
+ * const cosVal = cosSync(angle);
+ * ```
+ *
+ * @example Single-precision (F32) variants
+ * ```ts
+ * import { sinF32, sqrtF32, piF32 } from "@zig-wasm/math";
+ *
+ * // F32 variants for single-precision when memory/speed matters
+ * const angle = await piF32() / 4;
+ * const result = await sinF32(angle);
+ * ```
+ *
+ * @example Bit manipulation
+ * ```ts
+ * import { clz, popcount, bswap32, rotl } from "@zig-wasm/math";
+ *
+ * const leadingZeros = await clz(0b00001111);  // 28
+ * const setBits = await popcount(0b10101010);  // 4
+ * const swapped = await bswap32(0x12345678);   // 0x78563412
+ * const rotated = await rotl(0b1, 4);          // 0b10000
+ * ```
+ *
+ * @module
  */
 
 // Lifecycle
