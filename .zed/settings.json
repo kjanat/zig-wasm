@@ -1,6 +1,23 @@
 {
-  "auto_install_extensions": { "dprint": true },
+  "auto_install_extensions": { "biome": true, "dprint": true, "ruff": true, "ty": true },
   "formatter": { "language_server": { "name": "dprint" } },
+  "languages": {
+    "Python": {
+      "language_servers": ["ruff", "ty", "!pylsp", "..."],
+      "code_actions_on_format": {
+        // Organize imports
+        "source.organizeImports.ruff": true,
+        // Fix all auto-fixable lint violations
+        "source.fixAll.ruff": true
+      }
+    },
+    "TypeScript": {
+      "language_servers": ["biome", "tsgo", "..."],
+      "code_actions_on_format": {
+        "source.fixAll": true
+      }
+    }
+  },
   "lsp": {
     "dprint": {
       "binary": {
