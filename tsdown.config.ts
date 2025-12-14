@@ -43,6 +43,65 @@ function getPackageVersion(packageName: string): string {
   }
 }
 
+function resolveWorkspaceVersion(dependencyName: string): string {
+  const name = dependencyName.replace(/^@zig-wasm\//, "");
+  const fallback = "0.1.0";
+  const candidates = [
+    join(repoRoot, "packages", name, "package.json"),
+    join(repoRoot, "internal", name, "package.json"),
+  ];
+
+  for (const candidate of candidates) {
+    try {
+      if (!existsSync(candidate)) continue;
+      const pkg = JSON.parse(readFileSync(candidate, "utf-8"));
+      const version = typeof pkg.version === "string" ? pkg.version : "";
+      if (version) return version;
+    } catch {}
+  }
+
+  return fallback;
+}
+
+function injectJsrImports(packageRoot: string): void {
+  const jsrPath = join(packageRoot, "jsr.json");
+  const packageJsonPath = join(packageRoot, "package.json");
+
+  if (!existsSync(jsrPath) || !existsSync(packageJsonPath)) return;
+
+  try {
+    const jsrConfig = JSON.parse(readFileSync(jsrPath, "utf-8"));
+    const pkgConfig = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+
+    const imports = typeof jsrConfig.imports === "object" && jsrConfig.imports !== null
+      ? { ...jsrConfig.imports }
+      : {};
+
+    const dependencies = pkgConfig.dependencies && typeof pkgConfig.dependencies === "object"
+      ? pkgConfig.dependencies
+      : {};
+
+    for (const [dep, range] of Object.entries(dependencies)) {
+      if (dep.startsWith("@zig-wasm/") && typeof range === "string" && range.startsWith("workspace:")) {
+        const version = resolveWorkspaceVersion(dep);
+        imports[dep] = `jsr:${dep}@^${version}`;
+      }
+    }
+
+    if (Object.keys(imports).length > 0) {
+      jsrConfig.imports = imports;
+      writeFileSync(jsrPath, JSON.stringify(jsrConfig, null, 2) + "\n");
+    }
+  } catch (err) {
+    console.warn(`Failed to update JSR imports for ${packageRoot}:`, err);
+  }
+}
+
+export function ensureJsrImports(packageName: string): void {
+  const packageRoot = join(repoRoot, "packages", packageName);
+  injectJsrImports(packageRoot);
+}
+
 export function getBanner(packageName: string): string {
   const version = getPackageVersion(packageName);
   const versionSuffix = version ? ` v${version}` : "";
@@ -52,7 +111,7 @@ export function getBanner(packageName: string): string {
     ` * @zig-wasm/${packageName}${versionSuffix}`,
     ...(licenseInfo.year && licenseInfo.holder ? [` * (c) ${licenseInfo.year} ${licenseInfo.holder}`] : []),
     " * @license MIT",
-    ` * @source ${repoUrl}/tree/main/packages/${packageName}`,
+    ` * @source ${repoUrl}/tree/master/packages/${packageName}`,
     ` * @build ${gitInfo.hash}${gitInfo.dirty}${gitInfo.buildTime ? ` ${gitInfo.buildTime}` : ""}`,
     " */",
     "",
@@ -118,6 +177,8 @@ export function wasmConfig(packageName: string, overrides: Partial<UserConfig> =
         writeFileSync(packageJsonPath, JSON.stringify(pkgConfig, null, 2) + "\n");
       }
     }
+
+    injectJsrImports(packageRoot);
   } catch (err) {
     console.warn(`Failed to update metadata for ${packageName}:`, err);
   }
@@ -155,6 +216,13 @@ export function packageConfig(packageName: string, overrides: Partial<UserConfig
   ];
 
   const banner = overrides.banner ?? getBanner(packageName);
+  const packageRoot = join(repoRoot, "packages", packageName);
+
+  try {
+    injectJsrImports(packageRoot);
+  } catch (err) {
+    console.warn(`Failed to update JSR imports for ${packageName}:`, err);
+  }
 
   return {
     ...merged,
@@ -163,6 +231,14 @@ export function packageConfig(packageName: string, overrides: Partial<UserConfig
   };
 }
 
+function ensureStdImports(): void {
+  const stdRoot = join(repoRoot, "packages", "std");
+  injectJsrImports(stdRoot);
+}
+
 export default defineConfig({
   workspace: ["./packages/*", "./internal/*"],
+  hooks: {
+    "build:before": ensureStdImports,
+  },
 });

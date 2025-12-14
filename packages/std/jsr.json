@@ -3,6 +3,14 @@
   "name": "@zig-wasm/std",
   "version": "0.1.0",
   "license": "MIT",
+  "imports": {
+    "@zig-wasm/base64": "jsr:@zig-wasm/base64@^0.1.0",
+    "@zig-wasm/compress": "jsr:@zig-wasm/compress@^0.1.0",
+    "@zig-wasm/core": "jsr:@zig-wasm/core@^0.1.0",
+    "@zig-wasm/crypto": "jsr:@zig-wasm/crypto@^0.1.0",
+    "@zig-wasm/hash": "jsr:@zig-wasm/hash@^0.1.0",
+    "@zig-wasm/math": "jsr:@zig-wasm/math@^0.1.0"
+  },
   "exports": {
     ".": "./src/index.ts",
     "./base64": "./src/base64.ts",

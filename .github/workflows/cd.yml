@@ -259,8 +259,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Publish to JSR
-        run: pnpm run publish:jsr
+      - name: Publish core
+        run: pnpm --filter @zig-wasm/core run publish:jsr
+
+      - name: Publish tooling
+        run: pnpm --filter @zig-wasm/tooling run publish:jsr
+
+      - name: Publish core deps
+        run: pnpm --filter "@zig-wasm/*" --filter "!@zig-wasm/core" --filter "!@zig-wasm/tooling" --filter "!@zig-wasm/std" run publish:jsr
+
+      - name: Publish std
+        run: pnpm --filter @zig-wasm/std run publish:jsr
 
   github-release:
     name: Create GitHub Release
