@@ -178,11 +178,13 @@ function toBytes(data: string | Uint8Array): Uint8Array {
 }
 
 function toHex32(n: number): string {
-  return n.toString(16).padStart(8, "0");
+  // Use >>> 0 to treat as unsigned 32-bit integer
+  return (n >>> 0).toString(16).padStart(8, "0");
 }
 
 function toHex64(n: bigint): string {
-  return n.toString(16).padStart(16, "0");
+  // Use BigInt.asUintN to treat as unsigned 64-bit integer
+  return BigInt.asUintN(64, n).toString(16).padStart(16, "0");
 }
 
 function is32BitAlgorithm(algorithm: HashAlgorithm): algorithm is Hash32Algorithm {

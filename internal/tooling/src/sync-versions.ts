@@ -197,7 +197,7 @@ export async function syncVersions(options: SyncVersionsOptions = {}): Promise<S
 
         const npmVersion = packageJson.version;
         const jsrVersion = jsrJson.version;
-        const dirName = dir.split("/").slice(-1)[0] ?? dir;
+        const dirName = dir.split("/").slice(-1)[0] || dir;
 
         if (npmVersion !== jsrVersion) {
           mismatches++;

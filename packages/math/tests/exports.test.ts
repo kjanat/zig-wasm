@@ -75,6 +75,20 @@ describe("@zig-wasm/math - Basic Operations", () => {
       expect(await math.minI64(-999n, 999n)).toBe(-999n);
       expect(await math.maxI64(-999n, 999n)).toBe(999n);
     });
+
+    it("handles unsigned 32-bit integers", async () => {
+      expect(await math.minU32(5, 10)).toBe(5);
+      expect(await math.maxU32(5, 10)).toBe(10);
+      expect(await math.minU32(0, 100)).toBe(0);
+      expect(await math.maxU32(0, 100)).toBe(100);
+    });
+
+    it("handles unsigned 64-bit integers", async () => {
+      expect(await math.minU64(5n, 10n)).toBe(5n);
+      expect(await math.maxU64(5n, 10n)).toBe(10n);
+      expect(await math.minU64(0n, 100n)).toBe(0n);
+      expect(await math.maxU64(0n, 100n)).toBe(100n);
+    });
   });
 
   describe("clamp", () => {
@@ -96,6 +110,24 @@ describe("@zig-wasm/math - Basic Operations", () => {
     it("handles boundary values", async () => {
       expect(await math.clamp(0, 0, 10)).toBe(0);
       expect(await math.clamp(10, 0, 10)).toBe(10);
+    });
+
+    it("handles signed 64-bit integers", async () => {
+      expect(await math.clampI64(5n, -10n, 10n)).toBe(5n);
+      expect(await math.clampI64(-100n, -10n, 10n)).toBe(-10n);
+      expect(await math.clampI64(100n, -10n, 10n)).toBe(10n);
+    });
+
+    it("handles unsigned 32-bit integers", async () => {
+      expect(await math.clampU32(5, 0, 10)).toBe(5);
+      expect(await math.clampU32(0, 5, 10)).toBe(5);
+      expect(await math.clampU32(100, 0, 50)).toBe(50);
+    });
+
+    it("handles unsigned 64-bit integers", async () => {
+      expect(await math.clampU64(5n, 0n, 10n)).toBe(5n);
+      expect(await math.clampU64(0n, 5n, 10n)).toBe(5n);
+      expect(await math.clampU64(100n, 0n, 50n)).toBe(50n);
     });
   });
 });

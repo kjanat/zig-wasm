@@ -53,6 +53,14 @@ export fn min_f64(a: f64, b: f64) f64 {
     return @min(a, b);
 }
 
+export fn min_u32(a: u32, b: u32) u32 {
+    return @min(a, b);
+}
+
+export fn min_u64(a: u64, b: u64) u64 {
+    return @min(a, b);
+}
+
 /// Maximum of two values
 export fn max_i32(a: i32, b: i32) i32 {
     return @max(a, b);
@@ -70,6 +78,14 @@ export fn max_f64(a: f64, b: f64) f64 {
     return @max(a, b);
 }
 
+export fn max_u32(a: u32, b: u32) u32 {
+    return @max(a, b);
+}
+
+export fn max_u64(a: u64, b: u64) u64 {
+    return @max(a, b);
+}
+
 /// Clamp value between min and max
 export fn clamp_i32(val: i32, lo: i32, hi: i32) i32 {
     return std.math.clamp(val, lo, hi);
@@ -80,6 +96,18 @@ export fn clamp_f32(val: f32, lo: f32, hi: f32) f32 {
 }
 
 export fn clamp_f64(val: f64, lo: f64, hi: f64) f64 {
+    return std.math.clamp(val, lo, hi);
+}
+
+export fn clamp_i64(val: i64, lo: i64, hi: i64) i64 {
+    return std.math.clamp(val, lo, hi);
+}
+
+export fn clamp_u32(val: u32, lo: u32, hi: u32) u32 {
+    return std.math.clamp(val, lo, hi);
+}
+
+export fn clamp_u64(val: u64, lo: u64, hi: u64) u64 {
     return std.math.clamp(val, lo, hi);
 }
 

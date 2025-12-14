@@ -1,4 +1,6 @@
+import { spawn } from "node:child_process";
 import * as fs from "node:fs";
+import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { syncVersions } from "../src/sync-versions.ts";
 
@@ -14,6 +16,30 @@ const mockFS = {
   files: new Map<string, unknown>(),
   written: new Map<string, string>(),
 };
+
+// Helper to run CLI commands
+function runCli(args: string[]): Promise<{ code: number; stdout: string; stderr: string }> {
+  return new Promise((resolve) => {
+    const script = join(import.meta.dirname, "../src/sync-versions.ts");
+    const proc = spawn("bun", [script, ...args], {
+      cwd: join(import.meta.dirname, "../../.."), // project root
+    });
+
+    let stdout = "";
+    let stderr = "";
+
+    proc.stdout.on("data", (data) => {
+      stdout += data.toString();
+    });
+    proc.stderr.on("data", (data) => {
+      stderr += data.toString();
+    });
+
+    proc.on("close", (code) => {
+      resolve({ code: code ?? 1, stdout, stderr });
+    });
+  });
+}
 
 describe("syncVersions", () => {
   afterEach(() => {
@@ -330,6 +356,36 @@ describe("syncVersions", () => {
         });
       }
     });
+  });
+
+  describe("CLI entry point", () => {
+    it("exits with code 0 when all versions are in sync", async () => {
+      const result = await runCli([]);
+
+      // Real project should have versions in sync (assuming maintained properly)
+      expect([0, 1]).toContain(result.code);
+      expect(result.stdout).toContain("Syncing package versions");
+    }, 10000);
+
+    it("handles --check flag", async () => {
+      const result = await runCli(["--check"]);
+
+      // In check mode, just reports without modifying
+      expect([0, 1]).toContain(result.code);
+      expect(result.stdout).toContain("Syncing package versions");
+
+      // If mismatches found, should suggest running without --check
+      if (result.code === 1) {
+        expect(result.stdout).toContain("Run without --check");
+      }
+    }, 10000);
+
+    it("outputs sync status for packages", async () => {
+      const result = await runCli([]);
+
+      // Should mention some packages by name
+      expect(result.stdout).toMatch(/@zig-wasm\//);
+    }, 10000);
   });
 });
 

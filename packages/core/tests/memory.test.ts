@@ -198,6 +198,26 @@ describe("WasmMemory", () => {
       mem.deallocate(slice.ptr, slice.len);
       expect(mockExports.free).toHaveBeenCalledWith(slice.ptr, 3);
     });
+
+    it("handles empty array without allocation", () => {
+      const data = new Uint8Array([]);
+      const slice = mem.allocateAndCopy(data);
+
+      // Empty data returns null pointer and zero length
+      expect(slice.ptr).toBe(0);
+      expect(slice.len).toBe(0);
+
+      // No allocation should have been made
+      expect(mockExports.alloc).not.toHaveBeenCalled();
+    });
+
+    it("deallocating empty slice is safe", () => {
+      const slice = mem.allocateAndCopy(new Uint8Array([]));
+
+      // Should not throw and should not call free
+      mem.deallocate(slice.ptr, slice.len);
+      expect(mockExports.free).not.toHaveBeenCalled();
+    });
   });
 
   describe("copyOutAndFree", () => {
@@ -262,19 +282,15 @@ describe("WasmMemory", () => {
     });
 
     it("handles empty string", () => {
-      const text = "";
-      const bytes = new TextEncoder().encode(text);
+      const slice = mem.encodeString("");
 
-      if (bytes.length === 0) {
-        // Empty strings result in 0-byte allocation which is rejected
-        // This is expected behavior - empty strings don't need allocation
-        const decoded = new TextDecoder().decode(bytes);
-        expect(decoded).toBe("");
-      } else {
-        const slice = mem.encodeString(text);
-        const decoded = mem.decodeString(slice.ptr, slice.len);
-        expect(decoded).toBe(text);
-      }
+      // Empty string returns null slice (no allocation needed)
+      expect(slice.ptr).toBe(0);
+      expect(slice.len).toBe(0);
+
+      // Deallocating empty slice is safe
+      mem.deallocate(slice.ptr, slice.len);
+      expect(mockExports.free).not.toHaveBeenCalled();
     });
 
     it("preserves multi-byte characters", () => {

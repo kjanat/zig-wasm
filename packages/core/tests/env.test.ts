@@ -411,6 +411,123 @@ describe("edge cases", () => {
     // Cache might be modified, but detection logic is sound
     expect(typeof fresh.isNode).toBe("boolean");
   });
+
+  it("handles null process.versions", () => {
+    // Save original
+    const originalProcess = globalThis.process;
+
+    try {
+      // Mock process with null versions
+      (globalThis as { process: unknown }).process = {
+        versions: null,
+      };
+
+      const env = detectEnvironment();
+      expect(env.isNode).toBe(false);
+      expect(env.isBun).toBe(false);
+    } finally {
+      (globalThis as { process: typeof process }).process = originalProcess;
+    }
+  });
+
+  it("handles partial process object", () => {
+    const originalProcess = globalThis.process;
+
+    try {
+      // Mock process without versions
+      (globalThis as { process: unknown }).process = {};
+
+      const env = detectEnvironment();
+      expect(env.isNode).toBe(false);
+      expect(env.isBun).toBe(false);
+    } finally {
+      (globalThis as { process: typeof process }).process = originalProcess;
+    }
+  });
+});
+
+describe("browser environment simulation", () => {
+  let originalProcess: typeof globalThis.process | undefined;
+  let originalWindow: typeof globalThis.window | undefined;
+  let originalDocument: typeof globalThis.document | undefined;
+  let originalDeno: unknown;
+
+  beforeEach(() => {
+    originalProcess = globalThis.process;
+    originalWindow = globalThis.window;
+    originalDocument = globalThis.document;
+    originalDeno = (globalThis as unknown as { Deno?: unknown }).Deno;
+  });
+
+  afterEach(() => {
+    if (originalProcess) {
+      (globalThis as { process: typeof process }).process = originalProcess;
+    }
+    if (originalWindow) {
+      (globalThis as { window: typeof window }).window = originalWindow;
+    }
+    if (originalDocument !== undefined) {
+      (globalThis as { document: typeof document }).document = originalDocument;
+    }
+    if (originalDeno !== undefined) {
+      (globalThis as { Deno?: unknown }).Deno = originalDeno;
+    }
+  });
+
+  it("detects browser when window and document exist without Node/Deno/Bun", () => {
+    // Remove Node/Deno/Bun markers
+    delete (globalThis as { process?: typeof process }).process;
+    delete (globalThis as { Deno?: unknown }).Deno;
+
+    // Add browser markers
+    (globalThis as { window: unknown }).window = {};
+    (globalThis as { document: unknown }).document = {};
+
+    const env = detectEnvironment();
+
+    expect(env.isBrowser).toBe(true);
+    expect(env.isNode).toBe(false);
+    expect(env.isDeno).toBe(false);
+    expect(env.isBun).toBe(false);
+  });
+
+  it("is not browser when window exists but document does not", () => {
+    delete (globalThis as { process?: typeof process }).process;
+    delete (globalThis as { Deno?: unknown }).Deno;
+    delete (globalThis as { document?: typeof document }).document;
+
+    (globalThis as { window: unknown }).window = {};
+
+    const env = detectEnvironment();
+
+    expect(env.isBrowser).toBe(false);
+  });
+
+  it("is not browser when document exists but window does not", () => {
+    delete (globalThis as { process?: typeof process }).process;
+    delete (globalThis as { Deno?: unknown }).Deno;
+    delete (globalThis as { window?: typeof window }).window;
+
+    (globalThis as { document: unknown }).document = {};
+
+    const env = detectEnvironment();
+
+    expect(env.isBrowser).toBe(false);
+  });
+
+  it("Node takes precedence over browser markers", () => {
+    // Set up both Node and browser markers
+    (globalThis as { process: unknown }).process = {
+      versions: { node: "18.0.0" },
+    };
+    (globalThis as { window: unknown }).window = {};
+    (globalThis as { document: unknown }).document = {};
+
+    const env = detectEnvironment();
+
+    expect(env.isNode).toBe(true);
+    expect(env.isBrowser).toBe(false);
+  });
 });
 
 describe("type safety", () => {

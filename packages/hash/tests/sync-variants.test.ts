@@ -16,12 +16,13 @@ describe("@zig-wasm/hash - Sync Hex Variants", () => {
   describe("crc32HexSync", () => {
     it("returns hex string for known input", () => {
       const result = hash.crc32HexSync("123456789");
-      expect(result).toMatch(/^-?[0-9a-f]+$/);
+      expect(result).toMatch(/^[0-9a-f]{8}$/);
+      expect(result).toBe("cbf43926");
     });
 
     it("handles empty string", () => {
       const result = hash.crc32HexSync("");
-      expect(typeof result).toBe("string");
+      expect(result).toBe("00000000");
     });
   });
 
@@ -34,15 +35,14 @@ describe("@zig-wasm/hash - Sync Hex Variants", () => {
     it("handles binary input", () => {
       const bytes = new Uint8Array([1, 2, 3, 4]);
       const result = hash.adler32HexSync(bytes);
-      expect(result).toMatch(/^[0-9a-f]+$/);
+      expect(result).toMatch(/^[0-9a-f]{8}$/);
     });
   });
 
   describe("xxhash64HexSync", () => {
     it("returns hex string for known input", () => {
       const result = hash.xxhash64HexSync("test");
-      expect(result).toMatch(/^-?[0-9a-f]+$/);
-      expect(result.replace("-", "").length).toBeLessThanOrEqual(16);
+      expect(result).toMatch(/^[0-9a-f]{16}$/);
     });
 
     it("accepts seed parameter", () => {
@@ -55,7 +55,7 @@ describe("@zig-wasm/hash - Sync Hex Variants", () => {
   describe("xxhash32HexSync", () => {
     it("returns hex string", () => {
       const result = hash.xxhash32HexSync("hello");
-      expect(result).toMatch(/^-?[0-9a-f]+$/);
+      expect(result).toMatch(/^[0-9a-f]{8}$/);
     });
 
     it("accepts seed parameter", () => {
@@ -68,7 +68,7 @@ describe("@zig-wasm/hash - Sync Hex Variants", () => {
   describe("wyhashHexSync", () => {
     it("returns hex string", () => {
       const result = hash.wyhashHexSync("test");
-      expect(result).toMatch(/^-?[0-9a-f]+$/);
+      expect(result).toMatch(/^[0-9a-f]{16}$/);
     });
 
     it("accepts seed parameter", () => {
@@ -81,7 +81,7 @@ describe("@zig-wasm/hash - Sync Hex Variants", () => {
   describe("cityhash64HexSync", () => {
     it("returns hex string", () => {
       const result = hash.cityhash64HexSync("hello world");
-      expect(result).toMatch(/^-?[0-9a-f]+$/);
+      expect(result).toMatch(/^[0-9a-f]{16}$/);
     });
 
     it("accepts seed parameter", () => {
@@ -94,7 +94,7 @@ describe("@zig-wasm/hash - Sync Hex Variants", () => {
   describe("murmur2_64HexSync", () => {
     it("returns hex string", () => {
       const result = hash.murmur2_64HexSync("murmur test");
-      expect(result).toMatch(/^-?[0-9a-f]+$/);
+      expect(result).toMatch(/^[0-9a-f]{16}$/);
     });
 
     it("accepts seed parameter", () => {
@@ -107,7 +107,7 @@ describe("@zig-wasm/hash - Sync Hex Variants", () => {
   describe("fnv1a64HexSync", () => {
     it("returns hex string", () => {
       const result = hash.fnv1a64HexSync("fnv test");
-      expect(result).toMatch(/^-?[0-9a-f]+$/);
+      expect(result).toMatch(/^[0-9a-f]{16}$/);
     });
 
     it("is deterministic", () => {
@@ -120,7 +120,7 @@ describe("@zig-wasm/hash - Sync Hex Variants", () => {
   describe("fnv1a32HexSync", () => {
     it("returns hex string", () => {
       const result = hash.fnv1a32HexSync("fnv 32 test");
-      expect(result).toMatch(/^-?[0-9a-f]+$/);
+      expect(result).toMatch(/^[0-9a-f]{8}$/);
     });
   });
 });
@@ -182,12 +182,12 @@ describe("@zig-wasm/hash - Generic hashSync and hashHexSync", () => {
   describe("hashHexSync", () => {
     it("returns hex for 32-bit algorithm", () => {
       const result = hash.hashHexSync("crc32", "test");
-      expect(result).toMatch(/^-?[0-9a-f]+$/);
+      expect(result).toMatch(/^[0-9a-f]{8}$/);
     });
 
     it("returns hex for 64-bit algorithm", () => {
       const result = hash.hashHexSync("xxhash64", "test");
-      expect(result).toMatch(/^-?[0-9a-f]+$/);
+      expect(result).toMatch(/^[0-9a-f]{16}$/);
     });
   });
 });

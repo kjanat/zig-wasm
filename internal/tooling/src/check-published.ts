@@ -122,8 +122,8 @@ export async function checkPublished(pkgPath: string): Promise<CheckPublishedRes
   let packageJsonPath: string;
 
   if (pkgPath.startsWith("@")) {
-    // Handle @scope/name
-    const scopedName = pkgPath.split("/")[1] ?? pkgPath;
+    // Handle @scope/name - extract package name after the scope
+    const scopedName = pkgPath.split("/")[1] || pkgPath;
     packageJsonPath = resolve(process.cwd(), "packages", scopedName, "package.json");
   } else if (pkgPath.startsWith(".")) {
     // Handle relative paths

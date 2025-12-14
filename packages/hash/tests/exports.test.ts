@@ -57,7 +57,8 @@ describe("@zig-wasm/hash", () => {
     it("returns hex string format", async () => {
       const result = await hash.crc32Hex("123456789");
       expect(typeof result).toBe("string");
-      expect(result.length).toBe(9); // -340bc6da (includes minus sign for negative)
+      expect(result.length).toBe(8); // Always 8 hex chars (unsigned)
+      expect(result).toBe("cbf43926"); // Known value for "123456789"
     });
 
     it("handles Uint8Array input", async () => {
@@ -213,7 +214,7 @@ describe("@zig-wasm/hash", () => {
     it("returns hex string", async () => {
       const result = await hash.fnv1a64Hex("abc");
       expect(typeof result).toBe("string");
-      // Note: Length is 17 because negative bigints include minus sign
+      expect(result.length).toBe(16); // Always 16 hex chars (unsigned)
     });
   });
 

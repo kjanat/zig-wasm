@@ -550,3 +550,40 @@ describe("init with wasmUrl option", () => {
     }
   });
 });
+
+describe("init without explicit options", () => {
+  it("uses default wasmPath in Node/Bun environment", async () => {
+    const { writeFileSync, unlinkSync, mkdtempSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const { tmpdir } = await import("node:os");
+
+    // Create temp directory and write WASM file with expected name
+    const tempDir = mkdtempSync(join(tmpdir(), "wasm-default-test-"));
+    const wasmPath = join(tempDir, "default.wasm");
+    writeFileSync(wasmPath, createMinimalWasmWithMemory());
+
+    try {
+      const module = createWasmModule<TestExports>({
+        name: "default-test",
+        wasmFileName: wasmPath, // Use full path as filename for this test
+      });
+
+      // Init without explicit options - should use default from config
+      await module.init();
+
+      expect(module.isInitialized()).toBe(true);
+    } finally {
+      unlinkSync(wasmPath);
+    }
+  });
+
+  it("falls back to wasmFileName when no options provided", async () => {
+    const module = createWasmModule<TestExports>({
+      name: "fallback-test",
+      wasmFileName: "nonexistent.wasm",
+    });
+
+    // Should fail because file doesn't exist, but validates the path is being used
+    await expect(module.init()).rejects.toThrow();
+  });
+});

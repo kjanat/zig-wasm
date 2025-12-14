@@ -1,11 +1,6 @@
 /**
  * Tests for sync API variants to ensure complete coverage
  * Focuses on F32, U64, and less commonly used sync functions
- *
- * NOTE: Some functions declared in types.ts are NOT exported from the WASM:
- * - clamp_i64, clamp_u32, clamp_u64
- * - min_u32, min_u64, max_u32, max_u64
- * These are bugs in the Zig source that need to be fixed upstream.
  */
 import { beforeAll, describe, expect, it } from "vitest";
 import * as math from "../src/index.ts";
@@ -341,6 +336,61 @@ describe("@zig-wasm/math - Sync U64/I64 Variants", () => {
       expect(math.clampI32Sync(100, -10, 10)).toBe(10);
     });
   });
+
+  describe("min/max (U32)", () => {
+    it("minU32Sync finds minimum of unsigned 32-bit integers", () => {
+      expect(math.minU32Sync(5, 10)).toBe(5);
+      expect(math.minU32Sync(0, 100)).toBe(0);
+      expect(math.minU32Sync(0xFFFFFFFF >>> 0, 1)).toBe(1);
+    });
+
+    it("maxU32Sync finds maximum of unsigned 32-bit integers", () => {
+      expect(math.maxU32Sync(5, 10)).toBe(10);
+      expect(math.maxU32Sync(0, 100)).toBe(100);
+      expect(math.maxU32Sync(0xFFFFFFFF >>> 0, 1) >>> 0).toBe(0xFFFFFFFF >>> 0);
+    });
+  });
+
+  describe("min/max (U64)", () => {
+    it("minU64Sync finds minimum of unsigned 64-bit integers", () => {
+      expect(math.minU64Sync(5n, 10n)).toBe(5n);
+      expect(math.minU64Sync(0n, 100n)).toBe(0n);
+      expect(math.minU64Sync(0xFFFFFFFFFFFFFFFFn, 1n)).toBe(1n);
+    });
+
+    it("maxU64Sync finds maximum of unsigned 64-bit integers", () => {
+      expect(math.maxU64Sync(5n, 10n)).toBe(10n);
+      expect(math.maxU64Sync(0n, 100n)).toBe(100n);
+      expect(BigInt.asUintN(64, math.maxU64Sync(0xFFFFFFFFFFFFFFFFn, 1n))).toBe(0xFFFFFFFFFFFFFFFFn);
+    });
+  });
+
+  describe("clamp (I64)", () => {
+    it("clampI64Sync clamps signed 64-bit integers", () => {
+      expect(math.clampI64Sync(5n, -10n, 10n)).toBe(5n);
+      expect(math.clampI64Sync(-100n, -10n, 10n)).toBe(-10n);
+      expect(math.clampI64Sync(100n, -10n, 10n)).toBe(10n);
+      expect(math.clampI64Sync(-9223372036854775808n, -100n, 100n)).toBe(-100n);
+    });
+  });
+
+  describe("clamp (U32)", () => {
+    it("clampU32Sync clamps unsigned 32-bit integers", () => {
+      expect(math.clampU32Sync(5, 0, 10)).toBe(5);
+      expect(math.clampU32Sync(0, 5, 10)).toBe(5);
+      expect(math.clampU32Sync(100, 0, 50)).toBe(50);
+      expect(math.clampU32Sync(0xFFFFFFFF >>> 0, 0, 255)).toBe(255);
+    });
+  });
+
+  describe("clamp (U64)", () => {
+    it("clampU64Sync clamps unsigned 64-bit integers", () => {
+      expect(math.clampU64Sync(5n, 0n, 10n)).toBe(5n);
+      expect(math.clampU64Sync(0n, 5n, 10n)).toBe(5n);
+      expect(math.clampU64Sync(100n, 0n, 50n)).toBe(50n);
+      expect(math.clampU64Sync(0xFFFFFFFFFFFFFFFFn, 0n, 255n)).toBe(255n);
+    });
+  });
 });
 
 describe("@zig-wasm/math - Sync 32-bit bit manipulation", () => {
@@ -405,5 +455,182 @@ describe("@zig-wasm/math - Async F32 coverage", () => {
   it("copysignF32 async variant works", async () => {
     expect(await math.copysignF32(5.0, -1.0)).toBe(-5.0);
     expect(await math.copysignF32(-5.0, 1.0)).toBe(5.0);
+  });
+
+  it("floorF32 async variant works", async () => {
+    expect(await math.floorF32(3.7)).toBe(3);
+    expect(await math.floorF32(-3.2)).toBe(-4);
+  });
+
+  it("ceilF32 async variant works", async () => {
+    expect(await math.ceilF32(3.2)).toBe(4);
+    expect(await math.ceilF32(-3.7)).toBe(-3);
+  });
+
+  it("roundF32 async variant works", async () => {
+    expect(await math.roundF32(3.4)).toBe(3);
+    expect(await math.roundF32(3.5)).toBe(4);
+    expect(await math.roundF32(-3.5)).toBe(-4);
+  });
+
+  it("truncF32 async variant works", async () => {
+    expect(await math.truncF32(3.7)).toBe(3);
+    expect(await math.truncF32(-3.7)).toBe(-3);
+  });
+});
+
+/**
+ * Tests for async U64 bit manipulation variants
+ */
+describe("@zig-wasm/math - Async U64 bit ops coverage", () => {
+  it("rotlU64 async variant works", async () => {
+    expect(await math.rotlU64(1n, 1)).toBe(2n);
+    expect(BigInt.asUintN(64, await math.rotlU64(1n, 63))).toBe(0x8000000000000000n);
+  });
+
+  it("rotrU64 async variant works", async () => {
+    expect(await math.rotrU64(2n, 1)).toBe(1n);
+    expect(BigInt.asUintN(64, await math.rotrU64(1n, 1))).toBe(0x8000000000000000n);
+  });
+});
+
+/**
+ * Tests for async power/root F32 variants
+ */
+describe("@zig-wasm/math - Async power/root F32 coverage", () => {
+  it("sqrtF32 async variant works", async () => {
+    expect(await math.sqrtF32(4)).toBeCloseTo(2, 5);
+    expect(await math.sqrtF32(9)).toBeCloseTo(3, 5);
+  });
+
+  it("cbrtF32 async variant works", async () => {
+    expect(await math.cbrtF32(8)).toBeCloseTo(2, 5);
+    expect(await math.cbrtF32(27)).toBeCloseTo(3, 5);
+    expect(await math.cbrtF32(-8)).toBeCloseTo(-2, 5);
+  });
+
+  it("powF32 async variant works", async () => {
+    expect(await math.powF32(2, 3)).toBeCloseTo(8, 5);
+    expect(await math.powF32(5, 2)).toBeCloseTo(25, 5);
+  });
+
+  it("hypotF32 async variant works", async () => {
+    expect(await math.hypotF32(3, 4)).toBeCloseTo(5, 5);
+    expect(await math.hypotF32(5, 12)).toBeCloseTo(13, 5);
+  });
+});
+
+/**
+ * Tests for async exp/log F32 variants
+ */
+describe("@zig-wasm/math - Async exp/log F32 coverage", () => {
+  it("expF32 async variant works", async () => {
+    expect(await math.expF32(0)).toBeCloseTo(1, 5);
+    expect(await math.expF32(1)).toBeCloseTo(Math.E, 5);
+  });
+
+  it("exp2F32 async variant works", async () => {
+    expect(await math.exp2F32(0)).toBeCloseTo(1, 5);
+    expect(await math.exp2F32(10)).toBeCloseTo(1024, 5);
+  });
+
+  it("expm1F32 async variant works", async () => {
+    expect(await math.expm1F32(0)).toBeCloseTo(0, 5);
+    expect(await math.expm1F32(1)).toBeCloseTo(Math.E - 1, 4);
+  });
+
+  it("logF32 async variant works", async () => {
+    expect(await math.logF32(1)).toBeCloseTo(0, 5);
+    expect(await math.logF32(Math.E)).toBeCloseTo(1, 5);
+  });
+
+  it("log2F32 async variant works", async () => {
+    expect(await math.log2F32(1)).toBeCloseTo(0, 5);
+    expect(await math.log2F32(1024)).toBeCloseTo(10, 5);
+  });
+
+  it("log10F32 async variant works", async () => {
+    expect(await math.log10F32(1)).toBeCloseTo(0, 5);
+    expect(await math.log10F32(100)).toBeCloseTo(2, 5);
+  });
+
+  it("log1pF32 async variant works", async () => {
+    expect(await math.log1pF32(0)).toBeCloseTo(0, 5);
+    expect(await math.log1pF32(Math.E - 1)).toBeCloseTo(1, 4);
+  });
+});
+
+/**
+ * Tests for async trigonometric F32 variants
+ */
+describe("@zig-wasm/math - Async trig F32 coverage", () => {
+  it("sinF32 async variant works", async () => {
+    expect(await math.sinF32(0)).toBeCloseTo(0, 5);
+    expect(await math.sinF32(Math.PI / 2)).toBeCloseTo(1, 5);
+  });
+
+  it("cosF32 async variant works", async () => {
+    expect(await math.cosF32(0)).toBeCloseTo(1, 5);
+    expect(await math.cosF32(Math.PI)).toBeCloseTo(-1, 5);
+  });
+
+  it("tanF32 async variant works", async () => {
+    expect(await math.tanF32(0)).toBeCloseTo(0, 5);
+    expect(await math.tanF32(Math.PI / 4)).toBeCloseTo(1, 5);
+  });
+
+  it("asinF32 async variant works", async () => {
+    expect(await math.asinF32(0)).toBeCloseTo(0, 5);
+    expect(await math.asinF32(1)).toBeCloseTo(Math.PI / 2, 5);
+  });
+
+  it("acosF32 async variant works", async () => {
+    expect(await math.acosF32(1)).toBeCloseTo(0, 5);
+    expect(await math.acosF32(0)).toBeCloseTo(Math.PI / 2, 5);
+  });
+
+  it("atanF32 async variant works", async () => {
+    expect(await math.atanF32(0)).toBeCloseTo(0, 5);
+    expect(await math.atanF32(1)).toBeCloseTo(Math.PI / 4, 5);
+  });
+
+  it("atan2F32 async variant works", async () => {
+    expect(await math.atan2F32(0, 1)).toBeCloseTo(0, 5);
+    expect(await math.atan2F32(1, 0)).toBeCloseTo(Math.PI / 2, 5);
+  });
+});
+
+/**
+ * Tests for async hyperbolic F32 variants
+ */
+describe("@zig-wasm/math - Async hyperbolic F32 coverage", () => {
+  it("sinhF32 async variant works", async () => {
+    expect(await math.sinhF32(0)).toBeCloseTo(0, 5);
+    expect(await math.sinhF32(1)).toBeCloseTo(1.175201, 4);
+  });
+
+  it("coshF32 async variant works", async () => {
+    expect(await math.coshF32(0)).toBeCloseTo(1, 5);
+    expect(await math.coshF32(1)).toBeCloseTo(1.543081, 4);
+  });
+
+  it("tanhF32 async variant works", async () => {
+    expect(await math.tanhF32(0)).toBeCloseTo(0, 5);
+    expect(await math.tanhF32(1)).toBeCloseTo(0.761594, 4);
+  });
+
+  it("asinhF32 async variant works", async () => {
+    expect(await math.asinhF32(0)).toBeCloseTo(0, 5);
+    expect(await math.asinhF32(1)).toBeCloseTo(0.881373, 4);
+  });
+
+  it("acoshF32 async variant works", async () => {
+    expect(await math.acoshF32(1)).toBeCloseTo(0, 5);
+    expect(await math.acoshF32(2)).toBeCloseTo(1.316958, 4);
+  });
+
+  it("atanhF32 async variant works", async () => {
+    expect(await math.atanhF32(0)).toBeCloseTo(0, 5);
+    expect(await math.atanhF32(0.5)).toBeCloseTo(0.549306, 4);
   });
 });

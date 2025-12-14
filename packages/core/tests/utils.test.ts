@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compareBytes, concatBytes, fromHex, toHex } from "../src/utils.ts";
+import { bytesToString, compareBytes, concatBytes, fromHex, stringToBytes, toHex } from "../src/utils.ts";
 
 describe("toHex", () => {
   it("converts empty array to empty string", () => {
@@ -408,6 +408,87 @@ describe("real-world utility patterns", () => {
     const hashInput = concatBytes(salt, message);
 
     expect(hashInput.length).toBe(salt.length + message.length);
+  });
+});
+
+describe("stringToBytes", () => {
+  it("converts simple ASCII string to UTF-8 bytes", () => {
+    const bytes = stringToBytes("Hello");
+    expect(Array.from(bytes)).toEqual([72, 101, 108, 108, 111]);
+  });
+
+  it("converts empty string to empty array", () => {
+    const bytes = stringToBytes("");
+    expect(bytes.length).toBe(0);
+  });
+
+  it("handles Unicode characters", () => {
+    const bytes = stringToBytes("\u00e9"); // e with accent
+    // UTF-8 encoding of e is 2 bytes: 0xC3 0xA9
+    expect(Array.from(bytes)).toEqual([0xc3, 0xa9]);
+  });
+
+  it("handles emoji", () => {
+    const bytes = stringToBytes("\u{1F600}"); // grinning face
+    // UTF-8 encoding is 4 bytes
+    expect(bytes.length).toBe(4);
+  });
+
+  it("handles multi-byte characters correctly", () => {
+    const bytes = stringToBytes("\u4e2d\u6587"); // Chinese characters
+    expect(bytes.length).toBe(6); // 3 bytes per character
+  });
+});
+
+describe("bytesToString", () => {
+  it("converts ASCII bytes to string", () => {
+    const str = bytesToString(new Uint8Array([72, 101, 108, 108, 111]));
+    expect(str).toBe("Hello");
+  });
+
+  it("converts empty array to empty string", () => {
+    const str = bytesToString(new Uint8Array([]));
+    expect(str).toBe("");
+  });
+
+  it("decodes UTF-8 multi-byte characters", () => {
+    const str = bytesToString(new Uint8Array([0xc3, 0xa9])); // e
+    expect(str).toBe("\u00e9");
+  });
+
+  it("decodes emoji", () => {
+    // UTF-8 bytes for grinning face emoji
+    const str = bytesToString(new Uint8Array([0xf0, 0x9f, 0x98, 0x80]));
+    expect(str).toBe("\u{1F600}");
+  });
+
+  it("handles invalid UTF-8 with replacement character", () => {
+    // Invalid UTF-8 sequence
+    const str = bytesToString(new Uint8Array([0xff, 0xfe]));
+    expect(str).toContain("\uFFFD"); // replacement character
+  });
+});
+
+describe("stringToBytes/bytesToString symmetry", () => {
+  it("round-trip preserves ASCII string", () => {
+    const original = "Hello, World!";
+    const bytes = stringToBytes(original);
+    const result = bytesToString(bytes);
+    expect(result).toBe(original);
+  });
+
+  it("round-trip preserves Unicode string", () => {
+    const original = "\u4f60\u597d\u4e16\u754c"; // Hello World in Chinese
+    const bytes = stringToBytes(original);
+    const result = bytesToString(bytes);
+    expect(result).toBe(original);
+  });
+
+  it("round-trip preserves mixed content", () => {
+    const original = "Hello \u4e16\u754c \u{1F600}!";
+    const bytes = stringToBytes(original);
+    const result = bytesToString(bytes);
+    expect(result).toBe(original);
   });
 });
 

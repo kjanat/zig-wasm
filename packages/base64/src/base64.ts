@@ -220,6 +220,7 @@ const textDecoder = new TextDecoder();
 // ============================================================================
 
 function encodeImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): string {
+  if (data.length === 0) return "";
   const encodedLen = exports.base64_encode_len(data.length);
   return AllocationScope.use(mem, (scope: AllocationScopeType) => {
     const input = scope.allocAndCopy(data);
@@ -230,6 +231,7 @@ function encodeImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Arra
 }
 
 function decodeImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): Uint8Array {
+  if (data.length === 0) return new Uint8Array(0);
   const decodedLen = exports.base64_decode_len(data.length);
   return AllocationScope.use(mem, (scope: AllocationScopeType) => {
     const input = scope.allocAndCopy(data);
@@ -240,6 +242,7 @@ function decodeImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Arra
 }
 
 function encodeNoPaddingImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): string {
+  if (data.length === 0) return "";
   const encodedLen = exports.base64_no_pad_encode_len(data.length);
   return AllocationScope.use(mem, (scope: AllocationScopeType) => {
     const input = scope.allocAndCopy(data);
@@ -250,6 +253,7 @@ function encodeNoPaddingImpl(exports: Base64WasmExports, mem: WasmMemory, data: 
 }
 
 function decodeNoPaddingImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): Uint8Array {
+  if (data.length === 0) return new Uint8Array(0);
   const decodedLen = exports.base64_no_pad_decode_len(data.length);
   return AllocationScope.use(mem, (scope: AllocationScopeType) => {
     const input = scope.allocAndCopy(data);
@@ -260,6 +264,7 @@ function decodeNoPaddingImpl(exports: Base64WasmExports, mem: WasmMemory, data: 
 }
 
 function encodeUrlImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): string {
+  if (data.length === 0) return "";
   const encodedLen = exports.base64_url_encode_len(data.length);
   return AllocationScope.use(mem, (scope: AllocationScopeType) => {
     const input = scope.allocAndCopy(data);
@@ -270,6 +275,7 @@ function encodeUrlImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8A
 }
 
 function decodeUrlImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): Uint8Array {
+  if (data.length === 0) return new Uint8Array(0);
   const decodedLen = exports.base64_url_decode_len(data.length);
   return AllocationScope.use(mem, (scope: AllocationScopeType) => {
     const input = scope.allocAndCopy(data);
@@ -280,6 +286,7 @@ function decodeUrlImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8A
 }
 
 function encodeUrlNoPaddingImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): string {
+  if (data.length === 0) return "";
   const encodedLen = exports.base64_url_no_pad_encode_len(data.length);
   return AllocationScope.use(mem, (scope: AllocationScopeType) => {
     const input = scope.allocAndCopy(data);
@@ -290,6 +297,7 @@ function encodeUrlNoPaddingImpl(exports: Base64WasmExports, mem: WasmMemory, dat
 }
 
 function decodeUrlNoPaddingImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): Uint8Array {
+  if (data.length === 0) return new Uint8Array(0);
   const decodedLen = exports.base64_url_no_pad_decode_len(data.length);
   return AllocationScope.use(mem, (scope: AllocationScopeType) => {
     const input = scope.allocAndCopy(data);
@@ -300,6 +308,7 @@ function decodeUrlNoPaddingImpl(exports: Base64WasmExports, mem: WasmMemory, dat
 }
 
 function hexEncodeImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): string {
+  if (data.length === 0) return "";
   const encodedLen = exports.hex_encode_len(data.length);
   return AllocationScope.use(mem, (scope: AllocationScopeType) => {
     const input = scope.allocAndCopy(data);
@@ -310,6 +319,7 @@ function hexEncodeImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8A
 }
 
 function hexDecodeImpl(exports: Base64WasmExports, mem: WasmMemory, data: Uint8Array): Uint8Array {
+  if (data.length === 0) return new Uint8Array(0);
   const decodedLen = exports.hex_decode_len(data.length);
   return AllocationScope.use(mem, (scope: AllocationScopeType) => {
     const input = scope.allocAndCopy(data);
