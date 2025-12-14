@@ -53,6 +53,7 @@
     "@biomejs/biome": "catalog:",
     "@typescript/native-preview": "catalog:",
     "@zig-wasm/tooling": "workspace:*",
-    "dprint": "catalog:"
+    "dprint": "catalog:",
+    "tsdown": "catalog:"
   }
 }

@@ -1,5 +1,5 @@
 import { defineConfig } from "tsdown";
-import { packageConfig } from "zig-wasm/tsdown";
+import { packageConfig } from "../../tsdown.config.ts";
 
 export default defineConfig({
   ...packageConfig("core"),

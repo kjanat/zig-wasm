@@ -1,9 +1,3 @@
 {
-  "extends": "@zig-wasm/tooling/tsconfig",
-  "compilerOptions": {
-    "paths": {
-      "~/*": ["./src/*"],
-      "zig-wasm/tsdown": ["../../tsdown.config.ts"]
-    }
-  }
+  "extends": "@zig-wasm/tooling/tsconfig"
 }

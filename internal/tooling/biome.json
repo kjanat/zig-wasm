@@ -51,16 +51,6 @@
           }
         }
       }
-    },
-    {
-      "includes": ["**/*.config.ts"],
-      "linter": {
-        "rules": {
-          "correctness": {
-            "useImportExtensions": "off"
-          }
-        }
-      }
     }
   ]
 }

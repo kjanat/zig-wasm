@@ -1,4 +1,4 @@
 import { defineConfig } from "tsdown";
-import { wasmConfig } from "zig-wasm/tsdown";
+import { wasmConfig } from "../../tsdown.config.ts";
 
 export default defineConfig(wasmConfig("compress"));
