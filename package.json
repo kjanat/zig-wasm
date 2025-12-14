@@ -50,7 +50,9 @@
     "publish:dry": "pnpm -r publish --dry-run",
     "publish:jsr": "pnpm -r publish:jsr",
     "publish:jsr:dry": "pnpm -r publish:jsr --dry-run",
-    "test": "pnpm -r test",
+    "test": "vitest run",
+    "test:cov": "vitest run --coverage",
+    "test:r": "pnpm -r test",
     "typecheck": "pnpm -r typecheck"
   },
   "config": {
