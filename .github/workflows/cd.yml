@@ -183,7 +183,7 @@ jobs:
       - name: Publish preview
         run: |
           pnpm dlx pkg-pr-new publish "./{packages,internal}/*" \
-            --packageManager="pnpm" --pnpm --compact
+            --packageManager="pnpm" --pnpm
 
   publish-npm:
     name: Publish to npm
