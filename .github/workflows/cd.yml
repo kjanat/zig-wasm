@@ -262,7 +262,6 @@ jobs:
       - name: Publish to JSR
         run: pnpm run publish:jsr
 
-
   github-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
