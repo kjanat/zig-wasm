@@ -183,7 +183,7 @@ jobs:
       - name: Publish preview
         run: |
           pnpm dlx pkg-pr-new publish "./{packages,internal}/*" \
-            --packageManager="pnpm" --pnpm --compact
+            --packageManager="pnpm" --pnpm
 
   publish-npm:
     name: Publish to npm
@@ -260,7 +260,8 @@ jobs:
         run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Publish to JSR
-        run: pnpm run publish:jsr --provenance
+        run: pnpm run publish:jsr
+
 
   github-release:
     name: Create GitHub Release
