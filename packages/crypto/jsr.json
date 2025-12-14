@@ -8,9 +8,8 @@
     "./crypto.wasm": "./wasm/crypto.wasm"
   },
   "publish": {
-    "include": [
-      "src/**/*.ts",
-      "wasm/*.wasm"
+    "exclude": [
+      "!wasm"
     ]
   }
 }

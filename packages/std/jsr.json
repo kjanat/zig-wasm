@@ -10,10 +10,5 @@
     "./crypto": "./src/crypto.ts",
     "./hash": "./src/hash.ts",
     "./math": "./src/math.ts"
-  },
-  "publish": {
-    "include": [
-      "src/**/*.ts"
-    ]
   }
 }

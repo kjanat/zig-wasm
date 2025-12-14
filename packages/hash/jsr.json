@@ -8,9 +8,8 @@
     "./hash.wasm": "./wasm/hash.wasm"
   },
   "publish": {
-    "include": [
-      "src/**/*.ts",
-      "wasm/*.wasm"
+    "exclude": [
+      "!wasm"
     ]
   }
 }

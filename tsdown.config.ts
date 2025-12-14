@@ -102,7 +102,7 @@ export function wasmConfig(packageName: string, overrides: Partial<UserConfig> =
       };
 
       if (!jsrConfig.publish) {
-        jsrConfig.publish = { include: ["src/**/*.ts", "wasm/*.wasm"] };
+        jsrConfig.publish = { exclude: ["!wasm"] };
       }
 
       writeFileSync(jsrPath, JSON.stringify(jsrConfig, null, 2) + "\n");

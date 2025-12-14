@@ -8,9 +8,8 @@
     "./math.wasm": "./wasm/math.wasm"
   },
   "publish": {
-    "include": [
-      "src/**/*.ts",
-      "wasm/*.wasm"
+    "exclude": [
+      "!wasm"
     ]
   }
 }

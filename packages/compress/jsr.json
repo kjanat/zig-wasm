@@ -8,9 +8,8 @@
     "./compress.wasm": "./wasm/compress.wasm"
   },
   "publish": {
-    "include": [
-      "src/**/*.ts",
-      "wasm/*.wasm"
+    "exclude": [
+      "!wasm"
     ]
   }
 }

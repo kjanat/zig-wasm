@@ -8,9 +8,8 @@
     "./base64.wasm": "./wasm/base64.wasm"
   },
   "publish": {
-    "include": [
-      "src/**/*.ts",
-      "wasm/*.wasm"
+    "exclude": [
+      "!wasm"
     ]
   }
 }
