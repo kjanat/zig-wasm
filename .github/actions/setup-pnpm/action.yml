@@ -35,4 +35,5 @@ runs:
 
     - name: Update npm to latest
       if: ${{ inputs.latest-npm == 'true' }}
+      shell: bash
       run: npm install -g npm@latest
