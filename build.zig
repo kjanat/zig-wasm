@@ -41,9 +41,10 @@ fn buildTestVectorGenerator(b: *std.Build, optimize: std.builtin.OptimizeMode) v
     run_cmd.addArgs(&.{
         "--hash",   "packages/hash/__tests__/fixtures/test-vectors.json",
         "--crypto", "packages/crypto/__tests__/fixtures/test-vectors.json",
+        "--math",   "packages/math/__tests__/fixtures/test-vectors.json",
     });
 
-    const run_step = b.step("gen-test-vectors", "Generate test vector JSON fixtures for hash and crypto packages");
+    const run_step = b.step("gen-test-vectors", "Generate test vector JSON fixtures for hash, crypto, and math packages");
     run_step.dependOn(&run_cmd.step);
 }
 
