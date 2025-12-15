@@ -172,15 +172,27 @@ describe("@zig-wasm/compress - init() with default path (Node/Bun)", () => {
 describe("@zig-wasm/compress - Error recovery after init failure attempt", () => {
   it("recovers when init fails with invalid wasmPath", async () => {
     vi.resetModules();
-    const { isInitialized, decompressXz } = await import("@zig-wasm/compress");
+    const { init, isInitialized } = await import("@zig-wasm/compress");
 
     expect(isInitialized()).toBe(false);
 
-    // Async API should still auto-init correctly after module reset
+    // Attempt init with invalid path - should throw
+    await expect(init({ wasmPath: "/nonexistent/invalid.wasm" })).rejects.toThrow();
+    expect(isInitialized()).toBe(false);
+
+    // Reset modules and verify auto-init still works
+    vi.resetModules();
+    const { isInitialized: freshIsInitialized, decompressXz } = await import(
+      "@zig-wasm/compress"
+    );
+
+    expect(freshIsInitialized()).toBe(false);
+
+    // Async API should auto-init correctly after failed init attempt
     const compressed = loadFixture("hello.txt.xz");
     const result = await decompressXz(compressed);
     expect(new TextDecoder().decode(result)).toBe("Hello, World!");
-    expect(isInitialized()).toBe(true);
+    expect(freshIsInitialized()).toBe(true);
   });
 });
 
