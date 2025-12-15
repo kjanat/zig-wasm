@@ -66,7 +66,7 @@ import pkg from "../package.json" with { type: "json" };
 
 export const VERSION: string = pkg.version;
 
-export { checkPublished } from "./check-published.ts";
+export { checkPublished, checkPublishedCli } from "./check-published.ts";
 export type { CheckPublishedResult } from "./check-published.ts";
 
 export { syncVersions } from "./sync-versions.ts";

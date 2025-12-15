@@ -1,44 +1,43 @@
-import { checkPublished, findMonorepoRoot } from "@zig-wasm/tooling";
-import { spawn } from "node:child_process";
+import { checkPublished, checkPublishedCli, findMonorepoRoot } from "@zig-wasm/tooling";
+import { runCli } from "@zig-wasm/tooling/cli.ts";
 import * as fs from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock fs/promises.readFile
 vi.mock("node:fs/promises", () => ({
   readFile: vi.fn(),
 }));
 
+// Mock printHelp to suppress CLI output during tests
+vi.mock("@zig-wasm/tooling/messages.ts", async (importOriginal) => {
+  const mod = await importOriginal<typeof import("@zig-wasm/tooling/messages.ts")>();
+  return {
+    ...mod,
+    printHelp: vi.fn(),
+  };
+});
+
 import { readFile } from "node:fs/promises";
 
-// Helper to run CLI commands
-function runCli(args: string[]): Promise<{ code: number; stdout: string; stderr: string }> {
-  return new Promise((resolve) => {
-    const script = join(import.meta.dirname, "../src/check-published.ts");
-    const proc = spawn("node", [script, ...args], {
-      cwd: join(import.meta.dirname, "../../.."), // project root
-    });
-
-    let stdout = "";
-    let stderr = "";
-
-    proc.stdout.on("data", (data) => {
-      stdout += data.toString();
-    });
-    proc.stderr.on("data", (data) => {
-      stderr += data.toString();
-    });
-
-    proc.on("close", (code) => {
-      resolve({ code: code ?? 1, stdout, stderr });
-    });
-  });
-}
-
 describe("checkPublished", () => {
+  let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+  let originalArgv: string[];
+
   beforeEach(() => {
     vi.clearAllMocks();
+    originalArgv = process.argv;
+    consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    process.argv = originalArgv;
+    consoleLogSpy.mockRestore();
+    consoleErrorSpy.mockRestore();
+    vi.resetModules();
   });
 
   describe("path resolution", () => {
@@ -253,6 +252,22 @@ describe("checkPublished", () => {
       await expect(checkPublished("test")).rejects.toThrow("Network error");
     });
 
+    it("handles timeout (AbortError)", async () => {
+      const mockRead = vi.mocked(readFile);
+      mockRead.mockResolvedValue(
+        JSON.stringify({
+          name: "@test/pkg",
+          version: "1.0.0",
+        }),
+      );
+
+      const abortError = new Error("The operation was aborted");
+      abortError.name = "AbortError";
+      global.fetch = vi.fn().mockRejectedValue(abortError) as unknown as typeof fetch;
+
+      await expect(checkPublished("test")).rejects.toThrow("Request timed out checking @test/pkg@1.0.0");
+    });
+
     it("handles malformed package.json", async () => {
       const mockRead = vi.mocked(readFile);
       mockRead.mockResolvedValue(
@@ -354,48 +369,113 @@ describe("checkPublished", () => {
     });
   });
 
-  describe("CLI entry point", () => {
-    it("exits with code 2 and shows usage when no arguments provided", async () => {
-      const result = await runCli([]);
+  describe("CLI handler (checkPublishedCli)", () => {
+    it("returns 0 when --help is provided", async () => {
+      process.argv = ["node", "check-published.ts", "--help"];
 
-      expect(result.code).toBe(2);
-      expect(result.stderr).toContain("Usage: check-published");
-      expect(result.stderr).toContain("Examples:");
+      const exitCode = await checkPublishedCli();
+
+      expect(exitCode).toBe(0);
     });
 
-    it("exits with code 0 for published package", async () => {
-      // Use a real published package for integration test
-      const result = await runCli(["core"]);
+    it("returns 0 when -h is provided", async () => {
+      process.argv = ["node", "check-published.ts", "-h"];
 
-      // core package should be published (check the actual status)
-      expect([0, 1]).toContain(result.code);
-      expect(result.stdout).toContain("Checking if package is published");
-      if (result.code === 0) {
-        expect(result.stdout).toMatch(/is published on npm/);
-      } else {
-        expect(result.stdout).toMatch(/is NOT published on npm/);
-      }
-    }, 10000);
+      const exitCode = await checkPublishedCli();
 
-    it("exits with code 2 on error (e.g., invalid package path)", async () => {
-      const result = await runCli(["nonexistent-package-that-does-not-exist-xyz123"]);
-
-      expect(result.code).toBe(2);
-      expect(result.stderr).toContain("Failed to check npm registry");
+      expect(exitCode).toBe(0);
     });
 
-    it("handles scoped package names via CLI", async () => {
-      const result = await runCli(["@zig-wasm/core"]);
+    it("returns 2 when no arguments provided", async () => {
+      process.argv = ["node", "check-published.ts"];
 
-      expect([0, 1]).toContain(result.code);
-      expect(result.stdout).toContain("@zig-wasm/core");
-    }, 10000);
+      const exitCode = await checkPublishedCli();
 
-    it("handles relative paths via CLI", async () => {
-      const result = await runCli(["./packages/core"]);
+      expect(exitCode).toBe(2);
+    });
 
-      expect([0, 1]).toContain(result.code);
-      expect(result.stdout).toContain("@zig-wasm/core");
-    }, 10000);
+    it("returns 0 for published package", async () => {
+      const mockRead = vi.mocked(readFile);
+      mockRead.mockResolvedValueOnce(
+        JSON.stringify({
+          name: "@zig-wasm/core",
+          version: "1.0.0",
+        }),
+      );
+      global.fetch = vi.fn().mockResolvedValue({ ok: true }) as unknown as typeof fetch;
+
+      process.argv = ["node", "check-published.ts", "core"];
+
+      const exitCode = await checkPublishedCli();
+
+      expect(exitCode).toBe(0);
+      expect(consoleLogSpy).toHaveBeenCalledWith("Checking if package is published...");
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("is published on npm"));
+    });
+
+    it("returns 1 for unpublished package", async () => {
+      const mockRead = vi.mocked(readFile);
+      mockRead.mockResolvedValueOnce(
+        JSON.stringify({
+          name: "@zig-wasm/core",
+          version: "99.99.99",
+        }),
+      );
+      global.fetch = vi.fn().mockResolvedValue({ ok: false }) as unknown as typeof fetch;
+
+      process.argv = ["node", "check-published.ts", "core"];
+
+      const exitCode = await checkPublishedCli();
+
+      expect(exitCode).toBe(1);
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("is NOT published on npm"));
+    });
+
+    it("returns 2 on error", async () => {
+      const mockRead = vi.mocked(readFile);
+      mockRead.mockRejectedValueOnce(new Error("File not found"));
+
+      process.argv = ["node", "check-published.ts", "nonexistent"];
+
+      const exitCode = await checkPublishedCli();
+
+      expect(exitCode).toBe(2);
+      expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to check npm registry:", expect.any(Error));
+    });
+  });
+});
+
+describe("runCli", () => {
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+  let originalExitCode: typeof process.exitCode;
+
+  beforeEach(() => {
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    originalExitCode = process.exitCode;
+    process.exitCode = undefined;
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+    process.exitCode = originalExitCode;
+  });
+
+  it("sets process.exitCode to returned value on success", async () => {
+    await runCli(async () => 0);
+    expect(process.exitCode).toBe(0);
+
+    await runCli(async () => 1);
+    expect(process.exitCode).toBe(1);
+  });
+
+  it("sets process.exitCode to 2 and logs error on exception", async () => {
+    const testError = new Error("Test failure");
+
+    await runCli(async () => {
+      throw testError;
+    });
+
+    expect(process.exitCode).toBe(2);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(testError);
   });
 });

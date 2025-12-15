@@ -148,33 +148,40 @@ export async function checkPublished(
   return { name, version, published };
 }
 
-// CLI entry point
-if (import.meta.main) {
-  await runCli(async () => {
-    if (process.argv.includes("--help") || process.argv.includes("-h")) {
-      printHelp(CHECK_PUBLISHED_USAGE, "info");
+/**
+ * CLI handler for check-published command.
+ * Exported for testing; called via runCli when run directly.
+ * @internal
+ */
+export async function checkPublishedCli(): Promise<number> {
+  if (process.argv.includes("--help") || process.argv.includes("-h")) {
+    printHelp(CHECK_PUBLISHED_USAGE, "info");
+    return 0;
+  }
+
+  if (!process.argv[2]) {
+    printHelp(CHECK_PUBLISHED_USAGE, "error");
+    return 2;
+  }
+
+  console.log(`Checking if package is published...`);
+
+  try {
+    const result = await checkPublished(process.argv[2]);
+    if (result.published) {
+      console.log(`✓ ${result.name}@${result.version} is published on npm`);
       return 0;
     }
 
-    if (!process.argv[2]) {
-      printHelp(CHECK_PUBLISHED_USAGE, "error");
-      return 2;
-    }
+    console.log(`✗ ${result.name}@${result.version} is NOT published on npm`);
+    return 1;
+  } catch (error) {
+    console.error("Failed to check npm registry:", error);
+    return 2;
+  }
+}
 
-    console.log(`Checking if package is published...`);
-
-    try {
-      const result = await checkPublished(process.argv[2]);
-      if (result.published) {
-        console.log(`✓ ${result.name}@${result.version} is published on npm`);
-        return 0;
-      }
-
-      console.log(`✗ ${result.name}@${result.version} is NOT published on npm`);
-      return 1;
-    } catch (error) {
-      console.error("Failed to check npm registry:", error);
-      return 2;
-    }
-  });
+// CLI entry point
+if (import.meta.main) {
+  await runCli(checkPublishedCli);
 }
