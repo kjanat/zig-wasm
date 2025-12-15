@@ -49,12 +49,13 @@
  * }
  * ```
  *
- * @example Custom working directory
+ * @example Start search from a subdirectory
  * ```ts
  * import { syncVersions } from "@zig-wasm/tooling";
  *
+ * // Finds monorepo root by walking up from the given path
  * const result = await syncVersions({
- *   cwd: "/path/to/zig-wasm",
+ *   cwd: "/path/to/zig-wasm/packages/core",
  *   checkOnly: false
  * });
  * ```
@@ -111,7 +112,9 @@ export interface SyncVersionsOptions {
    */
   checkOnly?: boolean;
   /**
-   * Base directory containing `packages/` and `internal/` folders.
+   * Starting directory to search for the monorepo root.
+   * The tool walks up from this directory to find `pnpm-workspace.yaml`,
+   * then operates from that root (ignoring the original cwd for resolution).
    * @default process.cwd()
    */
   cwd?: string;
@@ -170,7 +173,8 @@ export interface SyncVersionsResult {
 export async function syncVersions(options: SyncVersionsOptions = {}): Promise<SyncVersionsResult> {
   const startPath = options.cwd ?? process.cwd();
   const monorepoRoot = findMonorepoRoot(startPath);
-  const { checkOnly = false, cwd = monorepoRoot } = options;
+  const { checkOnly = false } = options;
+  const cwd = monorepoRoot;
   const packagesDir = resolve(cwd, "packages");
   const internalDir = resolve(cwd, "internal");
 
