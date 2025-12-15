@@ -22,12 +22,25 @@ describe("leb128", () => {
       expect(encodeUleb128(value)).toEqual(expected);
     });
 
-    it("throws on negative values", () => {
+    it("throws TypeError on non-integers", () => {
+      expect(() => encodeUleb128(1.5)).toThrow(TypeError);
+      expect(() => encodeUleb128(1.5)).toThrow("requires integer");
+      expect(() => encodeUleb128(Number.NaN)).toThrow(TypeError);
+      expect(() => encodeUleb128(Number.POSITIVE_INFINITY)).toThrow(TypeError);
+    });
+
+    it("throws RangeError on negative values", () => {
+      expect(() => encodeUleb128(-1)).toThrow(RangeError);
       expect(() => encodeUleb128(-1)).toThrow("non-negative integer");
     });
 
-    it("throws on non-integers", () => {
-      expect(() => encodeUleb128(1.5)).toThrow("non-negative integer");
+    it("throws RangeError on values exceeding 32-bit", () => {
+      expect(() => encodeUleb128(0x100000000)).toThrow(RangeError);
+      expect(() => encodeUleb128(0x100000000)).toThrow("32-bit unsigned");
+    });
+
+    it("accepts max 32-bit unsigned value", () => {
+      expect(encodeUleb128(0xffffffff)).toEqual([0xff, 0xff, 0xff, 0xff, 0x0f]);
     });
   });
 
@@ -59,6 +72,26 @@ describe("leb128", () => {
       // This is critical - value 100 needs 2 bytes because bit 6 would indicate negative
       expect(encodeSleb128(100)).toEqual([0xe4, 0x00]);
     });
+
+    it("throws TypeError on non-integers", () => {
+      expect(() => encodeSleb128(1.5)).toThrow(TypeError);
+      expect(() => encodeSleb128(1.5)).toThrow("requires integer");
+      expect(() => encodeSleb128(Number.NaN)).toThrow(TypeError);
+      expect(() => encodeSleb128(Number.POSITIVE_INFINITY)).toThrow(TypeError);
+    });
+
+    it("throws RangeError on values exceeding 32-bit signed range", () => {
+      expect(() => encodeSleb128(0x80000000)).toThrow(RangeError); // 2^31
+      expect(() => encodeSleb128(-0x80000001)).toThrow(RangeError); // -(2^31 + 1)
+      expect(() => encodeSleb128(0x80000000)).toThrow("32-bit signed");
+    });
+
+    it("accepts 32-bit signed range boundaries", () => {
+      // Max positive: 0x7FFFFFFF = 2147483647
+      expect(encodeSleb128(0x7fffffff)).toEqual([0xff, 0xff, 0xff, 0xff, 0x07]);
+      // Min negative: -0x80000000 = -2147483648
+      expect(encodeSleb128(-0x80000000)).toEqual([0x80, 0x80, 0x80, 0x80, 0x78]);
+    });
   });
 
   describe("decodeUleb128", () => {
@@ -85,6 +118,25 @@ describe("leb128", () => {
 
     it("throws when running past end", () => {
       expect(() => decodeUleb128([0x80], 0)).toThrow("Unterminated LEB128");
+    });
+
+    it("throws RangeError on overflow (>5 bytes)", () => {
+      // 6 continuation bytes = overflow
+      expect(() => decodeUleb128([0x80, 0x80, 0x80, 0x80, 0x80, 0x01], 0)).toThrow(RangeError);
+      expect(() => decodeUleb128([0x80, 0x80, 0x80, 0x80, 0x80, 0x01], 0)).toThrow("LEB128 overflow");
+    });
+
+    it("throws RangeError on overflow (5th byte > 0x0f)", () => {
+      // 5 bytes but 5th byte has bits 4-6 set (0x10 = bit 4)
+      expect(() => decodeUleb128([0x80, 0x80, 0x80, 0x80, 0x10], 0)).toThrow(RangeError);
+      expect(() => decodeUleb128([0x80, 0x80, 0x80, 0x80, 0x10], 0)).toThrow("32-bit unsigned");
+    });
+
+    it("accepts max 32-bit unsigned value", () => {
+      // 0xFFFFFFFF encoded as ULEB128
+      const [value, consumed] = decodeUleb128([0xff, 0xff, 0xff, 0xff, 0x0f], 0);
+      expect(value).toBe(0xffffffff);
+      expect(consumed).toBe(5);
     });
   });
 
@@ -119,6 +171,32 @@ describe("leb128", () => {
 
     it("throws on unterminated LEB128", () => {
       expect(() => decodeSleb128([0x80, 0x80], 0)).toThrow("Unterminated LEB128");
+    });
+
+    it("throws RangeError on overflow (>5 bytes)", () => {
+      // 6 continuation bytes = overflow
+      expect(() => decodeSleb128([0x80, 0x80, 0x80, 0x80, 0x80, 0x01], 0)).toThrow(RangeError);
+      expect(() => decodeSleb128([0x80, 0x80, 0x80, 0x80, 0x80, 0x01], 0)).toThrow("LEB128 overflow");
+    });
+
+    it("throws RangeError on overflow (5th byte invalid sign bits)", () => {
+      // 5th byte 0x18 = 0b00011000, bits 4-6 are 0b001 - neither all 0 nor all 1
+      expect(() => decodeSleb128([0x80, 0x80, 0x80, 0x80, 0x18], 0)).toThrow(RangeError);
+      expect(() => decodeSleb128([0x80, 0x80, 0x80, 0x80, 0x18], 0)).toThrow("32-bit signed");
+    });
+
+    it("accepts max 32-bit signed value", () => {
+      // 0x7FFFFFFF encoded as SLEB128
+      const [value, consumed] = decodeSleb128([0xff, 0xff, 0xff, 0xff, 0x07], 0);
+      expect(value).toBe(0x7fffffff);
+      expect(consumed).toBe(5);
+    });
+
+    it("accepts min 32-bit signed value", () => {
+      // -0x80000000 encoded as SLEB128
+      const [value, consumed] = decodeSleb128([0x80, 0x80, 0x80, 0x80, 0x78], 0);
+      expect(value).toBe(-0x80000000);
+      expect(consumed).toBe(5);
     });
   });
 

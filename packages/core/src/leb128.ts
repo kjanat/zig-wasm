@@ -29,9 +29,10 @@
 /**
  * Encode an unsigned integer as unsigned LEB128.
  *
- * @param value - Non-negative integer to encode (0 to 2^32-1)
+ * @param value - Non-negative integer to encode (0 to 4294967295)
  * @returns Array of bytes representing the LEB128 encoding
- * @throws {Error} If value is negative or not an integer
+ * @throws {TypeError} If value is not an integer
+ * @throws {RangeError} If value is negative or exceeds 32-bit unsigned range
  *
  * @example
  * ```ts
@@ -42,8 +43,14 @@
  * ```
  */
 export function encodeUleb128(value: number): number[] {
-  if (!Number.isInteger(value) || value < 0) {
-    throw new Error(`encodeUleb128 requires non-negative integer, got ${value}`);
+  if (!Number.isInteger(value)) {
+    throw new TypeError(`encodeUleb128 requires integer, got ${value}`);
+  }
+  if (value < 0) {
+    throw new RangeError(`encodeUleb128 requires non-negative integer, got ${value}`);
+  }
+  if (value > 0xffffffff) {
+    throw new RangeError(`encodeUleb128 requires 32-bit unsigned integer (0 to 4294967295), got ${value}`);
   }
 
   const out: number[] = [];
@@ -64,8 +71,10 @@ export function encodeUleb128(value: number): number[] {
 /**
  * Encode a signed integer as signed LEB128.
  *
- * @param value - Integer to encode (fits in 32-bit signed range)
+ * @param value - Integer to encode (-2147483648 to 2147483647)
  * @returns Array of bytes representing the signed LEB128 encoding
+ * @throws {TypeError} If value is not an integer
+ * @throws {RangeError} If value exceeds 32-bit signed range
  *
  * @example
  * ```ts
@@ -78,6 +87,14 @@ export function encodeUleb128(value: number): number[] {
  * ```
  */
 export function encodeSleb128(value: number): number[] {
+  if (!Number.isInteger(value)) {
+    throw new TypeError(`encodeSleb128 requires integer, got ${value}`);
+  }
+  if (value < -0x80000000 || value > 0x7fffffff) {
+    throw new RangeError(
+      `encodeSleb128 requires 32-bit signed integer (-2147483648 to 2147483647), got ${value}`,
+    );
+  }
   const out: number[] = [];
   let v = value | 0; // keep as 32-bit signed for shifting behavior
 
@@ -103,6 +120,7 @@ export function encodeSleb128(value: number): number[] {
  * @param pos - Starting position in the array
  * @returns Tuple of [decoded value, number of bytes consumed]
  * @throws {Error} If LEB128 is unterminated (runs past end of data)
+ * @throws {RangeError} If value overflows 32-bit unsigned range
  *
  * @example
  * ```ts
@@ -123,6 +141,11 @@ export function decodeUleb128(data: ArrayLike<number>, pos: number): [number, nu
     }
     consumed += 1;
 
+    // Overflow protection: max 5 bytes for 32-bit, 5th byte must have upper 4 bits clear
+    if (consumed > 5 || (consumed === 5 && byte > 0x0f)) {
+      throw new RangeError(`LEB128 overflow at position ${pos}: value exceeds 32-bit unsigned range`);
+    }
+
     result |= (byte & 0x7f) << shift;
 
     if ((byte & 0x80) === 0) {
@@ -142,6 +165,7 @@ export function decodeUleb128(data: ArrayLike<number>, pos: number): [number, nu
  * @param pos - Starting position in the array
  * @returns Tuple of [decoded value, number of bytes consumed]
  * @throws {Error} If LEB128 is unterminated (runs past end of data)
+ * @throws {RangeError} If value overflows 32-bit signed range
  *
  * @example
  * ```ts
@@ -163,6 +187,12 @@ export function decodeSleb128(data: ArrayLike<number>, pos: number): [number, nu
     }
     byte = next;
     consumed += 1;
+
+    // Overflow protection: max 5 bytes for 32-bit signed
+    // 5th byte bits 4-6 must be all 0 (positive) or all 1 (negative sign extension)
+    if (consumed > 5 || (consumed === 5 && (byte & 0x70) !== 0 && (byte & 0x70) !== 0x70)) {
+      throw new RangeError(`LEB128 overflow at position ${pos}: value exceeds 32-bit signed range`);
+    }
 
     result |= (byte & 0x7f) << shift;
     shift += 7;
