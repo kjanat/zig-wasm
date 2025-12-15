@@ -18,6 +18,37 @@ function toHex(data: Uint8Array): string {
     .join("");
 }
 
+/**
+ * Safely access a hash vector with descriptive error on missing data.
+ */
+function requireVector(vectors: HashVectors, key: string, algo: string): string {
+  const value = vectors[key];
+  if (value === undefined) {
+    throw new Error(`Missing key "${key}" in ${algo} fixture`);
+  }
+  return value;
+}
+
+/**
+ * Safely access an HMAC vector with descriptive error on missing data.
+ */
+function requireHmacVector(
+  vectors: HmacVectors,
+  keyName: string,
+  inputName: string,
+  algo: string,
+): string {
+  const keyVectors = vectors[keyName];
+  if (!keyVectors) {
+    throw new Error(`Missing key "${keyName}" in ${algo} fixture`);
+  }
+  const value = keyVectors[inputName];
+  if (value === undefined) {
+    throw new Error(`Missing input "${inputName}" for key "${keyName}" in ${algo} fixture`);
+  }
+  return value;
+}
+
 // Test inputs matching those in the Zig generator
 const TEST_INPUTS: Record<string, string | Uint8Array> = {
   empty: "",
@@ -57,7 +88,7 @@ describe("Deterministic Test Vectors", () => {
 
     it.each(Object.entries(TEST_INPUTS))("md5(%s) matches expected", (name, input) => {
       const result = crypto.md5Sync(input);
-      expect(toHex(result)).toBe(vectors[name as keyof typeof vectors]);
+      expect(toHex(result)).toBe(requireVector(vectors, name, "md5"));
     });
 
     it("returns correct length (16 bytes)", () => {
@@ -70,7 +101,7 @@ describe("Deterministic Test Vectors", () => {
 
     it.each(Object.entries(TEST_INPUTS))("sha1(%s) matches expected", (name, input) => {
       const result = crypto.sha1Sync(input);
-      expect(toHex(result)).toBe(vectors[name as keyof typeof vectors]);
+      expect(toHex(result)).toBe(requireVector(vectors, name, "sha1"));
     });
 
     it("returns correct length (20 bytes)", () => {
@@ -83,7 +114,7 @@ describe("Deterministic Test Vectors", () => {
 
     it.each(Object.entries(TEST_INPUTS))("sha256(%s) matches expected", (name, input) => {
       const result = crypto.sha256Sync(input);
-      expect(toHex(result)).toBe(vectors[name as keyof typeof vectors]);
+      expect(toHex(result)).toBe(requireVector(vectors, name, "sha256"));
     });
 
     it("returns correct length (32 bytes)", () => {
@@ -96,7 +127,7 @@ describe("Deterministic Test Vectors", () => {
 
     it.each(Object.entries(TEST_INPUTS))("sha384(%s) matches expected", (name, input) => {
       const result = crypto.sha384Sync(input);
-      expect(toHex(result)).toBe(vectors[name as keyof typeof vectors]);
+      expect(toHex(result)).toBe(requireVector(vectors, name, "sha384"));
     });
 
     it("returns correct length (48 bytes)", () => {
@@ -109,7 +140,7 @@ describe("Deterministic Test Vectors", () => {
 
     it.each(Object.entries(TEST_INPUTS))("sha512(%s) matches expected", (name, input) => {
       const result = crypto.sha512Sync(input);
-      expect(toHex(result)).toBe(vectors[name as keyof typeof vectors]);
+      expect(toHex(result)).toBe(requireVector(vectors, name, "sha512"));
     });
 
     it("returns correct length (64 bytes)", () => {
@@ -122,7 +153,7 @@ describe("Deterministic Test Vectors", () => {
 
     it.each(Object.entries(TEST_INPUTS))("sha3_256(%s) matches expected", (name, input) => {
       const result = crypto.sha3_256Sync(input);
-      expect(toHex(result)).toBe(vectors[name as keyof typeof vectors]);
+      expect(toHex(result)).toBe(requireVector(vectors, name, "sha3_256"));
     });
 
     it("returns correct length (32 bytes)", () => {
@@ -135,7 +166,7 @@ describe("Deterministic Test Vectors", () => {
 
     it.each(Object.entries(TEST_INPUTS))("sha3_512(%s) matches expected", (name, input) => {
       const result = crypto.sha3_512Sync(input);
-      expect(toHex(result)).toBe(vectors[name as keyof typeof vectors]);
+      expect(toHex(result)).toBe(requireVector(vectors, name, "sha3_512"));
     });
 
     it("returns correct length (64 bytes)", () => {
@@ -148,7 +179,7 @@ describe("Deterministic Test Vectors", () => {
 
     it.each(Object.entries(TEST_INPUTS))("blake2b256(%s) matches expected", (name, input) => {
       const result = crypto.blake2b256Sync(input);
-      expect(toHex(result)).toBe(vectors[name as keyof typeof vectors]);
+      expect(toHex(result)).toBe(requireVector(vectors, name, "blake2b256"));
     });
 
     it("returns correct length (32 bytes)", () => {
@@ -161,7 +192,7 @@ describe("Deterministic Test Vectors", () => {
 
     it.each(Object.entries(TEST_INPUTS))("blake2s256(%s) matches expected", (name, input) => {
       const result = crypto.blake2s256Sync(input);
-      expect(toHex(result)).toBe(vectors[name as keyof typeof vectors]);
+      expect(toHex(result)).toBe(requireVector(vectors, name, "blake2s256"));
     });
 
     it("returns correct length (32 bytes)", () => {
@@ -174,7 +205,7 @@ describe("Deterministic Test Vectors", () => {
 
     it.each(Object.entries(TEST_INPUTS))("blake3(%s) matches expected", (name, input) => {
       const result = crypto.blake3Sync(input);
-      expect(toHex(result)).toBe(vectors[name as keyof typeof vectors]);
+      expect(toHex(result)).toBe(requireVector(vectors, name, "blake3"));
     });
 
     it("returns correct length (32 bytes)", () => {
@@ -191,12 +222,16 @@ describe("HMAC Test Vectors", () => {
   describe("hmacSha256Sync", () => {
     const vectors = testVectors.hmac_sha256 as HmacVectors;
 
-    it.each(Object.entries(HMAC_KEYS))("hmacSha256 with key=%s matches expected", (keyName, key) => {
-      const keyVectors = vectors[keyName as keyof typeof vectors] as HashVectors;
-      for (const [inputName, input] of Object.entries(TEST_INPUTS)) {
-        const result = crypto.hmacSha256Sync(key, input);
-        expect(toHex(result)).toBe(keyVectors[inputName as keyof typeof keyVectors]);
-      }
+    // Full matrix: all keys x all inputs
+    it.each(
+      Object.entries(HMAC_KEYS).flatMap(([keyName, key]) =>
+        Object.entries(TEST_INPUTS).map(
+          ([inputName, input]) => [keyName, key, inputName, input] as const,
+        )
+      ),
+    )("hmacSha256(key=%s, %s) matches expected", (keyName, key, inputName, input) => {
+      const expected = requireHmacVector(vectors, keyName, inputName, "hmac_sha256");
+      expect(toHex(crypto.hmacSha256Sync(key, input))).toBe(expected);
     });
 
     it("returns correct length (32 bytes)", () => {
@@ -207,12 +242,16 @@ describe("HMAC Test Vectors", () => {
   describe("hmacSha512Sync", () => {
     const vectors = testVectors.hmac_sha512 as HmacVectors;
 
-    it.each(Object.entries(HMAC_KEYS))("hmacSha512 with key=%s matches expected", (keyName, key) => {
-      const keyVectors = vectors[keyName as keyof typeof vectors] as HashVectors;
-      for (const [inputName, input] of Object.entries(TEST_INPUTS)) {
-        const result = crypto.hmacSha512Sync(key, input);
-        expect(toHex(result)).toBe(keyVectors[inputName as keyof typeof keyVectors]);
-      }
+    // Full matrix: all keys x all inputs
+    it.each(
+      Object.entries(HMAC_KEYS).flatMap(([keyName, key]) =>
+        Object.entries(TEST_INPUTS).map(
+          ([inputName, input]) => [keyName, key, inputName, input] as const,
+        )
+      ),
+    )("hmacSha512(key=%s, %s) matches expected", (keyName, key, inputName, input) => {
+      const expected = requireHmacVector(vectors, keyName, inputName, "hmac_sha512");
+      expect(toHex(crypto.hmacSha512Sync(key, input))).toBe(expected);
     });
 
     it("returns correct length (64 bytes)", () => {

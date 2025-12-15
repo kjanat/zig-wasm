@@ -15,6 +15,37 @@ const wasmPath = join(dirname(fileURLToPath(import.meta.url)), "../wasm/hash.was
 type HashVectors = Record<string, string>;
 type SeededVectors = Record<string, HashVectors>;
 
+/**
+ * Safely access a seeded vector with descriptive error on missing data.
+ */
+function requireSeededVector(
+  vectors: SeededVectors,
+  seed: string,
+  key: string,
+  algo: string,
+): string {
+  const seedVectors = vectors[seed];
+  if (!seedVectors) {
+    throw new Error(`Missing seed "${seed}" in ${algo}_seeded fixture`);
+  }
+  const value = seedVectors[key];
+  if (value === undefined) {
+    throw new Error(`Missing key "${key}" for seed "${seed}" in ${algo}_seeded fixture`);
+  }
+  return value;
+}
+
+/**
+ * Safely access an unseeded vector with descriptive error on missing data.
+ */
+function requireVector(vectors: HashVectors, key: string, algo: string): string {
+  const value = vectors[key];
+  if (value === undefined) {
+    throw new Error(`Missing key "${key}" in ${algo} fixture`);
+  }
+  return value;
+}
+
 // Test inputs matching those in the Zig generator
 const TEST_INPUTS: Record<string, string | Uint8Array> = {
   empty: "",
@@ -53,7 +84,7 @@ describe("Deterministic Test Vectors", () => {
 
     it.each(Object.entries(TEST_INPUTS))("crc32(%s) matches expected", (name, input) => {
       const result = hash.crc32HexSync(input);
-      expect(result).toBe(vectors[name]);
+      expect(result).toBe(requireVector(vectors, name, "crc32"));
     });
   });
 
@@ -62,7 +93,7 @@ describe("Deterministic Test Vectors", () => {
 
     it.each(Object.entries(TEST_INPUTS))("adler32(%s) matches expected", (name, input) => {
       const result = hash.adler32HexSync(input);
-      expect(result).toBe(vectors[name]);
+      expect(result).toBe(requireVector(vectors, name, "adler32"));
     });
   });
 
@@ -72,19 +103,40 @@ describe("Deterministic Test Vectors", () => {
 
     it.each(Object.entries(TEST_INPUTS))("xxhash32(%s) matches expected", (name, input) => {
       const result = hash.xxhash32HexSync(input);
-      expect(result).toBe(vectors[name]);
+      expect(result).toBe(requireVector(vectors, name, "xxhash32"));
     });
 
     it("xxhash32 with seed=0 matches unseeded", () => {
-      expect(hash.xxhash32HexSync("test", 0)).toBe(vectors.test);
+      expect(hash.xxhash32HexSync("test", 0)).toBe(requireVector(vectors, "test", "xxhash32"));
     });
 
-    it("xxhash32 with seed=42 matches expected", () => {
-      expect(hash.xxhash32HexSync("test", 42)).toBe(seededVectors["42"]!.test);
+    // Full matrix: all seeds x all inputs (xxhash32 uses 32-bit number seeds)
+    const xxhash32Seeds = [
+      ["0", 0],
+      ["1", 1],
+      ["42", 42],
+      ["3735928559", 0xdeadbeef], // 0xDEADBEEF
+    ] as const;
+
+    it.each(
+      xxhash32Seeds.flatMap(([seedKey, seedNum]) =>
+        Object.entries(TEST_INPUTS).map(
+          ([inputName, input]) => [seedKey, seedNum, inputName, input] as const,
+        )
+      ),
+    )("xxhash32(seed=%s, %s) matches expected", (seedKey, seedNum, inputName, _input) => {
+      const input = TEST_INPUTS[inputName];
+      if (input === undefined) throw new Error(`Missing TEST_INPUT: ${inputName}`);
+      const expected = requireSeededVector(seededVectors, seedKey, inputName, "xxhash32");
+      expect(hash.xxhash32HexSync(input, seedNum)).toBe(expected);
     });
 
-    it("xxhash32 with seed=0xDEADBEEF matches expected", () => {
-      expect(hash.xxhash32HexSync("test", 0xdeadbeef)).toBe(seededVectors["3735928559"]!.test);
+    it("validates string-to-number seed conversion", () => {
+      const seedStr = "3735928559";
+      const seedNum = Number(seedStr);
+      expect(seedNum).toBe(0xdeadbeef);
+      expect(Number.isInteger(seedNum)).toBe(true);
+      expect(seedNum).toBeLessThanOrEqual(0xffffffff);
     });
   });
 
@@ -94,15 +146,38 @@ describe("Deterministic Test Vectors", () => {
 
     it.each(Object.entries(TEST_INPUTS))("xxhash64(%s) matches expected", (name, input) => {
       const result = hash.xxhash64HexSync(input);
-      expect(result).toBe(vectors[name]);
+      expect(result).toBe(requireVector(vectors, name, "xxhash64"));
     });
 
     it("xxhash64 with seed=0n matches unseeded", () => {
-      expect(hash.xxhash64HexSync("test", 0n)).toBe(vectors.test);
+      expect(hash.xxhash64HexSync("test", 0n)).toBe(requireVector(vectors, "test", "xxhash64"));
     });
 
-    it("xxhash64 with seed=42n matches expected", () => {
-      expect(hash.xxhash64HexSync("test", 42n)).toBe(seededVectors["42"]!.test);
+    // Full matrix: all seeds x all inputs (xxhash64 uses 64-bit bigint seeds)
+    const xxhash64Seeds = [
+      ["0", 0n],
+      ["1", 1n],
+      ["42", 42n],
+      ["16045690984503098046", 16045690984503098046n], // 0xDEADBEEFCAFEBABE
+    ] as const;
+
+    it.each(
+      xxhash64Seeds.flatMap(([seedKey, seedNum]) =>
+        Object.entries(TEST_INPUTS).map(
+          ([inputName, input]) => [seedKey, seedNum, inputName, input] as const,
+        )
+      ),
+    )("xxhash64(seed=%s, %s) matches expected", (seedKey, seedNum, inputName, _input) => {
+      const input = TEST_INPUTS[inputName];
+      if (input === undefined) throw new Error(`Missing TEST_INPUT: ${inputName}`);
+      const expected = requireSeededVector(seededVectors, seedKey, inputName, "xxhash64");
+      expect(hash.xxhash64HexSync(input, seedNum)).toBe(expected);
+    });
+
+    it("validates string-to-bigint seed conversion", () => {
+      const seedStr = "16045690984503098046";
+      const seedBigInt = BigInt(seedStr);
+      expect(seedBigInt).toBe(0xdeadbeefcafebaben);
     });
   });
 
@@ -112,15 +187,32 @@ describe("Deterministic Test Vectors", () => {
 
     it.each(Object.entries(TEST_INPUTS))("wyhash(%s) matches expected", (name, input) => {
       const result = hash.wyhashHexSync(input);
-      expect(result).toBe(vectors[name]);
+      expect(result).toBe(requireVector(vectors, name, "wyhash"));
     });
 
     it("wyhash with seed=0n matches unseeded", () => {
-      expect(hash.wyhashHexSync("test", 0n)).toBe(vectors.test);
+      expect(hash.wyhashHexSync("test", 0n)).toBe(requireVector(vectors, "test", "wyhash"));
     });
 
-    it("wyhash with seed=42n matches expected", () => {
-      expect(hash.wyhashHexSync("test", 42n)).toBe(seededVectors["42"]!.test);
+    // Full matrix: all seeds x all inputs (wyhash uses 64-bit bigint seeds)
+    const wyhashSeeds = [
+      ["0", 0n],
+      ["1", 1n],
+      ["42", 42n],
+      ["16045690984503098046", 16045690984503098046n],
+    ] as const;
+
+    it.each(
+      wyhashSeeds.flatMap(([seedKey, seedNum]) =>
+        Object.entries(TEST_INPUTS).map(
+          ([inputName, input]) => [seedKey, seedNum, inputName, input] as const,
+        )
+      ),
+    )("wyhash(seed=%s, %s) matches expected", (seedKey, seedNum, inputName, _input) => {
+      const input = TEST_INPUTS[inputName];
+      if (input === undefined) throw new Error(`Missing TEST_INPUT: ${inputName}`);
+      const expected = requireSeededVector(seededVectors, seedKey, inputName, "wyhash");
+      expect(hash.wyhashHexSync(input, seedNum)).toBe(expected);
     });
   });
 
@@ -130,11 +222,28 @@ describe("Deterministic Test Vectors", () => {
 
     it.each(Object.entries(TEST_INPUTS))("cityhash64(%s) matches expected", (name, input) => {
       const result = hash.cityhash64HexSync(input);
-      expect(result).toBe(vectors[name]);
+      expect(result).toBe(requireVector(vectors, name, "cityhash64"));
     });
 
-    it("cityhash64 with seed=42n matches expected", () => {
-      expect(hash.cityhash64HexSync("test", 42n)).toBe(seededVectors["42"]!.test);
+    // Full matrix: all seeds x all inputs (cityhash64 uses 64-bit bigint seeds)
+    const cityhash64Seeds = [
+      ["0", 0n],
+      ["1", 1n],
+      ["42", 42n],
+      ["16045690984503098046", 16045690984503098046n],
+    ] as const;
+
+    it.each(
+      cityhash64Seeds.flatMap(([seedKey, seedNum]) =>
+        Object.entries(TEST_INPUTS).map(
+          ([inputName, input]) => [seedKey, seedNum, inputName, input] as const,
+        )
+      ),
+    )("cityhash64(seed=%s, %s) matches expected", (seedKey, seedNum, inputName, _input) => {
+      const input = TEST_INPUTS[inputName];
+      if (input === undefined) throw new Error(`Missing TEST_INPUT: ${inputName}`);
+      const expected = requireSeededVector(seededVectors, seedKey, inputName, "cityhash64");
+      expect(hash.cityhash64HexSync(input, seedNum)).toBe(expected);
     });
   });
 
@@ -144,11 +253,28 @@ describe("Deterministic Test Vectors", () => {
 
     it.each(Object.entries(TEST_INPUTS))("murmur2_64(%s) matches expected", (name, input) => {
       const result = hash.murmur2_64HexSync(input);
-      expect(result).toBe(vectors[name]);
+      expect(result).toBe(requireVector(vectors, name, "murmur2_64"));
     });
 
-    it("murmur2_64 with seed=42n matches expected", () => {
-      expect(hash.murmur2_64HexSync("test", 42n)).toBe(seededVectors["42"]!.test);
+    // Full matrix: all seeds x all inputs (murmur2_64 uses 64-bit bigint seeds)
+    const murmur2_64Seeds = [
+      ["0", 0n],
+      ["1", 1n],
+      ["42", 42n],
+      ["16045690984503098046", 16045690984503098046n],
+    ] as const;
+
+    it.each(
+      murmur2_64Seeds.flatMap(([seedKey, seedNum]) =>
+        Object.entries(TEST_INPUTS).map(
+          ([inputName, input]) => [seedKey, seedNum, inputName, input] as const,
+        )
+      ),
+    )("murmur2_64(seed=%s, %s) matches expected", (seedKey, seedNum, inputName, _input) => {
+      const input = TEST_INPUTS[inputName];
+      if (input === undefined) throw new Error(`Missing TEST_INPUT: ${inputName}`);
+      const expected = requireSeededVector(seededVectors, seedKey, inputName, "murmur2_64");
+      expect(hash.murmur2_64HexSync(input, seedNum)).toBe(expected);
     });
   });
 
@@ -157,7 +283,7 @@ describe("Deterministic Test Vectors", () => {
 
     it.each(Object.entries(TEST_INPUTS))("fnv1a64(%s) matches expected", (name, input) => {
       const result = hash.fnv1a64HexSync(input);
-      expect(result).toBe(vectors[name]);
+      expect(result).toBe(requireVector(vectors, name, "fnv1a64"));
     });
   });
 
@@ -166,7 +292,7 @@ describe("Deterministic Test Vectors", () => {
 
     it.each(Object.entries(TEST_INPUTS))("fnv1a32(%s) matches expected", (name, input) => {
       const result = hash.fnv1a32HexSync(input);
-      expect(result).toBe(vectors[name]);
+      expect(result).toBe(requireVector(vectors, name, "fnv1a32"));
     });
   });
 });
