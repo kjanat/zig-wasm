@@ -12,6 +12,10 @@
 test-results/
 /html
 
+# Reviews
+.lastreview
+.review.md
+
 # Created by https://gitignore.kjanat.com/api/node,zig,python,linux,macos,windows
 # Edit at https://gitignore.kjanat.com?templates=node,zig,python,linux,macos,windows
 
