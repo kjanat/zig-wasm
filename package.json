@@ -64,6 +64,7 @@
     "@vitest/ui": "catalog:",
     "@zig-wasm/tooling": "workspace:*",
     "dprint": "catalog:",
+    "glob": "catalog:",
     "lefthook": "catalog:",
     "markdownlint-cli2": "catalog:",
     "publint": "catalog:",
@@ -73,7 +74,7 @@
     "vite-tsconfig-paths": "catalog:",
     "vitest": "catalog:"
   },
-  "packageManager": "pnpm@10.25.0",
+  "packageManager": "pnpm@10.26.0",
   "engines": {
     "node": ">=20",
     "pnpm": ">=10"

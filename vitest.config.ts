@@ -1,4 +1,5 @@
-import { globSync, readFileSync } from "node:fs";
+import { globSync } from "glob";
+import { readFileSync } from "node:fs";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { configDefaults, defineConfig } from "vitest/config";
 import type { TestProjectConfiguration, TestUserConfig } from "vitest/config";
