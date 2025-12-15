@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * Check if a package version is already published on npm.
  *
@@ -10,13 +10,13 @@
  *
  * ```bash
  * # Using scoped package name
- * bun check-published @zig-wasm/crypto
+ * node check-published @zig-wasm/crypto
  *
  * # Using short name (resolves to packages/crypto)
- * bun check-published crypto
+ * node check-published crypto
  *
  * # Using relative path
- * bun check-published ./packages/crypto
+ * node check-published ./packages/crypto
  * ```
  *
  * Exit codes:
@@ -61,7 +61,10 @@
  * @module check-published
  */
 
-import { resolve } from "node:path";
+import { runCli } from "./cli.ts";
+import { CHECK_PUBLISHED_USAGE, printHelp } from "./messages.ts";
+import { findMonorepoRoot } from "./monorepo.ts";
+import { readPackageJson, resolvePackageJsonPath } from "./paths.ts";
 
 /**
  * Result returned by {@link checkPublished}.
@@ -117,60 +120,47 @@ export interface CheckPublishedResult {
  * // Reads from: ./internal/tooling/package.json
  * ```
  */
-export async function checkPublished(pkgPath: string): Promise<CheckPublishedResult> {
-  // Resolve path - support both @scope/name and relative paths
-  let packageJsonPath: string;
-
-  if (pkgPath.startsWith("@")) {
-    // Handle @scope/name - extract package name after the scope
-    const scopedName = pkgPath.split("/")[1] || pkgPath;
-    packageJsonPath = resolve(process.cwd(), "packages", scopedName, "package.json");
-  } else if (pkgPath.startsWith(".")) {
-    // Handle relative paths
-    packageJsonPath = resolve(process.cwd(), pkgPath, "package.json");
-  } else {
-    // Handle package name without scope
-    packageJsonPath = resolve(process.cwd(), "packages", pkgPath, "package.json");
-  }
-
-  const file = Bun.file(packageJsonPath);
-  const packageJson = (await file.json()) as { name: string; version: string };
-  const { name, version } = packageJson;
-
-  const npmResponse = await fetch(`https://registry.npmjs.org/${name}/${version}`);
+export async function checkPublished(
+  pkgPath: string,
+  registryUrl: string = "https://registry.npmjs.org",
+): Promise<CheckPublishedResult> {
+  const packageJsonPath: string = resolvePackageJsonPath(pkgPath, findMonorepoRoot());
+  const { name, version } = await readPackageJson(packageJsonPath);
 
   return {
     name,
     version,
-    published: npmResponse.ok,
+    published: (await fetch(`${registryUrl}/${name}/${version}`)).ok,
   };
 }
 
 // CLI entry point
 if (import.meta.main) {
-  (async () => {
-    const pkgPath = Bun.argv[2];
+  await runCli(async () => {
+    if (process.argv.includes("--help") || process.argv.includes("-h")) {
+      printHelp(CHECK_PUBLISHED_USAGE, "info");
+      return 0;
+    }
 
-    if (!pkgPath) {
-      console.error("Usage: check-published <package-path-or-name>");
-      console.error("Examples: check-published crypto, check-published @zig-wasm/crypto");
-      process.exit(1);
+    if (!process.argv[2]) {
+      printHelp(CHECK_PUBLISHED_USAGE, "error");
+      return 1;
     }
 
     console.log(`Checking if package is published...`);
 
     try {
-      const result = await checkPublished(pkgPath);
+      const result = await checkPublished(process.argv[2]);
       if (result.published) {
-        console.log(`\u2713 ${result.name}@${result.version} is published on npm`);
-        process.exit(0);
-      } else {
-        console.log(`\u2717 ${result.name}@${result.version} is NOT published on npm`);
-        process.exit(1);
+        console.log(`✓ ${result.name}@${result.version} is published on npm`);
+        return 0;
       }
+
+      console.log(`✗ ${result.name}@${result.version} is NOT published on npm`);
+      return 1;
     } catch (error) {
       console.error("Failed to check npm registry:", error);
-      process.exit(2);
+      return 2;
     }
-  })();
+  });
 }

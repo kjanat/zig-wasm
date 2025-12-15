@@ -4,9 +4,17 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, type UserConfig } from "tsdown";
+import rootPkg from "./package.json" with { type: "json" };
 
 const repoUrl = "https://github.com/kjanat/zig-wasm";
 const repoRoot = dirname(fileURLToPath(import.meta.url));
+
+/** Extract the relative wasm directory from the CI config (last segment of path) */
+function getWasmDir(): string {
+  const wasmPath = rootPkg.config.ci.paths.wasm;
+  const segments = wasmPath.split("/").filter(Boolean);
+  return segments.at(-1) ?? "wasm";
+}
 
 const licenseInfo = (() => {
   try {
@@ -90,7 +98,7 @@ function injectJsrImports(packageRoot: string): void {
 
     if (Object.keys(imports).length > 0) {
       jsrConfig.imports = imports;
-      writeFileSync(jsrPath, JSON.stringify(jsrConfig, null, 2) + "\n");
+      writeFileSync(jsrPath, `${JSON.stringify(jsrConfig, null, 2)}\n`);
     }
   } catch (err) {
     console.warn(`Failed to update JSR imports for ${packageRoot}:`, err);
@@ -155,16 +163,17 @@ export function wasmConfig(packageName: string, overrides: Partial<UserConfig> =
       const jsrContent = readFileSync(jsrPath, "utf-8");
       const jsrConfig = JSON.parse(jsrContent);
 
+      const wasmDir = getWasmDir();
       jsrConfig.exports = {
         ".": typeof jsrConfig.exports === "string" ? jsrConfig.exports : "./src/index.ts",
-        [`./${packageName}.wasm`]: `./wasm/${packageName}.wasm`,
+        [`./${packageName}.wasm`]: `./${wasmDir}/${packageName}.wasm`,
       };
 
       if (!jsrConfig.publish) {
         jsrConfig.publish = { exclude: ["!wasm"] };
       }
 
-      writeFileSync(jsrPath, JSON.stringify(jsrConfig, null, 2) + "\n");
+      writeFileSync(jsrPath, `${JSON.stringify(jsrConfig, null, 2)}\n`);
     }
 
     if (existsSync(packageJsonPath)) {
@@ -173,8 +182,9 @@ export function wasmConfig(packageName: string, overrides: Partial<UserConfig> =
       const hasExportsObject = typeof pkgConfig.exports === "object" && pkgConfig.exports !== null;
 
       if (hasExportsObject) {
-        pkgConfig.exports[`./${packageName}.wasm`] = `./dist/${packageName}.wasm`;
-        writeFileSync(packageJsonPath, JSON.stringify(pkgConfig, null, 2) + "\n");
+        const wasmDir = getWasmDir();
+        pkgConfig.exports[`./${packageName}.wasm`] = `./${wasmDir}/${packageName}.wasm`;
+        writeFileSync(packageJsonPath, `${JSON.stringify(pkgConfig, null, 2)}\n`);
       }
     }
 
@@ -199,7 +209,8 @@ export function wasmConfig(packageName: string, overrides: Partial<UserConfig> =
     plugins: mergedPlugins,
     exports: {
       customExports(pkg) {
-        pkg[`./${packageName}.wasm`] = `./wasm/${packageName}.wasm`;
+        const wasmDir = getWasmDir();
+        pkg[`./${packageName}.wasm`] = `./${wasmDir}/${packageName}.wasm`;
         return pkg;
       },
     },

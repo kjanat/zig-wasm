@@ -1,3 +1,11 @@
 {
-  "extends": "@zig-wasm/tooling/tsconfig"
+  "extends": "@zig-wasm/tooling/tsconfig",
+  "compilerOptions": {
+    "paths": {
+      "$/*": ["./src/*"],
+      "~/*": ["../../*"],
+      "@zig-wasm/compress/*": ["./src/*"],
+      "@zig-wasm/compress": ["./src/index.ts"]
+    }
+  }
 }

@@ -119,3 +119,28 @@ export type {
 
 // Utilities
 export { bytesToString, compareBytes, concatBytes, fromHex, stringToBytes, toHex } from "./utils.ts";
+
+// LEB128 encoding/decoding
+export { decodeSleb128, decodeUleb128, encodeSleb128, encodeUleb128 } from "./leb128.ts";
+
+// WASM binary format utilities
+export {
+  encodeFuncType,
+  encodeLimits,
+  encodeSection,
+  encodeString,
+  encodeVec,
+  ExportKind,
+  ImportKind,
+  isValidWasmHeader,
+  Op,
+  parseWasmSections,
+  Section,
+  SECTION_NAMES,
+  TypeConstructor,
+  ValType,
+  WASM_HEADER,
+  WASM_MAGIC,
+  WASM_VERSION,
+} from "./wasm-binary.ts";
+export type { ParsedSection } from "./wasm-binary.ts";

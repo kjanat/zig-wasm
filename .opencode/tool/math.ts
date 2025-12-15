@@ -1,5 +1,6 @@
+/// <reference types="bun-types" />
+/// <reference types="@opencode-ai/plugin" />
 import { tool } from "@opencode-ai/plugin";
-import "../node_modules/@opencode-ai/plugin/dist/index.d.ts";
 
 // dprint-ignore
 import {
@@ -19,7 +20,7 @@ import {
   sinh,
   // power
   sqrt, tan, tanh, trunc,
-} from "../../packages/math/dist/index.mjs";
+} from "@zig-wasm/math";
 
 const FNS = /* dprint-ignore */ [
   "sin", "cos", "tan", "asin", "acos", "atan", "atan2", "sinh", "cosh", "tanh",

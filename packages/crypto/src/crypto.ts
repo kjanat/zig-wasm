@@ -129,7 +129,11 @@ export async function init(options?: InitOptions): Promise<void> {
     } else if (options?.wasmPath) {
       result = await loadWasm<CryptoWasmExports>({ wasmPath: options.wasmPath, imports: options.imports });
     } else if (options?.wasmUrl) {
-      result = await loadWasm<CryptoWasmExports>({ wasmUrl: options.wasmUrl, imports: options.imports });
+      result = await loadWasm<CryptoWasmExports>({
+        wasmUrl: options.wasmUrl,
+        imports: options.imports,
+        fetchFn: options.fetchFn,
+      });
     } else if (env.isNode || env.isBun) {
       const { fileURLToPath } = await import("node:url");
       const { dirname, join } = await import("node:path");

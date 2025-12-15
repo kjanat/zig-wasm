@@ -1,7 +1,8 @@
+/// <reference types="bun-types" />
+/// <reference types="@opencode-ai/plugin" />
 import { tool } from "@opencode-ai/plugin";
-import "../node_modules/@opencode-ai/plugin/dist/index.d.ts";
 
-import { hashHex, hmacHex } from "../../packages/crypto/dist/index.mjs";
+import { hashHex, hmacHex } from "@zig-wasm/crypto";
 
 const ALGORITHMS = /* dprint-ignore */ [
   "md5", "sha1", "sha256", "sha384", "sha512", "sha3-256", "sha3-512",

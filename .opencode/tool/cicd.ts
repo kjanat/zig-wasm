@@ -1,5 +1,9 @@
+/// <reference types="bun-types" />
+/// <reference types="@opencode-ai/plugin" />
+
 import { tool } from "@opencode-ai/plugin";
-import "../node_modules/@opencode-ai/plugin/dist/index.d.ts";
+
+const REPOSITORY = "kjanat/zig-wasm";
 
 // ---------- types ----------
 
@@ -114,18 +118,15 @@ export const status = tool({
   },
   async execute(args) {
     const limit = args.limit ?? 5;
-    const repo = "kjanat/zig-wasm";
+    const repo = REPOSITORY;
 
     // Build list command
+    // dprint-ignore
     const listArgs = [
-      "run",
-      "list",
-      "--repo",
-      repo,
-      "--limit",
-      String(limit * 3), // Get more to filter
-      "--json",
-      "databaseId,conclusion,status,workflowName,headBranch,event,createdAt",
+      "run", "list",
+      "--repo", repo,
+      "--limit", String(limit * 3), // Get more to filter
+      "--json", "databaseId,conclusion,status,workflowName,headBranch,event,createdAt",
     ];
 
     if (args.workflow) {
@@ -185,14 +186,11 @@ export const status = tool({
 
         if (needsDetails) {
           try {
+            // dprint-ignore
             const detailsJson = await runGh([
-              "run",
-              "view",
-              String(run.databaseId),
-              "--repo",
-              repo,
-              "--json",
-              "jobs,url",
+              "run", "view", String(run.databaseId),
+              "--repo", repo,
+              "--json", "jobs,url",
             ]);
             const details: Pick<RunDetails, "jobs" | "url"> = JSON.parse(detailsJson);
 
@@ -274,18 +272,15 @@ export const logs = tool({
       .describe("Number of log lines to show (default: 100)"),
   },
   async execute(args) {
-    const repo = "kjanat/zig-wasm";
+    const repo = REPOSITORY;
     const tail = args.tail ?? 100;
 
     // Get run details first
+    // dprint-ignore
     const detailsJson = await runGh([
-      "run",
-      "view",
-      String(args.runId),
-      "--repo",
-      repo,
-      "--json",
-      "jobs,workflowName,conclusion,headBranch,url",
+      "run", "view", String(args.runId),
+      "--repo", repo,
+      "--json", "jobs,workflowName,conclusion,headBranch,url",
     ]);
     const details: RunDetails = JSON.parse(detailsJson);
 
@@ -298,7 +293,8 @@ export const logs = tool({
     // Filter jobs
     let jobs = details.jobs;
     if (args.job) {
-      jobs = jobs.filter((j) => j.name.toLowerCase().includes(args.job!.toLowerCase()));
+      const jobFilter = args.job; // Type is narrowed to string
+      jobs = jobs.filter((j) => j.name.toLowerCase().includes(jobFilter.toLowerCase()));
     }
     if (args.failed) {
       jobs = jobs.filter((j) => j.conclusion === "failure");
@@ -361,7 +357,7 @@ export const rerun = tool({
       .describe("Only rerun failed jobs (default: true)"),
   },
   async execute(args) {
-    const repo = "kjanat/zig-wasm";
+    const repo = REPOSITORY;
     const rerunArgs = ["run", "rerun", String(args.runId), "--repo", repo];
 
     if (args.failed) {
@@ -387,7 +383,7 @@ export const cancel = tool({
     runId: tool.schema.number().describe("Workflow run ID to cancel"),
   },
   async execute(args) {
-    const repo = "kjanat/zig-wasm";
+    const repo = REPOSITORY;
 
     try {
       await runGh(["run", "cancel", String(args.runId), "--repo", repo]);

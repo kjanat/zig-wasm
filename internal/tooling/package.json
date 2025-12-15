@@ -18,26 +18,28 @@
   "author": "Kaj Kowalski <dev@kajkowalski.nl> (https://github.com/kjanat)",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./biome": "./biome.json",
-    "./tsconfig": "./tsconfig.base.json"
+    ".": "./dist/index.mjs",
+    "./biome": "./configs/biome.base.json",
+    "./tsconfig": "./configs/tsconfig.base.json"
   },
   "bin": {
-    "check-published": "./src/check-published.ts",
-    "sync-versions": "./src/sync-versions.ts"
+    "check-published": "./bin/check-published.sh",
+    "sync-versions": "./bin/sync-versions.sh"
   },
   "files": [
-    "biome.json",
-    "tsconfig.base.json",
+    "bin",
+    "configs",
     "src"
   ],
   "scripts": {
-    "check-published": "bun ./src/check-published.ts",
+    "build": "tsdown",
+    "check-published": "./bin/check-published.sh",
+    "clean": "rm -rf dist",
     "fmt": "dprint fmt",
     "lint": "biome lint",
     "lint:fix": "biome check --write && pnpm fmt",
     "publish:jsr": "pnpm dlx jsr publish --allow-dirty",
-    "sync-versions": "bun ./src/sync-versions.ts",
+    "sync-versions": "./bin/sync-versions.sh",
     "test": "vitest run",
     "typecheck": "tsgo --noEmit"
   },
@@ -46,6 +48,7 @@
     "@types/bun": "catalog:",
     "@typescript/native-preview": "catalog:",
     "dprint": "catalog:",
+    "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },

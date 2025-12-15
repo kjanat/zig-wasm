@@ -1,5 +1,6 @@
+/// <reference types="bun-types" />
+/// <reference types="@opencode-ai/plugin" />
 import { tool } from "@opencode-ai/plugin";
-import "../node_modules/@opencode-ai/plugin/dist/index.d.ts";
 
 import {
   decode,
@@ -12,7 +13,7 @@ import {
   encodeUrlNoPadding,
   hexDecode,
   hexEncode,
-} from "../../packages/base64/dist/index.mjs";
+} from "@zig-wasm/base64";
 
 const VARIANTS = [
   "standard",

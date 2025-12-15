@@ -80,12 +80,17 @@ export async function init(options?: InitOptions): Promise<void> {
     const env = getEnvironment();
     let result: Awaited<ReturnType<typeof loadWasm<MathWasmExports>>>;
 
+    // v8 ignore else: -- @preserve -- browser fallback uses fetch() which doesn't support file:// URLs in Node
     if (options?.wasmBytes) {
       result = await loadWasm<MathWasmExports>({ wasmBytes: options.wasmBytes, imports: options.imports });
     } else if (options?.wasmPath) {
       result = await loadWasm<MathWasmExports>({ wasmPath: options.wasmPath, imports: options.imports });
     } else if (options?.wasmUrl) {
-      result = await loadWasm<MathWasmExports>({ wasmUrl: options.wasmUrl, imports: options.imports });
+      result = await loadWasm<MathWasmExports>({
+        wasmUrl: options.wasmUrl,
+        imports: options.imports,
+        fetchFn: options.fetchFn,
+      });
     } else if (env.isNode || env.isBun) {
       const { fileURLToPath } = await import("node:url");
       const { dirname, join } = await import("node:path");

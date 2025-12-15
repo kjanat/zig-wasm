@@ -64,10 +64,12 @@
 
 import pkg from "../package.json" with { type: "json" };
 
-export const VERSION = pkg.version;
+export const VERSION: string = pkg.version;
 
 export { checkPublished } from "./check-published.ts";
 export type { CheckPublishedResult } from "./check-published.ts";
 
 export { syncVersions } from "./sync-versions.ts";
 export type { SyncVersionsOptions, SyncVersionsResult } from "./sync-versions.ts";
+
+export { findMonorepoRoot } from "./monorepo.ts";

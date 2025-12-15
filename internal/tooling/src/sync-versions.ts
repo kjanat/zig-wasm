@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * Sync versions between package.json and jsr.json for all packages.
  *
@@ -16,10 +16,10 @@
  *
  * ```bash
  * # Check for mismatches (CI-friendly, exits non-zero on mismatch)
- * bun sync-versions --check
+ * node sync-versions --check
  *
  * # Sync versions (updates jsr.json files)
- * bun sync-versions
+ * node sync-versions
  * ```
  *
  * Exit codes:
@@ -62,8 +62,13 @@
  * @module sync-versions
  */
 
-import { readdirSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
+import { readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
+import { runCli } from "./cli.ts";
+import { printHelp, SYNC_VERSIONS_USAGE } from "./messages.ts";
+import { findMonorepoRoot } from "./monorepo.ts";
+import { readPackageJson } from "./paths.ts";
 
 /**
  * Internal representation of package.json structure.
@@ -163,7 +168,9 @@ export interface SyncVersionsResult {
  * ```
  */
 export async function syncVersions(options: SyncVersionsOptions = {}): Promise<SyncVersionsResult> {
-  const { checkOnly = false, cwd = process.cwd() } = options;
+  const startPath = options.cwd ?? process.cwd();
+  const monorepoRoot = findMonorepoRoot(startPath);
+  const { checkOnly = false, cwd = monorepoRoot } = options;
   const packagesDir = resolve(cwd, "packages");
   const internalDir = resolve(cwd, "internal");
 
@@ -185,15 +192,12 @@ export async function syncVersions(options: SyncVersionsOptions = {}): Promise<S
       const jsrJsonPath = join(dir, "jsr.json");
 
       try {
-        const packageFile = Bun.file(packageJsonPath);
-        const jsrFile = Bun.file(jsrJsonPath);
-
-        if (!(await packageFile.exists()) || !(await jsrFile.exists())) {
+        if (!existsSync(packageJsonPath) || !existsSync(jsrJsonPath)) {
           continue;
         }
 
-        const packageJson = (await packageFile.json()) as PackageJson;
-        const jsrJson = (await jsrFile.json()) as JsrJson;
+        const packageJson = (await readPackageJson(packageJsonPath)) as PackageJson;
+        const jsrJson = JSON.parse(await readFile(jsrJsonPath, "utf-8")) as JsrJson;
 
         const npmVersion = packageJson.version;
         const jsrVersion = jsrJson.version;
@@ -202,20 +206,20 @@ export async function syncVersions(options: SyncVersionsOptions = {}): Promise<S
         if (npmVersion !== jsrVersion) {
           mismatches++;
           console.warn(
-            `\u26A0 ${packageJson.name} version mismatch: package.json=${npmVersion}, jsr.json=${jsrVersion}`,
+            `⚠ ${packageJson.name} version mismatch: package.json=${npmVersion}, jsr.json=${jsrVersion}`,
           );
 
           if (!checkOnly) {
             jsrJson.version = npmVersion;
-            await Bun.write(jsrJsonPath, `${JSON.stringify(jsrJson, null, 2)}\n`);
-            console.log(`\u2713 Updated ${dirName}/jsr.json to v${npmVersion}`);
+            await writeFile(jsrJsonPath, `${JSON.stringify(jsrJson, null, 2)}\n`);
+            console.log(`✓ Updated ${dirName}/jsr.json to v${npmVersion}`);
             synced.push(packageJson.name);
           }
         } else {
-          console.log(`\u2713 ${packageJson.name}@${npmVersion} is in sync`);
+          console.log(`✓ ${packageJson.name}@${npmVersion} is in sync`);
         }
       } catch (error) {
-        if ((error as ErrnoException).code !== "ENOENT") {
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
           console.error(`Error processing ${dir}:`, error);
         }
       }
@@ -232,7 +236,7 @@ export async function syncVersions(options: SyncVersionsOptions = {}): Promise<S
   if (mismatches > 0 && checkOnly) {
     console.log("\nRun without --check to fix these mismatches");
   } else {
-    console.log("\n\u2713 All versions are in sync!");
+    console.log("\n✓ All versions are in sync!");
   }
 
   return { success, mismatches, synced };
@@ -240,9 +244,14 @@ export async function syncVersions(options: SyncVersionsOptions = {}): Promise<S
 
 // CLI entry point
 if (import.meta.main) {
-  (async () => {
-    const checkOnly = Bun.argv.includes("--check");
+  await runCli(async () => {
+    if (process.argv.includes("--help") || process.argv.includes("-h")) {
+      printHelp(SYNC_VERSIONS_USAGE);
+      return 0;
+    }
+
+    const checkOnly = process.argv.includes("--check");
     const result = await syncVersions({ checkOnly });
-    process.exit(result.success ? 0 : 1);
-  })();
+    return result.success ? 0 : 1;
+  });
 }

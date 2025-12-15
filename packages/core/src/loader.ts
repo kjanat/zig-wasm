@@ -177,7 +177,11 @@ async function instantiateWasm(
   }
 
   // Fall back to ArrayBuffer instantiation
-  const bytes = source instanceof ArrayBuffer ? source : await (source as Promise<Response>).then(r => r.arrayBuffer());
+  const bytes = source instanceof ArrayBuffer
+    ? source
+    : /* v8 ignore next -- @preserve: Promise<Response> unreachable in Node */ await (source as Promise<Response>).then(
+      r => r.arrayBuffer(),
+    );
   return WebAssembly.instantiate(bytes, imports);
 }
 

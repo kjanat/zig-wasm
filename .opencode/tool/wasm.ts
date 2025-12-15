@@ -1,5 +1,6 @@
+/// <reference types="bun-types" />
+/// <reference types="@opencode-ai/plugin" />
 import { tool } from "@opencode-ai/plugin";
-import "../node_modules/@opencode-ai/plugin/dist/index.d.ts";
 
 // --- helpers for parsing WASM binary sections ---
 
@@ -42,7 +43,9 @@ function readVarUint32(bytes: Uint8Array, offset: number): [value: number, next:
   let pos = offset;
 
   while (pos < bytes.length) {
-    const byte = bytes[pos++];
+    const byte = bytes.at(pos);
+    if (byte === undefined) break;
+    pos++;
     result |= (byte & 0x7f) << shift;
     if ((byte & 0x80) === 0) break;
     shift += 7;
@@ -295,7 +298,10 @@ function parseWasmSections(bytes: Uint8Array): SectionInfo[] {
   let offset = 8;
 
   while (offset < bytes.length) {
-    const sectionId = bytes[offset++];
+    const sectionId = bytes[offset];
+    if (sectionId === undefined) break; // Should never happen, but satisfies TypeScript
+    offset++;
+
     const [size, next] = readVarUint32(bytes, offset);
     const sectionStart = offset;
 
@@ -367,10 +373,9 @@ export const size = tool({
     }));
 
     // Find largest section
-    const largestSection = sections.reduce(
-      (max, s) => (s.size > max.size ? s : max),
-      sections[0] ?? { name: "none", size: 0 },
-    );
+    const largestSection = sections.length > 0
+      ? sections.reduce((max, s) => (s.size > max.size ? s : max))
+      : null;
 
     return JSON.stringify({
       tool: "wasm_size",
