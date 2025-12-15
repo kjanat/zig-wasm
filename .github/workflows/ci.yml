@@ -190,15 +190,20 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          slug: kjanat/zig-wasm
-          flags: unit
           name: coverage-node-${{ matrix.node-version }}
+          slug: ${{ github.repository }}
+          flags: unit,node-${{ matrix.node-version }},vitest
+          report_type: coverage
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v1
+        uses: codecov/codecov-action@v5
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          flags: unit
           name: test-results-node-${{ matrix.node-version }}
+          slug: ${{ github.repository }}
+          flags: unit,node-${{ matrix.node-version }},vitest
+          report_type: test_results
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
