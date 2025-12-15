@@ -43,7 +43,7 @@ const TEST_INPUTS: Record<string, string | Uint8Array> = {
   null_in_middle: "before\x00after",
 };
 
-describe("@zig-wasm/hash - Deterministic Test Vectors", () => {
+describe("Deterministic Test Vectors", () => {
   beforeAll(async () => {
     await hash.init({ wasmPath });
   });
@@ -171,7 +171,7 @@ describe("@zig-wasm/hash - Deterministic Test Vectors", () => {
   });
 });
 
-describe("@zig-wasm/hash - Generic hashSync and hashHexSync", () => {
+describe("Generic hashSync and hashHexSync", () => {
   beforeAll(async () => {
     await hash.init({ wasmPath });
   });
@@ -232,7 +232,7 @@ describe("@zig-wasm/hash - Generic hashSync and hashHexSync", () => {
   });
 });
 
-describe("@zig-wasm/hash - Edge Cases", () => {
+describe("Edge Cases", () => {
   beforeAll(async () => {
     await hash.init({ wasmPath });
   });
@@ -260,7 +260,7 @@ describe("@zig-wasm/hash - Edge Cases", () => {
   });
 });
 
-describe("@zig-wasm/hash - Concurrent Initialization", () => {
+describe("Concurrent Initialization", () => {
   it("handles concurrent init calls safely", async () => {
     const hashModule = await import("@zig-wasm/hash");
 

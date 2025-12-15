@@ -10,7 +10,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const wasmPath = join(__dirname, "../wasm/base64.wasm");
 
-describe("@zig-wasm/base64 - Concurrent Initialization", () => {
+describe("Concurrent Initialization", () => {
   it("handles concurrent init calls safely", async () => {
     const base64 = await import("@zig-wasm/base64");
 
@@ -44,7 +44,7 @@ describe("@zig-wasm/base64 - Concurrent Initialization", () => {
   });
 });
 
-describe("@zig-wasm/base64 - NotInitializedError behavior", () => {
+describe("NotInitializedError behavior", () => {
   it("NotInitializedError has correct format", () => {
     const error = new NotInitializedError("base64");
 
@@ -56,7 +56,7 @@ describe("@zig-wasm/base64 - NotInitializedError behavior", () => {
   });
 });
 
-describe("@zig-wasm/base64 - Sync decode variants", () => {
+describe("Sync decode variants", () => {
   it("decodeSync works correctly", async () => {
     const base64 = await import("@zig-wasm/base64");
     await base64.init();
@@ -98,7 +98,7 @@ describe("@zig-wasm/base64 - Sync decode variants", () => {
   });
 });
 
-describe("@zig-wasm/base64 - Init options coverage", () => {
+describe("Init options coverage", () => {
   beforeEach(() => {
     vi.resetModules();
   });
@@ -143,7 +143,7 @@ describe("@zig-wasm/base64 - Init options coverage", () => {
   });
 });
 
-describe("@zig-wasm/base64 - Sync API without init", () => {
+describe("Sync API without init", () => {
   beforeEach(() => {
     vi.resetModules();
   });
@@ -156,7 +156,7 @@ describe("@zig-wasm/base64 - Sync API without init", () => {
   });
 });
 
-describe("@zig-wasm/base64 - Concurrent init with fresh module", () => {
+describe("Concurrent init with fresh module", () => {
   beforeEach(() => {
     vi.resetModules();
   });
@@ -174,7 +174,7 @@ describe("@zig-wasm/base64 - Concurrent init with fresh module", () => {
   });
 });
 
-describe("@zig-wasm/base64 - Additional sync encode coverage", () => {
+describe("Additional sync encode coverage", () => {
   it("encodeSync with Uint8Array input", async () => {
     const base64 = await import("@zig-wasm/base64");
     await base64.init();

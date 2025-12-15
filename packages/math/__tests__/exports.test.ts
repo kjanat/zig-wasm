@@ -24,7 +24,7 @@ describe("@zig-wasm/math exports", () => {
   });
 });
 
-describe("@zig-wasm/math - Basic Operations", () => {
+describe("Basic Operations", () => {
   describe("abs", () => {
     it("computes absolute value for positive numbers", async () => {
       expect(await math.abs(42.5)).toBe(42.5);
@@ -132,7 +132,7 @@ describe("@zig-wasm/math - Basic Operations", () => {
   });
 });
 
-describe("@zig-wasm/math - Power and Root Functions", () => {
+describe("Power and Root Functions", () => {
   describe("sqrt", () => {
     it("computes square root of positive numbers", async () => {
       expect(await math.sqrt(4)).toBe(2);
@@ -229,7 +229,7 @@ describe("@zig-wasm/math - Power and Root Functions", () => {
   });
 });
 
-describe("@zig-wasm/math - Exponential and Logarithmic Functions", () => {
+describe("Exponential and Logarithmic Functions", () => {
   describe("exp", () => {
     it("computes e^x for positive x", async () => {
       expect(await math.exp(0)).toBeCloseTo(1, 10);
@@ -311,7 +311,7 @@ describe("@zig-wasm/math - Exponential and Logarithmic Functions", () => {
   });
 });
 
-describe("@zig-wasm/math - Trigonometric Functions", () => {
+describe("Trigonometric Functions", () => {
   describe("sin", () => {
     it("computes sine for standard angles", async () => {
       expect(await math.sin(0)).toBeCloseTo(0, 10);
@@ -407,7 +407,7 @@ describe("@zig-wasm/math - Trigonometric Functions", () => {
   });
 });
 
-describe("@zig-wasm/math - Hyperbolic Functions", () => {
+describe("Hyperbolic Functions", () => {
   describe("sinh", () => {
     it("computes hyperbolic sine", async () => {
       expect(await math.sinh(0)).toBe(0);
@@ -474,7 +474,7 @@ describe("@zig-wasm/math - Hyperbolic Functions", () => {
   });
 });
 
-describe("@zig-wasm/math - Rounding Functions", () => {
+describe("Rounding Functions", () => {
   describe("floor", () => {
     it("rounds down to nearest integer", async () => {
       expect(await math.floor(3.7)).toBe(3);
@@ -527,7 +527,7 @@ describe("@zig-wasm/math - Rounding Functions", () => {
   });
 });
 
-describe("@zig-wasm/math - Classification Functions", () => {
+describe("Classification Functions", () => {
   describe("isNaN", () => {
     it("detects NaN values", async () => {
       expect(await math.isNaN(NaN)).toBe(true);
@@ -597,7 +597,7 @@ describe("@zig-wasm/math - Classification Functions", () => {
   });
 });
 
-describe("@zig-wasm/math - Constants", () => {
+describe("Constants", () => {
   describe("pi", () => {
     it("returns accurate pi value", async () => {
       expect(await math.pi()).toBeCloseTo(Math.PI, 15);
@@ -635,7 +635,7 @@ describe("@zig-wasm/math - Constants", () => {
   });
 });
 
-describe("@zig-wasm/math - Bit Manipulation", () => {
+describe("Bit Manipulation", () => {
   describe("clz (count leading zeros)", () => {
     it("counts leading zeros in 32-bit integers", async () => {
       expect(await math.clz(0b00000001)).toBe(31);
@@ -722,7 +722,7 @@ describe("@zig-wasm/math - Bit Manipulation", () => {
   });
 });
 
-describe("@zig-wasm/math - Integer Math", () => {
+describe("Integer Math", () => {
   describe("gcd (greatest common divisor)", () => {
     it("computes GCD of two positive integers", async () => {
       expect(await math.gcd(12, 8)).toBe(4);
@@ -746,7 +746,7 @@ describe("@zig-wasm/math - Integer Math", () => {
   });
 });
 
-describe("@zig-wasm/math - Floating-Point Utilities", () => {
+describe("Floating-Point Utilities", () => {
   describe("fmod (floating-point remainder)", () => {
     it("computes remainder of division", async () => {
       expect(await math.fmod(5.5, 2.0)).toBeCloseTo(1.5, 10);
@@ -782,7 +782,7 @@ describe("@zig-wasm/math - Floating-Point Utilities", () => {
   });
 });
 
-describe("@zig-wasm/math - Edge Cases and Precision", () => {
+describe("Edge Cases and Precision", () => {
   describe("NaN propagation", () => {
     it("propagates NaN through operations", async () => {
       expect(await math.abs(NaN)).toBeNaN();

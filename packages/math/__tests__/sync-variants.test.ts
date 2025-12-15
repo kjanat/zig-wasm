@@ -10,7 +10,7 @@ beforeAll(async () => {
   await math.init();
 });
 
-describe("@zig-wasm/math - Sync F32 Variants", () => {
+describe("Sync F32 Variants", () => {
   describe("classification functions (F32)", () => {
     it("isNaNF32Sync detects NaN", () => {
       expect(math.isNaNF32Sync(NaN)).toBe(true);
@@ -255,7 +255,7 @@ describe("@zig-wasm/math - Sync F32 Variants", () => {
   });
 });
 
-describe("@zig-wasm/math - Sync U64/I64 Variants", () => {
+describe("Sync U64/I64 Variants", () => {
   describe("bit manipulation (U64)", () => {
     it("clzU64Sync counts leading zeros", () => {
       expect(math.clzU64Sync(1n)).toBe(63n);
@@ -394,7 +394,7 @@ describe("@zig-wasm/math - Sync U64/I64 Variants", () => {
   });
 });
 
-describe("@zig-wasm/math - Sync 32-bit bit manipulation", () => {
+describe("Sync 32-bit bit manipulation", () => {
   describe("bswap sync variants", () => {
     it("bswap16Sync swaps bytes", () => {
       expect(math.bswap16Sync(0x1234)).toBe(0x3412);
@@ -426,7 +426,7 @@ describe("@zig-wasm/math - Sync 32-bit bit manipulation", () => {
 /**
  * Tests for async F32 variants that aren't covered in the main test file
  */
-describe("@zig-wasm/math - Async F32 coverage", () => {
+describe("Async F32 coverage", () => {
   it("isNaNF32 async variant works", async () => {
     expect(await math.isNaNF32(NaN)).toBe(true);
     expect(await math.isNaNF32(42)).toBe(false);
@@ -483,7 +483,7 @@ describe("@zig-wasm/math - Async F32 coverage", () => {
 /**
  * Tests for async U64 bit manipulation variants
  */
-describe("@zig-wasm/math - Async U64 bit ops coverage", () => {
+describe("Async U64 bit ops coverage", () => {
   it("rotlU64 async variant works", async () => {
     expect(await math.rotlU64(1n, 1)).toBe(2n);
     expect(BigInt.asUintN(64, await math.rotlU64(1n, 63))).toBe(0x8000000000000000n);
@@ -498,7 +498,7 @@ describe("@zig-wasm/math - Async U64 bit ops coverage", () => {
 /**
  * Tests for async power/root F32 variants
  */
-describe("@zig-wasm/math - Async power/root F32 coverage", () => {
+describe("Async power/root F32 coverage", () => {
   it("sqrtF32 async variant works", async () => {
     expect(await math.sqrtF32(4)).toBeCloseTo(2, 5);
     expect(await math.sqrtF32(9)).toBeCloseTo(3, 5);
@@ -524,7 +524,7 @@ describe("@zig-wasm/math - Async power/root F32 coverage", () => {
 /**
  * Tests for async exp/log F32 variants
  */
-describe("@zig-wasm/math - Async exp/log F32 coverage", () => {
+describe("Async exp/log F32 coverage", () => {
   it("expF32 async variant works", async () => {
     expect(await math.expF32(0)).toBeCloseTo(1, 5);
     expect(await math.expF32(1)).toBeCloseTo(Math.E, 5);
@@ -564,7 +564,7 @@ describe("@zig-wasm/math - Async exp/log F32 coverage", () => {
 /**
  * Tests for async trigonometric F32 variants
  */
-describe("@zig-wasm/math - Async trig F32 coverage", () => {
+describe("Async trig F32 coverage", () => {
   it("sinF32 async variant works", async () => {
     expect(await math.sinF32(0)).toBeCloseTo(0, 5);
     expect(await math.sinF32(Math.PI / 2)).toBeCloseTo(1, 5);
@@ -604,7 +604,7 @@ describe("@zig-wasm/math - Async trig F32 coverage", () => {
 /**
  * Tests for async hyperbolic F32 variants
  */
-describe("@zig-wasm/math - Async hyperbolic F32 coverage", () => {
+describe("Async hyperbolic F32 coverage", () => {
   it("sinhF32 async variant works", async () => {
     expect(await math.sinhF32(0)).toBeCloseTo(0, 5);
     expect(await math.sinhF32(1)).toBeCloseTo(1.175201, 4);

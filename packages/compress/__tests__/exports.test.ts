@@ -30,7 +30,7 @@ describe("@zig-wasm/compress exports", () => {
   });
 });
 
-describe("@zig-wasm/compress - XZ decompression (async)", () => {
+describe("XZ decompression (async)", () => {
   it("decompresses empty data", async () => {
     const compressed = loadFixture("empty.txt.xz");
     const decompressed = await compress.decompressXz(compressed);
@@ -109,7 +109,7 @@ describe("@zig-wasm/compress - XZ decompression (async)", () => {
   });
 });
 
-describe("@zig-wasm/compress - LZMA decompression (async)", () => {
+describe("LZMA decompression (async)", () => {
   it("decompresses empty data", async () => {
     const compressed = loadFixture("empty.txt.lzma");
     const decompressed = await compress.decompressLzma(compressed);
@@ -181,7 +181,7 @@ describe("@zig-wasm/compress - LZMA decompression (async)", () => {
   });
 });
 
-describe("@zig-wasm/compress - XZ decompression (sync)", () => {
+describe("XZ decompression (sync)", () => {
   it("requires initialization before use", () => {
     // Module is already initialized from async tests, but we test the error path
     // by checking that sync methods work after init
@@ -217,7 +217,7 @@ describe("@zig-wasm/compress - XZ decompression (sync)", () => {
   });
 });
 
-describe("@zig-wasm/compress - LZMA decompression (sync)", () => {
+describe("LZMA decompression (sync)", () => {
   it("decompresses empty data", () => {
     const compressed = loadFixture("empty.txt.lzma");
     const decompressed = compress.decompressLzmaSync(compressed);
@@ -247,7 +247,7 @@ describe("@zig-wasm/compress - LZMA decompression (sync)", () => {
   });
 });
 
-describe("@zig-wasm/compress - Memory management", () => {
+describe("Memory management", () => {
   it("handles multiple decompressions without memory leaks", async () => {
     const compressed = loadFixture("text.txt.xz");
     const expected = loadFixture("text.txt");
@@ -298,7 +298,7 @@ describe("@zig-wasm/compress - Memory management", () => {
   });
 });
 
-describe("@zig-wasm/compress - Round-trip validation", () => {
+describe("Round-trip validation", () => {
   it("maintains data integrity for text", async () => {
     const originalXz = loadFixture("text.txt");
     const compressedXz = loadFixture("text.txt.xz");
@@ -355,7 +355,7 @@ describe("@zig-wasm/compress - Round-trip validation", () => {
   });
 });
 
-describe("@zig-wasm/compress - Edge cases", () => {
+describe("Edge cases", () => {
   it("handles consecutive failures gracefully", async () => {
     const garbage = loadFixture("garbage.xz");
 

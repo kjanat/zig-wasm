@@ -19,7 +19,7 @@ function hexToBytes(hex: string): Uint8Array {
   return bytes;
 }
 
-describe("@zig-wasm/crypto - NotInitializedError", () => {
+describe("NotInitializedError", () => {
   it("throws NotInitializedError when calling sync functions before init", async () => {
     // Use dynamic import to get a fresh module instance
     vi.resetModules();
@@ -63,7 +63,7 @@ describe("@zig-wasm/crypto - NotInitializedError", () => {
   });
 });
 
-describe("@zig-wasm/crypto - Init with wasmPath option", () => {
+describe("Init with wasmPath option", () => {
   it("initializes with custom wasmPath", async () => {
     vi.resetModules();
     const freshCrypto = await import("@zig-wasm/crypto");
@@ -82,7 +82,7 @@ describe("@zig-wasm/crypto - Init with wasmPath option", () => {
   });
 });
 
-describe("@zig-wasm/crypto - Init with wasmBytes option", () => {
+describe("Init with wasmBytes option", () => {
   it("initializes with pre-loaded WASM bytes", async () => {
     vi.resetModules();
     const freshCrypto = await import("@zig-wasm/crypto");
@@ -102,7 +102,7 @@ describe("@zig-wasm/crypto - Init with wasmBytes option", () => {
   });
 });
 
-describe("@zig-wasm/crypto - Init with wasmUrl option", () => {
+describe("Init with wasmUrl option", () => {
   it("initializes with wasmUrl and custom fetchFn", async () => {
     vi.resetModules();
     const freshCrypto = await import("@zig-wasm/crypto");
@@ -130,7 +130,7 @@ describe("@zig-wasm/crypto - Init with wasmUrl option", () => {
   });
 });
 
-describe("@zig-wasm/crypto - HMAC-SHA512 Sync", () => {
+describe("HMAC-SHA512 Sync", () => {
   it("computes HMAC-SHA512 synchronously", async () => {
     vi.resetModules();
     const crypto = await import("@zig-wasm/crypto");
@@ -209,7 +209,7 @@ describe("@zig-wasm/crypto - HMAC-SHA512 Sync", () => {
   });
 });
 
-describe("@zig-wasm/crypto - Additional HMAC edge cases", () => {
+describe("Additional HMAC edge cases", () => {
   it("handles HMAC-SHA512 with very long data", async () => {
     vi.resetModules();
     const crypto = await import("@zig-wasm/crypto");
@@ -236,7 +236,7 @@ describe("@zig-wasm/crypto - Additional HMAC edge cases", () => {
   });
 });
 
-describe("@zig-wasm/crypto - Generic hmacSync with sha512", () => {
+describe("Generic hmacSync with sha512", () => {
   it("computes HMAC via hmacSync with sha512 algorithm", async () => {
     vi.resetModules();
     const crypto = await import("@zig-wasm/crypto");
@@ -258,7 +258,7 @@ describe("@zig-wasm/crypto - Generic hmacSync with sha512", () => {
   });
 });
 
-describe("@zig-wasm/crypto - Init idempotency", () => {
+describe("Init idempotency", () => {
   it("calling init multiple times is safe", async () => {
     vi.resetModules();
     const crypto = await import("@zig-wasm/crypto");
@@ -292,7 +292,7 @@ describe("@zig-wasm/crypto - Init idempotency", () => {
   });
 });
 
-describe("@zig-wasm/crypto - All hash algorithms with all input types", () => {
+describe("All hash algorithms with all input types", () => {
   const testData = "test data for hashing";
   const testDataBytes = new TextEncoder().encode(testData);
 

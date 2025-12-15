@@ -16,7 +16,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const wasmPath = join(dirname(fileURLToPath(import.meta.url)), "../wasm/hash.wasm");
 
-describe("@zig-wasm/hash - Initialization Paths", () => {
+describe("Initialization Paths", () => {
   beforeEach(() => {
     vi.resetModules();
   });

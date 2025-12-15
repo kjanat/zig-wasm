@@ -6,7 +6,7 @@
 import * as base64 from "@zig-wasm/base64";
 import { beforeAll, describe, expect, it } from "vitest";
 
-describe("@zig-wasm/base64 - Init options (coverage)", () => {
+describe("Init options (coverage)", () => {
   it("init with wasmPath option", async () => {
     // This tests the wasmPath branch - we use the actual path
     const { dirname, join } = await import("node:path");
@@ -23,7 +23,7 @@ describe("@zig-wasm/base64 - Init options (coverage)", () => {
   });
 });
 
-describe("@zig-wasm/base64 - Async decode variants (coverage)", () => {
+describe("Async decode variants (coverage)", () => {
   beforeAll(async () => {
     await base64.init();
   });
@@ -131,7 +131,7 @@ describe("@zig-wasm/base64 - Async decode variants (coverage)", () => {
   });
 });
 
-describe("@zig-wasm/base64 - Empty input handling", () => {
+describe("Empty input handling", () => {
   beforeAll(async () => {
     await base64.init();
   });
@@ -246,7 +246,7 @@ describe("@zig-wasm/base64 - Empty input handling", () => {
   });
 });
 
-describe("@zig-wasm/base64 - Cross-variant compatibility", () => {
+describe("Cross-variant compatibility", () => {
   beforeAll(async () => {
     await base64.init();
   });
@@ -274,7 +274,7 @@ describe("@zig-wasm/base64 - Cross-variant compatibility", () => {
   });
 });
 
-describe("@zig-wasm/base64 - Uint8Array input variants", () => {
+describe("Uint8Array input variants", () => {
   beforeAll(async () => {
     await base64.init();
   });
@@ -311,7 +311,7 @@ describe("@zig-wasm/base64 - Uint8Array input variants", () => {
   });
 });
 
-describe("@zig-wasm/base64 - Whitespace and special character inputs", () => {
+describe("Whitespace and special character inputs", () => {
   beforeAll(async () => {
     await base64.init();
   });
@@ -347,7 +347,7 @@ describe("@zig-wasm/base64 - Whitespace and special character inputs", () => {
   });
 });
 
-describe("@zig-wasm/base64 - Standard decode roundtrips", () => {
+describe("Standard decode roundtrips", () => {
   beforeAll(async () => {
     await base64.init();
   });

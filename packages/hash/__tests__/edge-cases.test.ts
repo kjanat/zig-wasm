@@ -11,7 +11,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 const wasmPath = join(dirname(fileURLToPath(import.meta.url)), "../wasm/hash.wasm");
 
-describe("@zig-wasm/hash - Edge Cases", () => {
+describe("Edge Cases", () => {
   beforeAll(async () => {
     await hash.init({ wasmPath });
   });

@@ -47,7 +47,7 @@ const HMAC_KEYS: Record<string, string> = {
   long_key: "this_is_a_much_longer_key_for_hmac_testing_purposes_1234567890",
 };
 
-describe("@zig-wasm/crypto - Deterministic Test Vectors", () => {
+describe("Deterministic Test Vectors", () => {
   beforeAll(async () => {
     await crypto.init();
   });
@@ -183,7 +183,7 @@ describe("@zig-wasm/crypto - Deterministic Test Vectors", () => {
   });
 });
 
-describe("@zig-wasm/crypto - HMAC Test Vectors", () => {
+describe("HMAC Test Vectors", () => {
   beforeAll(async () => {
     await crypto.init();
   });
@@ -221,7 +221,7 @@ describe("@zig-wasm/crypto - HMAC Test Vectors", () => {
   });
 });
 
-describe("@zig-wasm/crypto - Generic hashSync and hashHexSync", () => {
+describe("Generic hashSync and hashHexSync", () => {
   beforeAll(async () => {
     await crypto.init();
   });
@@ -284,7 +284,7 @@ describe("@zig-wasm/crypto - Generic hashSync and hashHexSync", () => {
   });
 });
 
-describe("@zig-wasm/crypto - Edge Cases", () => {
+describe("Edge Cases", () => {
   beforeAll(async () => {
     await crypto.init();
   });
@@ -317,7 +317,7 @@ describe("@zig-wasm/crypto - Edge Cases", () => {
   });
 });
 
-describe("@zig-wasm/crypto - Concurrent Initialization", () => {
+describe("Concurrent Initialization", () => {
   it("handles concurrent init calls safely", async () => {
     const cryptoModule = await import("@zig-wasm/crypto");
 

@@ -14,7 +14,7 @@ function loadFixture(filename: string): Uint8Array {
   return new Uint8Array(readFileSync(join(fixturesDir, filename)));
 }
 
-describe("@zig-wasm/compress - NotInitializedError", () => {
+describe("NotInitializedError", () => {
   it("throws NotInitializedError when calling sync function before init", async () => {
     // Use vi.resetModules to get fresh module state
     vi.resetModules();
@@ -46,7 +46,7 @@ describe("@zig-wasm/compress - NotInitializedError", () => {
   });
 });
 
-describe("@zig-wasm/compress - init() options", () => {
+describe("init() options", () => {
   it("supports wasmPath option", async () => {
     vi.resetModules();
     const { init, isInitialized, decompressXzSync } = await import("@zig-wasm/compress");
@@ -152,7 +152,7 @@ describe("@zig-wasm/compress - init() options", () => {
   });
 });
 
-describe("@zig-wasm/compress - init() with default path (Node/Bun)", () => {
+describe("init() with default path (Node/Bun)", () => {
   it("auto-detects environment and loads WASM", async () => {
     vi.resetModules();
     const { init, isInitialized, decompressXzSync } = await import("@zig-wasm/compress");
@@ -169,7 +169,7 @@ describe("@zig-wasm/compress - init() with default path (Node/Bun)", () => {
   });
 });
 
-describe("@zig-wasm/compress - Error recovery after init failure attempt", () => {
+describe("Error recovery after init failure attempt", () => {
   it("recovers when init fails with invalid wasmPath", async () => {
     vi.resetModules();
     const { init, isInitialized } = await import("@zig-wasm/compress");
@@ -196,7 +196,7 @@ describe("@zig-wasm/compress - Error recovery after init failure attempt", () =>
   });
 });
 
-describe("@zig-wasm/compress - Edge cases for decompression", () => {
+describe("Edge cases for decompression", () => {
   it("handles truncated XZ data", async () => {
     vi.resetModules();
     const { decompressXz } = await import("@zig-wasm/compress");
@@ -268,7 +268,7 @@ describe("@zig-wasm/compress - Edge cases for decompression", () => {
   });
 });
 
-describe("@zig-wasm/compress - Sync API after async init", () => {
+describe("Sync API after async init", () => {
   it("sync functions work after async function auto-initializes", async () => {
     vi.resetModules();
     const { decompressXz, decompressXzSync, decompressLzmaSync, isInitialized } = await import(

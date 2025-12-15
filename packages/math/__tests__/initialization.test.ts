@@ -13,7 +13,7 @@ const wasmPath = join(__dirname, "../wasm/math.wasm");
 // We need to test initialization behavior, so we use dynamic imports
 // to get fresh module instances
 
-describe("@zig-wasm/math - Module Initialization", () => {
+describe("Module Initialization", () => {
   beforeEach(() => {
     vi.resetModules();
   });
@@ -112,7 +112,7 @@ describe("@zig-wasm/math - Module Initialization", () => {
   });
 });
 
-describe("@zig-wasm/math - NotInitializedError behavior", () => {
+describe("NotInitializedError behavior", () => {
   // This test needs careful setup because the module is a singleton
   // We test by checking the error message format
 
@@ -135,7 +135,7 @@ describe("@zig-wasm/math - NotInitializedError behavior", () => {
   });
 });
 
-describe("@zig-wasm/math - Additional async coverage", () => {
+describe("Additional async coverage", () => {
   it("absF32 async variant works", async () => {
     const math = await import("@zig-wasm/math");
     await math.init();
@@ -170,7 +170,7 @@ describe("@zig-wasm/math - Additional async coverage", () => {
   });
 });
 
-describe("@zig-wasm/math - Init options coverage", () => {
+describe("Init options coverage", () => {
   beforeEach(() => {
     vi.resetModules();
   });
@@ -217,7 +217,7 @@ describe("@zig-wasm/math - Init options coverage", () => {
   });
 });
 
-describe("@zig-wasm/math - Sync API without init", () => {
+describe("Sync API without init", () => {
   beforeEach(() => {
     vi.resetModules();
   });
@@ -231,7 +231,7 @@ describe("@zig-wasm/math - Sync API without init", () => {
   });
 });
 
-describe("@zig-wasm/math - Concurrent init with fresh module", () => {
+describe("Concurrent init with fresh module", () => {
   beforeEach(() => {
     vi.resetModules();
   });

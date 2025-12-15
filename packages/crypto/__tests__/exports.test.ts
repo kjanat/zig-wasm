@@ -52,7 +52,7 @@ function bytesToHex(bytes: Uint8Array): string {
     .join("");
 }
 
-describe("@zig-wasm/crypto - MD5 (NIST Test Vectors)", () => {
+describe("MD5 (NIST Test Vectors)", () => {
   it("computes MD5 for empty string", async () => {
     const result = await crypto.md5("");
     expect(bytesToHex(result)).toBe("d41d8cd98f00b204e9800998ecf8427e");
@@ -79,7 +79,7 @@ describe("@zig-wasm/crypto - MD5 (NIST Test Vectors)", () => {
   });
 });
 
-describe("@zig-wasm/crypto - SHA-1 (NIST FIPS 180-4 Test Vectors)", () => {
+describe("SHA-1 (NIST FIPS 180-4 Test Vectors)", () => {
   it("computes SHA-1 for empty string", async () => {
     const result = await crypto.sha1("");
     expect(bytesToHex(result)).toBe("da39a3ee5e6b4b0d3255bfef95601890afd80709");
@@ -96,7 +96,7 @@ describe("@zig-wasm/crypto - SHA-1 (NIST FIPS 180-4 Test Vectors)", () => {
   });
 });
 
-describe("@zig-wasm/crypto - SHA-256 (NIST FIPS 180-4 Test Vectors)", () => {
+describe("SHA-256 (NIST FIPS 180-4 Test Vectors)", () => {
   it("computes SHA-256 for empty string", async () => {
     const result = await crypto.sha256("");
     expect(bytesToHex(result)).toBe("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
@@ -125,7 +125,7 @@ describe("@zig-wasm/crypto - SHA-256 (NIST FIPS 180-4 Test Vectors)", () => {
   });
 });
 
-describe("@zig-wasm/crypto - SHA-384 (NIST FIPS 180-4 Test Vectors)", () => {
+describe("SHA-384 (NIST FIPS 180-4 Test Vectors)", () => {
   it("computes SHA-384 for empty string", async () => {
     const result = await crypto.sha384("");
     expect(bytesToHex(result)).toBe(
@@ -150,7 +150,7 @@ describe("@zig-wasm/crypto - SHA-384 (NIST FIPS 180-4 Test Vectors)", () => {
   });
 });
 
-describe("@zig-wasm/crypto - SHA-512 (NIST FIPS 180-4 Test Vectors)", () => {
+describe("SHA-512 (NIST FIPS 180-4 Test Vectors)", () => {
   it("computes SHA-512 for empty string", async () => {
     const result = await crypto.sha512("");
     expect(bytesToHex(result)).toBe(
@@ -175,7 +175,7 @@ describe("@zig-wasm/crypto - SHA-512 (NIST FIPS 180-4 Test Vectors)", () => {
   });
 });
 
-describe("@zig-wasm/crypto - SHA3-256 (NIST FIPS 202 Test Vectors)", () => {
+describe("SHA3-256 (NIST FIPS 202 Test Vectors)", () => {
   it("computes SHA3-256 for empty string", async () => {
     const result = await crypto.sha3_256("");
     expect(bytesToHex(result)).toBe("a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a");
@@ -192,7 +192,7 @@ describe("@zig-wasm/crypto - SHA3-256 (NIST FIPS 202 Test Vectors)", () => {
   });
 });
 
-describe("@zig-wasm/crypto - SHA3-512 (NIST FIPS 202 Test Vectors)", () => {
+describe("SHA3-512 (NIST FIPS 202 Test Vectors)", () => {
   it("computes SHA3-512 for empty string", async () => {
     const result = await crypto.sha3_512("");
     expect(bytesToHex(result)).toBe(
@@ -208,7 +208,7 @@ describe("@zig-wasm/crypto - SHA3-512 (NIST FIPS 202 Test Vectors)", () => {
   });
 });
 
-describe("@zig-wasm/crypto - BLAKE2b-256 Test Vectors", () => {
+describe("BLAKE2b-256 Test Vectors", () => {
   it("computes BLAKE2b-256 for empty string", async () => {
     const result = await crypto.blake2b256("");
     expect(bytesToHex(result)).toBe("0e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8");
@@ -220,7 +220,7 @@ describe("@zig-wasm/crypto - BLAKE2b-256 Test Vectors", () => {
   });
 });
 
-describe("@zig-wasm/crypto - BLAKE2s-256 Test Vectors", () => {
+describe("BLAKE2s-256 Test Vectors", () => {
   it("computes BLAKE2s-256 for empty string", async () => {
     const result = await crypto.blake2s256("");
     expect(bytesToHex(result)).toBe("69217a3079908094e11121d042354a7c1f55b6482ca1a51e1b250dfd1ed0eef9");
@@ -232,7 +232,7 @@ describe("@zig-wasm/crypto - BLAKE2s-256 Test Vectors", () => {
   });
 });
 
-describe("@zig-wasm/crypto - BLAKE3 Test Vectors", () => {
+describe("BLAKE3 Test Vectors", () => {
   it("computes BLAKE3 for empty string", async () => {
     const result = await crypto.blake3("");
     expect(bytesToHex(result)).toBe("af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262");
@@ -244,7 +244,7 @@ describe("@zig-wasm/crypto - BLAKE3 Test Vectors", () => {
   });
 });
 
-describe("@zig-wasm/crypto - HMAC-SHA256 (RFC 4231 Test Vectors)", () => {
+describe("HMAC-SHA256 (RFC 4231 Test Vectors)", () => {
   it("computes HMAC-SHA256 Test Case 1", async () => {
     const key = hexToBytes("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b");
     const data = hexToBytes("4869205468657265"); // "Hi There"
@@ -287,7 +287,7 @@ describe("@zig-wasm/crypto - HMAC-SHA256 (RFC 4231 Test Vectors)", () => {
   });
 });
 
-describe("@zig-wasm/crypto - HMAC-SHA512 (RFC 4231 Test Vectors)", () => {
+describe("HMAC-SHA512 (RFC 4231 Test Vectors)", () => {
   it("computes HMAC-SHA512 Test Case 1", async () => {
     const key = hexToBytes("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b");
     const data = hexToBytes("4869205468657265"); // "Hi There"
@@ -318,7 +318,7 @@ describe("@zig-wasm/crypto - HMAC-SHA512 (RFC 4231 Test Vectors)", () => {
   });
 });
 
-describe("@zig-wasm/crypto - Generic Hash API", () => {
+describe("Generic Hash API", () => {
   it("supports generic hash with algorithm parameter", async () => {
     const result = await crypto.hash("sha256", "test");
     const direct = await crypto.sha256("test");
@@ -344,7 +344,7 @@ describe("@zig-wasm/crypto - Generic Hash API", () => {
   });
 });
 
-describe("@zig-wasm/crypto - Digest Lengths", () => {
+describe("Digest Lengths", () => {
   it("returns correct digest length for MD5 (16 bytes)", async () => {
     expect(await crypto.getHashDigestLength("md5")).toBe(16);
   });
@@ -386,7 +386,7 @@ describe("@zig-wasm/crypto - Digest Lengths", () => {
   });
 });
 
-describe("@zig-wasm/crypto - Sync API", () => {
+describe("Sync API", () => {
   beforeAll(async () => {
     await crypto.init();
   });
@@ -431,7 +431,7 @@ describe("@zig-wasm/crypto - Sync API", () => {
   });
 });
 
-describe("@zig-wasm/crypto - NotInitializedError", () => {
+describe("NotInitializedError", () => {
   it("throws NotInitializedError when using sync method before init", async () => {
     vi.resetModules();
     const { sha256Sync, NotInitializedError } = await import("@zig-wasm/crypto");
@@ -439,7 +439,7 @@ describe("@zig-wasm/crypto - NotInitializedError", () => {
   });
 });
 
-describe("@zig-wasm/crypto - Binary Data Handling", () => {
+describe("Binary Data Handling", () => {
   it("handles Uint8Array input for hashing", async () => {
     const input = new TextEncoder().encode("test data");
     const result = await crypto.sha256(input);
@@ -464,7 +464,7 @@ describe("@zig-wasm/crypto - Binary Data Handling", () => {
   });
 });
 
-describe("@zig-wasm/crypto - Edge Cases", () => {
+describe("Edge Cases", () => {
   it("handles empty input correctly", async () => {
     const result = await crypto.sha256("");
     expect(result).toBeInstanceOf(Uint8Array);
@@ -499,7 +499,7 @@ describe("@zig-wasm/crypto - Edge Cases", () => {
   });
 });
 
-describe("@zig-wasm/crypto - HMAC Edge Cases", () => {
+describe("HMAC Edge Cases", () => {
   it("handles empty key", async () => {
     const result = await crypto.hmacSha256("", "data");
     expect(result).toBeInstanceOf(Uint8Array);
