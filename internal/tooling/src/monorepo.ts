@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { parse, resolve } from "node:path";
 
 /**
  * Find the monorepo root by looking for pnpm-workspace.yaml.
@@ -8,11 +8,16 @@ import { resolve } from "node:path";
 export function findMonorepoRoot(startPath: string = process.cwd()): string {
   let current = startPath;
 
-  while (current !== "/") {
+  while (true) {
     if (existsSync(resolve(current, "pnpm-workspace.yaml"))) {
       return current;
     }
-    current = resolve(current, "..");
+    const parent = resolve(current, "..");
+    // Cross-platform root detection: at root, parent equals current
+    if (parent === current || current === parse(current).root) {
+      break;
+    }
+    current = parent;
   }
 
   throw new Error(
