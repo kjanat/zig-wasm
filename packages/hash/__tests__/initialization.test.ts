@@ -23,7 +23,7 @@ describe("@zig-wasm/hash - Initialization Paths", () => {
 
   describe("wasmBytes initialization", () => {
     it("initializes with wasmBytes", async () => {
-      const hashModule = await import("../src/hash.ts");
+      const hashModule = await import("@zig-wasm/hash");
       const wasmBytes = new Uint8Array(readFileSync(wasmPath));
 
       await hashModule.init({ wasmBytes });
@@ -35,7 +35,7 @@ describe("@zig-wasm/hash - Initialization Paths", () => {
 
     it("supports imports option with wasmBytes", async () => {
       vi.resetModules();
-      const hashModule = await import("../src/hash.ts");
+      const hashModule = await import("@zig-wasm/hash");
       const wasmBytes = new Uint8Array(readFileSync(wasmPath));
 
       await hashModule.init({
@@ -52,7 +52,7 @@ describe("@zig-wasm/hash - Initialization Paths", () => {
       vi.resetModules();
       const { readFile } = await import("node:fs/promises");
       const { pathToFileURL } = await import("node:url");
-      const hashModule = await import("../src/hash.ts");
+      const hashModule = await import("@zig-wasm/hash");
 
       const wasmUrl = pathToFileURL(wasmPath).href;
 
@@ -74,7 +74,7 @@ describe("@zig-wasm/hash - Initialization Paths", () => {
   describe("concurrent initialization", () => {
     it("reuses initPromise for concurrent init calls", async () => {
       vi.resetModules();
-      const hashModule = await import("../src/hash.ts");
+      const hashModule = await import("@zig-wasm/hash");
 
       // Start multiple init calls simultaneously
       const promise1 = hashModule.init({ wasmPath });
@@ -93,7 +93,7 @@ describe("@zig-wasm/hash - Initialization Paths", () => {
 
     it("handles init called while initialization is in progress", async () => {
       vi.resetModules();
-      const hashModule = await import("../src/hash.ts");
+      const hashModule = await import("@zig-wasm/hash");
 
       // First call starts initialization
       const firstInit = hashModule.init({ wasmPath });
@@ -121,14 +121,14 @@ describe("@zig-wasm/hash - Initialization Paths", () => {
 
     it("throws NotInitializedError when sync functions called before init", async () => {
       vi.resetModules();
-      const hashModule = await import("../src/hash.ts");
+      const hashModule = await import("@zig-wasm/hash");
 
       expectNotInitializedError(() => hashModule.crc32Sync("test"));
     });
 
     it("throws with correct module name in error", async () => {
       vi.resetModules();
-      const hashModule = await import("../src/hash.ts");
+      const hashModule = await import("@zig-wasm/hash");
 
       try {
         hashModule.crc32Sync("test");
@@ -141,7 +141,7 @@ describe("@zig-wasm/hash - Initialization Paths", () => {
 
     it("throws for all sync functions before init", async () => {
       vi.resetModules();
-      const hashModule = await import("../src/hash.ts");
+      const hashModule = await import("@zig-wasm/hash");
 
       // 32-bit sync functions
       expectNotInitializedError(() => hashModule.hash32Sync("crc32", "test"));
@@ -164,7 +164,7 @@ describe("@zig-wasm/hash - Initialization Paths", () => {
 
     it("throws for hex sync functions before init", async () => {
       vi.resetModules();
-      const hashModule = await import("../src/hash.ts");
+      const hashModule = await import("@zig-wasm/hash");
 
       expectNotInitializedError(() => hashModule.crc32HexSync("test"));
       expectNotInitializedError(() => hashModule.adler32HexSync("test"));
@@ -181,7 +181,7 @@ describe("@zig-wasm/hash - Initialization Paths", () => {
   describe("idempotent initialization", () => {
     it("returns immediately if already initialized", async () => {
       vi.resetModules();
-      const hashModule = await import("../src/hash.ts");
+      const hashModule = await import("@zig-wasm/hash");
 
       // First initialization
       await hashModule.init({ wasmPath });

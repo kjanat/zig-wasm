@@ -1,10 +1,10 @@
 /**
  * Tests for sync variants and hex output functions
  */
+import * as hash from "@zig-wasm/hash";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it } from "vitest";
-import * as hash from "../src/index.ts";
 
 const wasmPath = join(dirname(fileURLToPath(import.meta.url)), "../wasm/hash.wasm");
 
@@ -194,7 +194,7 @@ describe("@zig-wasm/hash - Generic hashSync and hashHexSync", () => {
 
 describe("@zig-wasm/hash - Concurrent Initialization", () => {
   it("handles concurrent init calls safely", async () => {
-    const hashModule = await import("../src/index.ts");
+    const hashModule = await import("@zig-wasm/hash");
 
     const promises = [
       hashModule.init({ wasmPath }),
