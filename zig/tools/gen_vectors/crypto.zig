@@ -2,6 +2,7 @@
 //! Generates test vectors for cryptographic hash functions and HMACs.
 
 const std = @import("std");
+
 const common = @import("common.zig");
 const mem = common.mem;
 

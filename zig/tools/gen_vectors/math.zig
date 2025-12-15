@@ -2,6 +2,7 @@
 //! Generates test vectors for math functions including deg2rad, rad2deg, gcd, lcm, and fma.
 
 const std = @import("std");
+
 const common = @import("common.zig");
 const mem = common.mem;
 

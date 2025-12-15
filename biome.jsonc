@@ -5,14 +5,17 @@
   "vcs": {
     "enabled": true,
     "clientKind": "git",
-    "useIgnoreFile": false,
+    "useIgnoreFile": true,
     "defaultBranch": "master"
   },
+  "formatter": { "enabled": true },
   "files": {
     "ignoreUnknown": false,
     "includes": [
       "**",
-      ".opencode",
+      ".opencode/tool/**",
+      "internal/**",
+      "packages/**",
       "!!**/*.wasm",
       "!!**/.ruff_cache",
       "!!**/.zig-cache",

@@ -20,6 +20,8 @@
     "build:ts:watch": "tsdown --workspace --watch",
     "build:zig": "zig build",
     "build:zig:small": "pnpm build:zig -Doptimize=ReleaseSmall",
+    "build:zig:watch": "zig build --watch --debounce 3000 --summary all --color on",
+    "build:zig:web": "zig build --webui=[::1]:38033 --time-report --summary all --color on",
     "clean": "pnpm --parallel --aggregate-output clean && rm -rf zig-out .zig-cache",
     "clean:bash": "find . -maxdepth 3 -type d \\( -name coverage -o -name dist -o -name test-results -o -name zig-out -o -name .zig-cache -o -name html -o -name .ruff_cache \\) -prune -exec rm -rf {} +",
     "fmt": "dprint fmt && pnpm -r --parallel --aggregate-output fmt",

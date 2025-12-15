@@ -16,6 +16,9 @@ test-results/
 .lastreview
 .review.md
 
+# Other
+f2y_*
+
 # Created by https://gitignore.kjanat.com/api/node,zig,python,linux,macos,windows
 # Edit at https://gitignore.kjanat.com?templates=node,zig,python,linux,macos,windows
 
@@ -420,4 +423,3 @@ $RECYCLE.BIN/
 # End of https://gitignore.kjanat.com/api/node,zig,python,linux,macos,windows
 
 !.opencode/tsconfig.json
-

@@ -11,8 +11,8 @@ const mem = std.mem;
 const fs = std.fs;
 
 const common = @import("gen_vectors/common.zig");
-const hash = @import("gen_vectors/hash.zig");
 const crypto = @import("gen_vectors/crypto.zig");
+const hash = @import("gen_vectors/hash.zig");
 const math = @import("gen_vectors/math.zig");
 
 pub fn main() !void {

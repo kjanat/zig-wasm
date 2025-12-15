@@ -91,13 +91,13 @@
  *
  * ## API Overview
  *
- * | Variant | Async | Sync | Description |
- * |---------|-------|------|-------------|
- * | Standard | {@link encode}/{@link decode} | {@link encodeSync}/{@link decodeSync} | RFC 4648 Base64 |
- * | No Padding | {@link encodeNoPadding}/{@link decodeNoPadding} | {@link encodeNoPaddingSync}/{@link decodeNoPaddingSync} | Standard without `=` |
- * | URL-safe | {@link encodeUrl}/{@link decodeUrl} | {@link encodeUrlSync}/{@link decodeUrlSync} | Uses `-_` instead of `+/` |
- * | URL-safe No Pad | {@link encodeUrlNoPadding}/{@link decodeUrlNoPadding} | {@link encodeUrlNoPaddingSync}/{@link decodeUrlNoPaddingSync} | Best for JWTs |
- * | Hex | {@link hexEncode}/{@link hexDecode} | {@link hexEncodeSync}/{@link hexDecodeSync} | Lowercase hex |
+ * | Variant         | Async                                                 | Sync                                                          | Description               |
+ * | --------------- | ----------------------------------------------------- | ------------------------------------------------------------- | ------------------------- |
+ * | Standard        | {@link encode}/{@link decode}                         | {@link encodeSync}/{@link decodeSync}                         | RFC 4648 Base64           |
+ * | No Padding      | {@link encodeNoPadding}/{@link decodeNoPadding}       | {@link encodeNoPaddingSync}/{@link decodeNoPaddingSync}       | Standard without `=`      |
+ * | URL-safe        | {@link encodeUrl}/{@link decodeUrl}                   | {@link encodeUrlSync}/{@link decodeUrlSync}                   | Uses `-_` instead of `+/` |
+ * | URL-safe No Pad | {@link encodeUrlNoPadding}/{@link decodeUrlNoPadding} | {@link encodeUrlNoPaddingSync}/{@link decodeUrlNoPaddingSync} | Best for JWTs             |
+ * | Hex             | {@link hexEncode}/{@link hexDecode}                   | {@link hexEncodeSync}/{@link hexDecodeSync}                   | Lowercase hex             |
  *
  * @see {@link init} - Manual initialization for sync API
  * @see {@link isInitialized} - Check if module is ready
@@ -114,17 +114,31 @@ export { init, isInitialized } from "./base64.ts";
 // Async API
 // dprint-ignore
 export {
-  decode, decodeNoPadding, decodeUrl, decodeUrlNoPadding,
-  encode, encodeNoPadding, encodeUrl, encodeUrlNoPadding,
-  hexDecode, hexEncode,
+	decode,
+	decodeNoPadding,
+	decodeUrl,
+	decodeUrlNoPadding,
+	encode,
+	encodeNoPadding,
+	encodeUrl,
+	encodeUrlNoPadding,
+	hexDecode,
+	hexEncode,
 } from "./base64.ts";
 
 // Sync API
 // dprint-ignore
 export {
-  decodeNoPaddingSync, decodeSync, decodeUrlNoPaddingSync, decodeUrlSync,
-  encodeNoPaddingSync, encodeSync, encodeUrlNoPaddingSync, encodeUrlSync,
-  hexDecodeSync, hexEncodeSync,
+	decodeNoPaddingSync,
+	decodeSync,
+	decodeUrlNoPaddingSync,
+	decodeUrlSync,
+	encodeNoPaddingSync,
+	encodeSync,
+	encodeUrlNoPaddingSync,
+	encodeUrlSync,
+	hexDecodeSync,
+	hexEncodeSync,
 } from "./base64.ts";
 
 // Types
