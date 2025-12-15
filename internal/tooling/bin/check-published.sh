@@ -15,7 +15,7 @@ debug() {
 	local DIM_CODE RESET_CODE
 	DIM_CODE="\033[2m"
 	RESET_CODE="\033[0m"
-	if [[ "${DEBUG:-}" == "1" ]]; then
+	if [[ "${DEBUG:-}" == "1" || -n "${CI:-}" ]]; then
 		printf "%bDEBUG: %-18s %s%b\n" "${DIM_CODE}" "$1" "$2" "${RESET_CODE}" >&2
 	fi
 }
