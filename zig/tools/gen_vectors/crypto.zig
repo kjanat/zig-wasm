@@ -127,11 +127,9 @@ pub fn writeCryptoVectors(allocator: mem.Allocator) ![]u8 {
     // BLAKE3
     try writer.writeAll("  \"blake3\": {\n");
     for (common.test_inputs, 0..) |input, idx| {
-        var hasher = std.crypto.hash.Blake3.init(.{});
-        hasher.update(input.data);
-        var digest: [32]u8 = undefined;
-        hasher.final(&digest);
-        const hex = common.bytesToHex(32, &digest);
+        var digest: [std.crypto.hash.Blake3.digest_length]u8 = undefined;
+        std.crypto.hash.Blake3.hash(input.data, &digest, .{});
+        const hex = common.bytesToHex(std.crypto.hash.Blake3.digest_length, &digest);
         try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
         if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
         try writer.writeAll("\n");
