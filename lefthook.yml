@@ -27,4 +27,4 @@ pre-push:
   parallel: true
   commands:
     test:
-      run: pnpm test
+      run: pnpm test --run
