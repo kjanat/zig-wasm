@@ -123,40 +123,44 @@ describe("checkPublished", () => {
       fs.writeFileSync(join(workspaceRoot, "pnpm-workspace.yaml"), "packages: []");
 
       const cwdSpy = vi.spyOn(process, "cwd").mockReturnValue(nestedCwd);
+      try {
+        global.fetch = vi.fn().mockResolvedValue({ ok: true }) as unknown as typeof fetch;
 
-      global.fetch = vi.fn().mockResolvedValue({ ok: true }) as unknown as typeof fetch;
+        const result = await checkPublished("hash");
 
-      const result = await checkPublished("hash");
-
-      expect(result.name).toBe("@zig-wasm/hash");
-      expect(mockRead).toHaveBeenCalledWith(
-        join(workspaceRoot, "packages", "hash", "package.json"),
-        "utf-8",
-      );
-
-      cwdSpy.mockRestore();
-      fs.rmSync(workspaceRoot, { recursive: true, force: true });
+        expect(result.name).toBe("@zig-wasm/hash");
+        expect(mockRead).toHaveBeenCalledWith(
+          join(workspaceRoot, "packages", "hash", "package.json"),
+          "utf-8",
+        );
+      } finally {
+        cwdSpy.mockRestore();
+        fs.rmSync(workspaceRoot, { recursive: true, force: true });
+      }
     });
   });
 
   describe("monorepo root detection", () => {
     it("throws when pnpm-workspace.yaml is missing", () => {
       const tmp = fs.mkdtempSync(join(tmpdir(), "monorepo-root-missing-"));
-
-      expect(() => findMonorepoRoot(tmp)).toThrow(
-        "Could not find pnpm-workspace.yaml. Run this script from within the monorepo.",
-      );
-
-      fs.rmSync(tmp, { recursive: true, force: true });
+      try {
+        expect(() => findMonorepoRoot(tmp)).toThrow(
+          "Could not find pnpm-workspace.yaml. Run this script from within the monorepo.",
+        );
+      } finally {
+        fs.rmSync(tmp, { recursive: true, force: true });
+      }
     });
 
     it("finds workspace when marker exists in start dir", () => {
       const tmp = fs.mkdtempSync(join(tmpdir(), "monorepo-root-found-"));
-      fs.writeFileSync(join(tmp, "pnpm-workspace.yaml"), "packages: []");
+      try {
+        fs.writeFileSync(join(tmp, "pnpm-workspace.yaml"), "packages: []");
 
-      expect(findMonorepoRoot(tmp)).toBe(tmp);
-
-      fs.rmSync(tmp, { recursive: true, force: true });
+        expect(findMonorepoRoot(tmp)).toBe(tmp);
+      } finally {
+        fs.rmSync(tmp, { recursive: true, force: true });
+      }
     });
   });
 
