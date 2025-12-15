@@ -1,5 +1,6 @@
+/// <reference types="bun-types" />
+/// <reference types="@opencode-ai/plugin" />
 import { tool } from "@opencode-ai/plugin";
-import "../node_modules/@opencode-ai/plugin/dist/index.d.ts";
 
 // ---------- test: run zig tests ----------
 

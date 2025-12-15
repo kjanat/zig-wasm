@@ -1,1 +1,4 @@
-{ "extends": ["@zig-wasm/tooling/biome"] }
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": "//"
+}

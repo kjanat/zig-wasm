@@ -1,0 +1,9 @@
+{
+  "extends": ["@zig-wasm/tooling/tsconfig"],
+  "compilerOptions": {
+    "paths": {
+      "@zig-wasm/*": ["../packages/*/src", "../internal/*/src"],
+      "~/*": ["../*"]
+    }
+  }
+}

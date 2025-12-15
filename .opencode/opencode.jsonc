@@ -5,6 +5,14 @@
       "command": ["biome", "lsp-proxy"],
       "extensions": [".js", ".jsx", ".ts", ".tsx", ".json", ".jsonc"],
       "env": {}
+    },
+    "ruff": {
+      "command": ["ruff", "server", "--preview"],
+      "extensions": [".py", ".pyi"]
+    },
+    "ty": {
+      "command": ["ty", "server"],
+      "extensions": [".py", ".pyi"]
     }
   },
   "formatter": {
@@ -17,7 +25,8 @@
         ".dockerfile", ".dockerignore",
         ".yaml", ".yml",
         ".html", ".xml", ".css", ".sass", ".scss",
-        ".toml"
+        ".toml",
+        ".py"
       ],
       "environment": { "DPRINT_CONFIG_DISCOVERY": "false" }
     },
@@ -30,6 +39,9 @@
       ],
       "extensions": ["sh"],
       "disabled": false
+    },
+    "ruff": {
+      "disabled": true
     }
   },
   "mcp": {

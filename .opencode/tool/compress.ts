@@ -1,7 +1,8 @@
+/// <reference types="bun-types" />
+/// <reference types="@opencode-ai/plugin" />
 import { tool } from "@opencode-ai/plugin";
-import "../node_modules/@opencode-ai/plugin/dist/index.d.ts";
 
-import { decompressLzma, decompressXz } from "../../packages/compress/dist/index.mjs";
+import { decompressLzma, decompressXz } from "@zig-wasm/compress";
 
 // ---------- compressXz: placeholder using system xz until Zig WASM compressor exists ----------
 

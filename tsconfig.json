@@ -1,0 +1,20 @@
+{
+  "extends": ["@zig-wasm/tooling/tsconfig"],
+  "compilerOptions": {
+    "paths": {
+      "~/*": ["./*"],
+      "@zig-wasm/*": [
+        "./internal/*/src/index.ts",
+        "./packages/*/src/index.ts",
+      ],
+      "@zig-wasm/base64/*": ["./packages/base64/src/*"],
+      "@zig-wasm/compress/*": ["./packages/compress/src/*"],
+      "@zig-wasm/core/*": ["./packages/core/src/*"],
+      "@zig-wasm/crypto/*": ["./packages/crypto/src/*"],
+      "@zig-wasm/hash/*": ["./packages/hash/src/*"],
+      "@zig-wasm/math/*": ["./packages/math/src/*"],
+      "@zig-wasm/std/*": ["./packages/std/src/*"],
+      "@zig-wasm/tooling/*": ["./internal/tooling/src/*"]
+    }
+  }
+}

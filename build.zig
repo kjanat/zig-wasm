@@ -12,6 +12,40 @@ pub fn build(b: *std.Build) void {
     inline for (.{ "crypto", "hash", "compress", "base64", "math" }) |name| {
         buildWasmModule(b, name, wasm_target, optimize);
     }
+
+    // Test vector generator (native executable, not WASM)
+    buildTestVectorGenerator(b, optimize);
+}
+
+fn buildTestVectorGenerator(b: *std.Build, optimize: std.builtin.OptimizeMode) void {
+    const native_target = b.resolveTargetQuery(.{});
+
+    const module = b.createModule(.{
+        .root_source_file = b.path("zig/tools/gen_test_vectors.zig"),
+        .target = native_target,
+        .optimize = optimize,
+    });
+
+    const exe = b.addExecutable(.{
+        .name = "gen-test-vectors",
+        .root_module = module,
+    });
+
+    b.installArtifact(exe);
+
+    // Run step: `zig build gen-test-vectors`
+    const run_cmd = b.addRunArtifact(exe);
+    run_cmd.step.dependOn(b.getInstallStep());
+
+    // Pass args for output paths
+    run_cmd.addArgs(&.{
+        "--hash",   "packages/hash/__tests__/fixtures/test-vectors.json",
+        "--crypto", "packages/crypto/__tests__/fixtures/test-vectors.json",
+        "--math",   "packages/math/__tests__/fixtures/test-vectors.json",
+    });
+
+    const run_step = b.step("gen-test-vectors", "Generate test vector JSON fixtures for hash, crypto, and math packages");
+    run_step.dependOn(&run_cmd.step);
 }
 
 fn buildWasmModule(

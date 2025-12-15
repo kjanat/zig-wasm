@@ -1,3 +1,6 @@
+/// <reference types="bun-types" />
+/// <reference types="@opencode-ai/plugin" />
+
 import { tool } from "@opencode-ai/plugin";
 
 /**
@@ -6,8 +9,8 @@ import { tool } from "@opencode-ai/plugin";
  */
 function compareSemver(a: string, b: string): number {
   const normalize = (v: string) => v.replace(/^v/, "");
-  const partsA = normalize(a).split(/[-+]/)[0]!.split(".").map(Number);
-  const partsB = normalize(b).split(/[-+]/)[0]!.split(".").map(Number);
+  const partsA = (normalize(a).split(/[-+]/)[0] ?? "").split(".").map(Number);
+  const partsB = (normalize(b).split(/[-+]/)[0] ?? "").split(".").map(Number);
 
   for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
     const numA = partsA[i] ?? 0;
@@ -38,35 +41,37 @@ function isSemverTag(tag: string): boolean {
  * Normalize repo input: handles full URLs, owner/repo, or just repo name
  */
 function parseRepoInput(input: string): { owner: string; repo: string } | null {
-  let cleaned = input.trim();
+  const cleaned = input.trim();
 
   // Handle full GitHub URLs
   const urlMatch = cleaned.match(
     /(?:https?:\/\/)?(?:www\.)?github\.com\/([^/]+)\/([^/\s#?]+)/,
   );
-  if (urlMatch) {
+  if (urlMatch?.[1] && urlMatch[2]) {
     return {
-      owner: urlMatch[1]!,
-      repo: urlMatch[2]!.replace(/\.git$/, ""),
+      owner: urlMatch[1],
+      repo: urlMatch[2].replace(/\.git$/, ""),
     };
   }
 
   // Handle git@ URLs
   const sshMatch = cleaned.match(/git@github\.com:([^/]+)\/([^/\s]+)/);
-  if (sshMatch) {
+  if (sshMatch?.[1] && sshMatch[2]) {
     return {
-      owner: sshMatch[1]!,
-      repo: sshMatch[2]!.replace(/\.git$/, ""),
+      owner: sshMatch[1],
+      repo: sshMatch[2].replace(/\.git$/, ""),
     };
   }
 
   // Handle owner/repo format
   if (cleaned.includes("/") && !cleaned.includes(" ")) {
     const parts = cleaned.split("/").filter(Boolean);
-    if (parts.length === 2) {
+    const owner = parts[0];
+    const repo = parts[1];
+    if (parts.length === 2 && owner && repo) {
       return {
-        owner: parts[0]!,
-        repo: parts[1]!.replace(/\.git$/, ""),
+        owner,
+        repo: repo.replace(/\.git$/, ""),
       };
     }
   }
@@ -177,7 +182,10 @@ export const latestTag = tool({
     // Sort by semver descending
     semverTags.sort((a, b) => compareSemver(b.name, a.name));
 
-    const latest = semverTags[0]!;
+    const latest = semverTags[0];
+    if (!latest) {
+      throw new Error("Unexpected: no tags after length check");
+    }
     const result: Record<string, unknown> = {
       tool: "github_latest_tag",
       repo: `${owner}/${repo}`,
@@ -298,7 +306,10 @@ export const latestRelease = tool({
       });
     }
 
-    const latest = releases[0]!;
+    const latest = releases[0];
+    if (!latest) {
+      throw new Error("Unexpected: no releases after length check");
+    }
     const result: Record<string, unknown> = {
       tool: "github_latest_release",
       repo: `${owner}/${repo}`,
@@ -380,11 +391,12 @@ export const compareVersions = tool({
         .filter((t) => isSemverTag(t.name) && !/-/.test(t.name))
         .sort((a, b) => compareSemver(b.name, a.name));
 
-      if (semverTags.length === 0) {
+      const latestTag = semverTags[0];
+      if (!latestTag) {
         throw new Error("No semver tags found in repository");
       }
 
-      targetVersion = semverTags[0]!.name;
+      targetVersion = latestTag.name;
     }
 
     if (!targetVersion) {
@@ -480,11 +492,13 @@ function parseActionRef(input: string): {
   }
 
   const parts = cleaned.split("/").filter(Boolean);
-  if (parts.length < 2) return null;
+  const owner = parts[0];
+  const repo = parts[1];
+  if (parts.length < 2 || !owner || !repo) return null;
 
   return {
-    owner: parts[0]!,
-    repo: parts[1]!,
+    owner,
+    repo,
     path: parts.slice(2).join("/"),
     ref,
   };

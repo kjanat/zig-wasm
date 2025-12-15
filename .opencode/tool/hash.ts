@@ -1,10 +1,14 @@
+/// <reference types="bun-types" />
+/// <reference types="@opencode-ai/plugin" />
 import { tool } from "@opencode-ai/plugin";
-import "../node_modules/@opencode-ai/plugin/dist/index.d.ts";
 
 // dprint-ignore
 import {
-  adler32, cityhash64, crc32, fnv1a32, fnv1a64, murmur2_64, wyhash, xxhash32, xxhash64,
-} from "../../packages/hash/dist/index.mjs";
+  adler32, cityhash64, crc32,
+  fnv1a32, fnv1a64,
+  murmur2_64, wyhash,
+  xxhash32, xxhash64,
+} from "@zig-wasm/hash";
 
 // ---------- streaming: hash a file using Bun's native streaming ----------
 

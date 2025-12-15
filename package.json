@@ -13,51 +13,39 @@
   "license": "MIT",
   "author": "Kaj Kowalski <dev@kajkowalski.nl> (https://github.com/kjanat)",
   "type": "module",
-  "workspaces": {
-    "packages": [
-      "internal/*",
-      "packages/*"
-    ],
-    "catalog": {
-      "@biomejs/biome": "2.3.8",
-      "@types/bun": "^1.3.4",
-      "@types/node": "^25",
-      "@typescript/native-preview": "latest",
-      "@vitest/coverage-v8": "~4.0.15",
-      "dprint": "latest",
-      "publint": "^0.3.16",
-      "tsdown": "~0.17.3",
-      "typescript": "5.9.3",
-      "unplugin-unused": "^0.5.6",
-      "vitest": "~4.0.15"
-    }
-  },
   "scripts": {
-    "build": "pnpm clean && pnpm build:zig && pnpm build:ts",
+    "build": "pnpm clean && pnpm build:zig && pnpm build:ts:parallel",
     "build:ts": "tsdown --workspace",
+    "build:ts:parallel": "pnpm --parallel --aggregate-output --filter @zig-wasm/* build",
+    "build:ts:watch": "tsdown --workspace --watch",
     "build:zig": "zig build",
     "build:zig:small": "pnpm build:zig -Doptimize=ReleaseSmall",
-    "clean": "pnpm -r clean && rm -rf zig-out .zig-cache",
-    "fmt": "dprint fmt && pnpm -r fmt",
+    "clean": "pnpm --parallel --aggregate-output clean && rm -rf zig-out .zig-cache",
+    "clean:bash": "find . -maxdepth 3 -type d \\( -name coverage -o -name dist -o -name test-results -o -name zig-out -o -name .zig-cache -o -name html -o -name .ruff_cache \\) -prune -exec rm -rf {} +",
+    "fmt": "dprint fmt && pnpm -r --parallel --aggregate-output fmt",
     "fmt:check": "dprint check",
     "fmt:staged": "dprint fmt --staged",
     "postinstall": "lefthook install",
-    "lint": "pnpm --filter @zig-wasm/* lint",
-    "lint:fix": "pnpm --filter @zig-wasm/* lint:fix",
+    "lint": "pnpm --parallel --aggregate-output --filter @zig-wasm/* lint",
+    "lint:fix": "pnpm --parallel --aggregate-output --filter @zig-wasm/* lint:fix",
     "prepare": "pnpm build:zig",
     "prepublishOnly": "pnpm clean && pnpm build:zig -Doptimize=ReleaseFast && pnpm build:ts",
     "publish": "pnpm -r publish --access public",
-    "publish:dry": "pnpm -r publish --dry-run",
+    "publish:dry": "pnpm --parallel --aggregate-output -r publish --dry-run",
     "publish:jsr": "pnpm -r publish:jsr",
-    "publish:jsr:dry": "pnpm -r publish:jsr --dry-run",
-    "test": "pnpm -r test",
-    "typecheck": "pnpm -r typecheck"
+    "publish:jsr:dry": "pnpm --parallel --aggregate-output -r publish:jsr --dry-run",
+    "pretest": "zig build gen-test-vectors",
+    "test": "vitest",
+    "test:cov": "vitest --coverage",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui --coverage",
+    "typecheck": "pnpm --parallel --aggregate-output -r typecheck"
   },
   "config": {
     "ci": {
       "paths": {
         "wasm": "packages/*/wasm",
-        "dist": "packages/*/dist"
+        "dist": "packages/*/dist\ninternal/*/dist"
       },
       "nodeVersions": [
         20,
@@ -70,18 +58,23 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@codecov/rollup-plugin": "^1.9.1",
+    "@codecov/rollup-plugin": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "catalog:",
+    "@zig-wasm/tooling": "workspace:*",
     "dprint": "catalog:",
-    "lefthook": "^2.0.11",
+    "glob": "catalog:",
+    "lefthook": "catalog:",
+    "markdownlint-cli2": "catalog:",
     "publint": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "unplugin-unused": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
     "vitest": "catalog:"
   },
-  "packageManager": "pnpm@10.23.0",
+  "packageManager": "pnpm@10.26.0",
   "engines": {
     "node": ">=20",
     "pnpm": ">=10"
