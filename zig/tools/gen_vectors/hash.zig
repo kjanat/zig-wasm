@@ -5,207 +5,172 @@ const std = @import("std");
 const common = @import("common.zig");
 const mem = common.mem;
 
+// Helper to define hash function entries with different APIs
+const HashEntry = struct {
+    name: []const u8,
+    hash_fn: *const fn (data: []const u8) u64,
+    is_32bit: bool,
+};
+
+// Simple hash functions (no seed parameter)
+const SimpleHashes = struct {
+    // 32-bit hashes
+    fn crc32(data: []const u8) u64 {
+        return std.hash.crc.Crc32.hash(data);
+    }
+    fn adler32(data: []const u8) u64 {
+        return std.hash.Adler32.hash(data);
+    }
+    fn fnv1a32(data: []const u8) u64 {
+        return std.hash.Fnv1a_32.hash(data);
+    }
+    // 64-bit hashes (unseeded)
+    fn xxhash32(data: []const u8) u64 {
+        return std.hash.XxHash32.hash(0, data);
+    }
+    fn xxhash64(data: []const u8) u64 {
+        return std.hash.XxHash64.hash(0, data);
+    }
+    fn wyhash(data: []const u8) u64 {
+        return std.hash.Wyhash.hash(0, data);
+    }
+    fn cityhash64(data: []const u8) u64 {
+        return std.hash.CityHash64.hash(data);
+    }
+    fn murmur2_64(data: []const u8) u64 {
+        return std.hash.Murmur2_64.hash(data);
+    }
+    fn fnv1a64(data: []const u8) u64 {
+        return std.hash.Fnv1a_64.hash(data);
+    }
+};
+
+// Define the simple hashes to generate (order matters for JSON output)
+const simple_hashes: []const HashEntry = &.{
+    .{ .name = "crc32", .hash_fn = SimpleHashes.crc32, .is_32bit = true },
+    .{ .name = "adler32", .hash_fn = SimpleHashes.adler32, .is_32bit = true },
+    .{ .name = "xxhash32", .hash_fn = SimpleHashes.xxhash32, .is_32bit = true },
+    .{ .name = "xxhash64", .hash_fn = SimpleHashes.xxhash64, .is_32bit = false },
+    .{ .name = "wyhash", .hash_fn = SimpleHashes.wyhash, .is_32bit = false },
+    .{ .name = "cityhash64", .hash_fn = SimpleHashes.cityhash64, .is_32bit = false },
+    .{ .name = "murmur2_64", .hash_fn = SimpleHashes.murmur2_64, .is_32bit = false },
+    .{ .name = "fnv1a32", .hash_fn = SimpleHashes.fnv1a32, .is_32bit = true },
+    .{ .name = "fnv1a64", .hash_fn = SimpleHashes.fnv1a64, .is_32bit = false },
+};
+
+// Seeded hash types - these need inline for due to different APIs
+const SeededHash32Types = .{
+    .{ "xxhash32_seeded", std.hash.XxHash32 },
+};
+
+const SeededHash64Types = .{
+    .{ "xxhash64_seeded", std.hash.XxHash64 },
+    .{ "wyhash_seeded", std.hash.Wyhash },
+};
+
+// CityHash64 and Murmur2_64 use hashWithSeed instead of hash
+const SeededHash64WithSeedTypes = .{
+    .{ "cityhash64_seeded", std.hash.CityHash64 },
+    .{ "murmur2_64_seeded", std.hash.Murmur2_64 },
+};
+
 pub fn writeHashVectors(allocator: mem.Allocator) ![]u8 {
-    var list = std.ArrayListUnmanaged(u8){};
-    errdefer list.deinit(allocator);
-    const writer = list.writer(allocator);
+    var out: std.io.Writer.Allocating = .init(allocator);
+    errdefer out.deinit();
 
-    try writer.writeAll("{\n");
-    try writer.writeAll("  \"_meta\": {\n");
-    try writer.writeAll("    \"generated_by\": \"zig/tools/gen_test_vectors.zig\",\n");
-    try writer.writeAll("    \"description\": \"Deterministic test vectors for @zig-wasm/hash\"\n");
-    try writer.writeAll("  },\n");
+    var ws: std.json.Stringify = .{ .writer = &out.writer, .options = .{ .whitespace = .indent_2 } };
 
-    // CRC32
-    try writer.writeAll("  \"crc32\": {\n");
-    for (common.test_inputs, 0..) |input, idx| {
-        const hash = std.hash.crc.Crc32.hash(input.data);
-        const hex = common.toHex32(hash);
-        try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
-        if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
+    try ws.beginObject();
 
-    // Adler32
-    try writer.writeAll("  \"adler32\": {\n");
-    for (common.test_inputs, 0..) |input, idx| {
-        const hash = std.hash.Adler32.hash(input.data);
-        const hex = common.toHex32(hash);
-        try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
-        if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
+    // Meta section
+    try ws.objectField("_meta");
+    try ws.beginObject();
+    try ws.objectField("generated_by");
+    try ws.write("zig/tools/gen_test_vectors.zig");
+    try ws.objectField("description");
+    try ws.write("Deterministic test vectors for @zig-wasm/hash");
+    try ws.endObject();
 
-    // xxHash32 (unseeded)
-    try writer.writeAll("  \"xxhash32\": {\n");
-    for (common.test_inputs, 0..) |input, idx| {
-        const hash = std.hash.XxHash32.hash(0, input.data);
-        const hex = common.toHex32(hash);
-        try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
-        if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
-
-    // xxHash32 seeded
-    try writer.writeAll("  \"xxhash32_seeded\": {\n");
-    var first_seed32 = true;
-    for (common.test_seeds_32) |seed| {
-        if (!first_seed32) try writer.writeAll(",\n");
-        first_seed32 = false;
-        try writer.print("    \"{d}\": {{\n", .{seed});
-        for (common.test_inputs, 0..) |input, idx| {
-            const hash = std.hash.XxHash32.hash(seed, input.data);
-            const hex = common.toHex32(hash);
-            try writer.print("      \"{s}\": \"{s}\"", .{ input.name, hex });
-            if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-            try writer.writeAll("\n");
+    // Simple hashes (no seeds)
+    for (simple_hashes) |entry| {
+        try ws.objectField(entry.name);
+        try ws.beginObject();
+        for (common.test_inputs) |input| {
+            const hash = entry.hash_fn(input.data);
+            try ws.objectField(input.name);
+            if (entry.is_32bit) {
+                try ws.write(common.toHex32(@truncate(hash)));
+            } else {
+                try ws.write(common.toHex64(hash));
+            }
         }
-        try writer.writeAll("    }");
+        try ws.endObject();
     }
-    try writer.writeAll("\n  },\n");
 
-    // xxHash64 (unseeded)
-    try writer.writeAll("  \"xxhash64\": {\n");
-    for (common.test_inputs, 0..) |input, idx| {
-        const hash = std.hash.XxHash64.hash(0, input.data);
-        const hex = common.toHex64(hash);
-        try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
-        if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
+    // Seeded 32-bit hashes
+    inline for (SeededHash32Types) |entry| {
+        const name = entry[0];
+        const Algo = entry[1];
 
-    // xxHash64 seeded
-    try writer.writeAll("  \"xxhash64_seeded\": {\n");
-    var first_seed64 = true;
-    for (common.test_seeds_64) |seed| {
-        if (!first_seed64) try writer.writeAll(",\n");
-        first_seed64 = false;
-        try writer.print("    \"{d}\": {{\n", .{seed});
-        for (common.test_inputs, 0..) |input, idx| {
-            const hash = std.hash.XxHash64.hash(seed, input.data);
-            const hex = common.toHex64(hash);
-            try writer.print("      \"{s}\": \"{s}\"", .{ input.name, hex });
-            if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-            try writer.writeAll("\n");
+        try ws.objectField(name);
+        try ws.beginObject();
+        for (common.test_seeds_32) |seed| {
+            try ws.objectField(common.seedToString(u32, seed));
+            try ws.beginObject();
+            for (common.test_inputs) |input| {
+                const hash = Algo.hash(seed, input.data);
+                try ws.objectField(input.name);
+                try ws.write(common.toHex32(hash));
+            }
+            try ws.endObject();
         }
-        try writer.writeAll("    }");
+        try ws.endObject();
     }
-    try writer.writeAll("\n  },\n");
 
-    // wyhash (unseeded)
-    try writer.writeAll("  \"wyhash\": {\n");
-    for (common.test_inputs, 0..) |input, idx| {
-        const hash = std.hash.Wyhash.hash(0, input.data);
-        const hex = common.toHex64(hash);
-        try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
-        if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
+    // Seeded 64-bit hashes (hash method)
+    inline for (SeededHash64Types) |entry| {
+        const name = entry[0];
+        const Algo = entry[1];
 
-    // wyhash seeded
-    try writer.writeAll("  \"wyhash_seeded\": {\n");
-    var first_wy = true;
-    for (common.test_seeds_64) |seed| {
-        if (!first_wy) try writer.writeAll(",\n");
-        first_wy = false;
-        try writer.print("    \"{d}\": {{\n", .{seed});
-        for (common.test_inputs, 0..) |input, idx| {
-            const hash = std.hash.Wyhash.hash(seed, input.data);
-            const hex = common.toHex64(hash);
-            try writer.print("      \"{s}\": \"{s}\"", .{ input.name, hex });
-            if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-            try writer.writeAll("\n");
+        try ws.objectField(name);
+        try ws.beginObject();
+        for (common.test_seeds_64) |seed| {
+            try ws.objectField(common.seedToString(u64, seed));
+            try ws.beginObject();
+            for (common.test_inputs) |input| {
+                const hash = Algo.hash(seed, input.data);
+                try ws.objectField(input.name);
+                try ws.write(common.toHex64(hash));
+            }
+            try ws.endObject();
         }
-        try writer.writeAll("    }");
+        try ws.endObject();
     }
-    try writer.writeAll("\n  },\n");
 
-    // CityHash64 (unseeded)
-    try writer.writeAll("  \"cityhash64\": {\n");
-    for (common.test_inputs, 0..) |input, idx| {
-        const hash = std.hash.CityHash64.hash(input.data);
-        const hex = common.toHex64(hash);
-        try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
-        if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
+    // Seeded 64-bit hashes (hashWithSeed method)
+    inline for (SeededHash64WithSeedTypes) |entry| {
+        const name = entry[0];
+        const Algo = entry[1];
 
-    // CityHash64 seeded
-    try writer.writeAll("  \"cityhash64_seeded\": {\n");
-    var first_city = true;
-    for (common.test_seeds_64) |seed| {
-        if (!first_city) try writer.writeAll(",\n");
-        first_city = false;
-        try writer.print("    \"{d}\": {{\n", .{seed});
-        for (common.test_inputs, 0..) |input, idx| {
-            const hash = std.hash.CityHash64.hashWithSeed(input.data, seed);
-            const hex = common.toHex64(hash);
-            try writer.print("      \"{s}\": \"{s}\"", .{ input.name, hex });
-            if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-            try writer.writeAll("\n");
+        try ws.objectField(name);
+        try ws.beginObject();
+        for (common.test_seeds_64) |seed| {
+            try ws.objectField(common.seedToString(u64, seed));
+            try ws.beginObject();
+            for (common.test_inputs) |input| {
+                const hash = Algo.hashWithSeed(input.data, seed);
+                try ws.objectField(input.name);
+                try ws.write(common.toHex64(hash));
+            }
+            try ws.endObject();
         }
-        try writer.writeAll("    }");
+        try ws.endObject();
     }
-    try writer.writeAll("\n  },\n");
 
-    // Murmur2_64 (unseeded)
-    try writer.writeAll("  \"murmur2_64\": {\n");
-    for (common.test_inputs, 0..) |input, idx| {
-        const hash = std.hash.Murmur2_64.hash(input.data);
-        const hex = common.toHex64(hash);
-        try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
-        if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
+    try ws.endObject();
 
-    // Murmur2_64 seeded
-    try writer.writeAll("  \"murmur2_64_seeded\": {\n");
-    var first_murmur = true;
-    for (common.test_seeds_64) |seed| {
-        if (!first_murmur) try writer.writeAll(",\n");
-        first_murmur = false;
-        try writer.print("    \"{d}\": {{\n", .{seed});
-        for (common.test_inputs, 0..) |input, idx| {
-            const hash = std.hash.Murmur2_64.hashWithSeed(input.data, seed);
-            const hex = common.toHex64(hash);
-            try writer.print("      \"{s}\": \"{s}\"", .{ input.name, hex });
-            if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-            try writer.writeAll("\n");
-        }
-        try writer.writeAll("    }");
-    }
-    try writer.writeAll("\n  },\n");
+    // Add trailing newline for POSIX compliance
+    try out.writer.writeByte('\n');
 
-    // FNV-1a 32-bit
-    try writer.writeAll("  \"fnv1a32\": {\n");
-    for (common.test_inputs, 0..) |input, idx| {
-        const hash = std.hash.Fnv1a_32.hash(input.data);
-        const hex = common.toHex32(hash);
-        try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
-        if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
-
-    // FNV-1a 64-bit
-    try writer.writeAll("  \"fnv1a64\": {\n");
-    for (common.test_inputs, 0..) |input, idx| {
-        const hash = std.hash.Fnv1a_64.hash(input.data);
-        const hex = common.toHex64(hash);
-        try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
-        if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  }\n");
-
-    try writer.writeAll("}\n");
-
-    return list.toOwnedSlice(allocator);
+    return out.toOwnedSlice();
 }

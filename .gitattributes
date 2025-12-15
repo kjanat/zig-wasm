@@ -1,0 +1,2 @@
+# git config diff.json_sort.textconv "jq --sort-keys ."
+*.json diff=json_sort

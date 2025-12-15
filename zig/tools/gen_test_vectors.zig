@@ -72,18 +72,18 @@ pub fn main() !void {
     if (hash_path) |path| {
         const data = try hash.writeHashVectors(allocator);
         defer allocator.free(data);
-        try common.writeToFile(path, data);
+        try common.writeToFile(allocator, path, data);
     }
 
     if (crypto_path) |path| {
         const data = try crypto.writeCryptoVectors(allocator);
         defer allocator.free(data);
-        try common.writeToFile(path, data);
+        try common.writeToFile(allocator, path, data);
     }
 
     if (math_path) |path| {
         const data = try math.writeMathVectors(allocator);
         defer allocator.free(data);
-        try common.writeToFile(path, data);
+        try common.writeToFile(allocator, path, data);
     }
 }

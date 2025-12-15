@@ -1,5 +1,5 @@
 //! Math test vector generator.
-//! Generates test vectors for math functions including the new deg2rad, rad2deg, lcm, and fma.
+//! Generates test vectors for math functions including deg2rad, rad2deg, gcd, lcm, and fma.
 
 const std = @import("std");
 const common = @import("common.zig");
@@ -125,210 +125,167 @@ const fma_test_cases = [_]FmaTestCase{
     .{ .name = "precision_test", .x = 1.0000001, .y = 1.0000001, .z = -1.0000002 }, // Tests precision
 };
 
-fn writeFloat(writer: anytype, value: f64) !void {
+// Unary math functions that operate on all inputs
+const UnaryMathFn = struct {
+    name: []const u8,
+    func: *const fn (f64) f64,
+    filter: ?*const fn (f64) bool = null, // Optional filter for valid inputs
+};
+
+fn mathSin(x: f64) f64 {
+    return @sin(x);
+}
+fn mathCos(x: f64) f64 {
+    return @cos(x);
+}
+fn mathTan(x: f64) f64 {
+    return @tan(x);
+}
+fn mathSqrt(x: f64) f64 {
+    return @sqrt(x);
+}
+fn mathCbrt(x: f64) f64 {
+    return std.math.cbrt(x);
+}
+fn mathExp(x: f64) f64 {
+    return @exp(x);
+}
+fn mathLog(x: f64) f64 {
+    return @log(x);
+}
+fn mathFloor(x: f64) f64 {
+    return @floor(x);
+}
+fn mathCeil(x: f64) f64 {
+    return @ceil(x);
+}
+fn mathRound(x: f64) f64 {
+    return @round(x);
+}
+fn mathTrunc(x: f64) f64 {
+    return @trunc(x);
+}
+fn isNonNegative(x: f64) bool {
+    return x >= 0;
+}
+fn isPositive(x: f64) bool {
+    return x > 0;
+}
+
+const unary_functions = [_]UnaryMathFn{
+    .{ .name = "sin", .func = mathSin },
+    .{ .name = "cos", .func = mathCos },
+    .{ .name = "tan", .func = mathTan },
+    .{ .name = "sqrt", .func = mathSqrt, .filter = isNonNegative },
+    .{ .name = "cbrt", .func = mathCbrt },
+    .{ .name = "exp", .func = mathExp },
+    .{ .name = "log", .func = mathLog, .filter = isPositive },
+    .{ .name = "floor", .func = mathFloor },
+    .{ .name = "ceil", .func = mathCeil },
+    .{ .name = "round", .func = mathRound },
+    .{ .name = "trunc", .func = mathTrunc },
+};
+
+/// Write a float value, handling special cases (NaN, Inf)
+fn writeFloatValue(ws: *std.json.Stringify, value: f64) !void {
     if (std.math.isNan(value)) {
-        try writer.writeAll("\"NaN\"");
+        try ws.write("NaN");
     } else if (std.math.isPositiveInf(value)) {
-        try writer.writeAll("\"Infinity\"");
+        try ws.write("Infinity");
     } else if (std.math.isNegativeInf(value)) {
-        try writer.writeAll("\"-Infinity\"");
+        try ws.write("-Infinity");
     } else {
-        try writer.print("{d:.15}", .{value});
+        try ws.print("{d:.15}", .{value});
     }
 }
 
 pub fn writeMathVectors(allocator: mem.Allocator) ![]u8 {
-    var list = std.ArrayListUnmanaged(u8){};
-    errdefer list.deinit(allocator);
-    const writer = list.writer(allocator);
+    var out: std.io.Writer.Allocating = .init(allocator);
+    errdefer out.deinit();
 
-    try writer.writeAll("{\n");
-    try writer.writeAll("  \"_meta\": {\n");
-    try writer.writeAll("    \"generated_by\": \"zig/tools/gen_test_vectors.zig\",\n");
-    try writer.writeAll("    \"description\": \"Deterministic test vectors for @zig-wasm/math\"\n");
-    try writer.writeAll("  },\n");
+    var ws: std.json.Stringify = .{ .writer = &out.writer, .options = .{ .whitespace = .indent_2 } };
+
+    try ws.beginObject();
+
+    // Meta section
+    try ws.objectField("_meta");
+    try ws.beginObject();
+    try ws.objectField("generated_by");
+    try ws.write("zig/tools/gen_test_vectors.zig");
+    try ws.objectField("description");
+    try ws.write("Deterministic test vectors for @zig-wasm/math");
+    try ws.endObject();
 
     // deg2rad - convert degrees to radians
-    try writer.writeAll("  \"deg2rad\": {\n");
-    for (degree_inputs, 0..) |input, idx| {
+    try ws.objectField("deg2rad");
+    try ws.beginObject();
+    for (degree_inputs) |input| {
         const result = input.value * (std.math.pi / 180.0);
-        try writer.print("    \"{s}\": ", .{input.name});
-        try writeFloat(writer, result);
-        if (idx < degree_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
+        try ws.objectField(input.name);
+        try writeFloatValue(&ws, result);
     }
-    try writer.writeAll("  },\n");
+    try ws.endObject();
 
     // rad2deg - convert radians to degrees
-    try writer.writeAll("  \"rad2deg\": {\n");
-    for (math_test_inputs, 0..) |input, idx| {
+    try ws.objectField("rad2deg");
+    try ws.beginObject();
+    for (math_test_inputs) |input| {
         const result = input.value * (180.0 / std.math.pi);
-        try writer.print("    \"{s}\": ", .{input.name});
-        try writeFloat(writer, result);
-        if (idx < math_test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
+        try ws.objectField(input.name);
+        try writeFloatValue(&ws, result);
     }
-    try writer.writeAll("  },\n");
+    try ws.endObject();
 
     // GCD
-    try writer.writeAll("  \"gcd\": {\n");
-    for (integer_test_pairs, 0..) |pair, idx| {
+    try ws.objectField("gcd");
+    try ws.beginObject();
+    for (integer_test_pairs) |pair| {
         const result = std.math.gcd(pair.a, pair.b);
-        try writer.print("    \"{s}\": {d}", .{ pair.name, result });
-        if (idx < integer_test_pairs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
+        try ws.objectField(pair.name);
+        try ws.write(result);
     }
-    try writer.writeAll("  },\n");
+    try ws.endObject();
 
     // LCM
-    try writer.writeAll("  \"lcm\": {\n");
-    for (integer_test_pairs, 0..) |pair, idx| {
+    try ws.objectField("lcm");
+    try ws.beginObject();
+    for (integer_test_pairs) |pair| {
         const result = if (pair.a == 0 or pair.b == 0) 0 else (pair.a / std.math.gcd(pair.a, pair.b)) * pair.b;
-        try writer.print("    \"{s}\": {d}", .{ pair.name, result });
-        if (idx < integer_test_pairs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
+        try ws.objectField(pair.name);
+        try ws.write(result);
     }
-    try writer.writeAll("  },\n");
+    try ws.endObject();
 
     // FMA - fused multiply-add
-    try writer.writeAll("  \"fma\": {\n");
-    for (fma_test_cases, 0..) |tc, idx| {
+    try ws.objectField("fma");
+    try ws.beginObject();
+    for (fma_test_cases) |tc| {
         const result = @mulAdd(f64, tc.x, tc.y, tc.z);
-        try writer.print("    \"{s}\": ", .{tc.name});
-        try writeFloat(writer, result);
-        if (idx < fma_test_cases.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
+        try ws.objectField(tc.name);
+        try writeFloatValue(&ws, result);
     }
-    try writer.writeAll("  },\n");
+    try ws.endObject();
 
-    // sin
-    try writer.writeAll("  \"sin\": {\n");
-    for (math_test_inputs, 0..) |input, idx| {
-        const result = @sin(input.value);
-        try writer.print("    \"{s}\": ", .{input.name});
-        try writeFloat(writer, result);
-        if (idx < math_test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
-
-    // cos
-    try writer.writeAll("  \"cos\": {\n");
-    for (math_test_inputs, 0..) |input, idx| {
-        const result = @cos(input.value);
-        try writer.print("    \"{s}\": ", .{input.name});
-        try writeFloat(writer, result);
-        if (idx < math_test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
-
-    // tan
-    try writer.writeAll("  \"tan\": {\n");
-    for (math_test_inputs, 0..) |input, idx| {
-        const result = @tan(input.value);
-        try writer.print("    \"{s}\": ", .{input.name});
-        try writeFloat(writer, result);
-        if (idx < math_test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
-
-    // sqrt (only for non-negative values)
-    try writer.writeAll("  \"sqrt\": {\n");
-    var first_sqrt = true;
-    for (math_test_inputs) |input| {
-        if (input.value >= 0) {
-            if (!first_sqrt) try writer.writeAll(",\n");
-            first_sqrt = false;
-            const result = @sqrt(input.value);
-            try writer.print("    \"{s}\": ", .{input.name});
-            try writeFloat(writer, result);
+    // Unary math functions
+    for (unary_functions) |func| {
+        try ws.objectField(func.name);
+        try ws.beginObject();
+        for (math_test_inputs) |input| {
+            // Skip inputs that don't pass the filter
+            if (func.filter) |filter| {
+                if (!filter(input.value)) continue;
+            }
+            const result = func.func(input.value);
+            try ws.objectField(input.name);
+            try writeFloatValue(&ws, result);
         }
+        try ws.endObject();
     }
-    try writer.writeAll("\n  },\n");
 
-    // cbrt
-    try writer.writeAll("  \"cbrt\": {\n");
-    for (math_test_inputs, 0..) |input, idx| {
-        const result = std.math.cbrt(input.value);
-        try writer.print("    \"{s}\": ", .{input.name});
-        try writeFloat(writer, result);
-        if (idx < math_test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
+    try ws.endObject();
 
-    // exp
-    try writer.writeAll("  \"exp\": {\n");
-    for (math_test_inputs, 0..) |input, idx| {
-        const result = @exp(input.value);
-        try writer.print("    \"{s}\": ", .{input.name});
-        try writeFloat(writer, result);
-        if (idx < math_test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
+    // Add trailing newline for POSIX compliance
+    try out.writer.writeByte('\n');
 
-    // log (only for positive values)
-    try writer.writeAll("  \"log\": {\n");
-    var first_log = true;
-    for (math_test_inputs) |input| {
-        if (input.value > 0) {
-            if (!first_log) try writer.writeAll(",\n");
-            first_log = false;
-            const result = @log(input.value);
-            try writer.print("    \"{s}\": ", .{input.name});
-            try writeFloat(writer, result);
-        }
-    }
-    try writer.writeAll("\n  },\n");
-
-    // floor
-    try writer.writeAll("  \"floor\": {\n");
-    for (math_test_inputs, 0..) |input, idx| {
-        const result = @floor(input.value);
-        try writer.print("    \"{s}\": ", .{input.name});
-        try writeFloat(writer, result);
-        if (idx < math_test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
-
-    // ceil
-    try writer.writeAll("  \"ceil\": {\n");
-    for (math_test_inputs, 0..) |input, idx| {
-        const result = @ceil(input.value);
-        try writer.print("    \"{s}\": ", .{input.name});
-        try writeFloat(writer, result);
-        if (idx < math_test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
-
-    // round
-    try writer.writeAll("  \"round\": {\n");
-    for (math_test_inputs, 0..) |input, idx| {
-        const result = @round(input.value);
-        try writer.print("    \"{s}\": ", .{input.name});
-        try writeFloat(writer, result);
-        if (idx < math_test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
-
-    // trunc
-    try writer.writeAll("  \"trunc\": {\n");
-    for (math_test_inputs, 0..) |input, idx| {
-        const result = @trunc(input.value);
-        try writer.print("    \"{s}\": ", .{input.name});
-        try writeFloat(writer, result);
-        if (idx < math_test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  }\n");
-
-    try writer.writeAll("}\n");
-
-    return list.toOwnedSlice(allocator);
+    return out.toOwnedSlice();
 }

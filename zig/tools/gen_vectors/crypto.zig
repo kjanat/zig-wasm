@@ -5,178 +5,89 @@ const std = @import("std");
 const common = @import("common.zig");
 const mem = common.mem;
 
+// Define tuples mapping the JSON key to the Zig Standard Library type
+const HashTypes = .{
+    .{ "md5", std.crypto.hash.Md5 },
+    .{ "sha1", std.crypto.hash.Sha1 },
+    .{ "sha256", std.crypto.hash.sha2.Sha256 },
+    .{ "sha384", std.crypto.hash.sha2.Sha384 },
+    .{ "sha512", std.crypto.hash.sha2.Sha512 },
+    .{ "sha3_256", std.crypto.hash.sha3.Sha3_256 },
+    .{ "sha3_512", std.crypto.hash.sha3.Sha3_512 },
+    .{ "blake2b256", std.crypto.hash.blake2.Blake2b256 },
+    .{ "blake2s256", std.crypto.hash.blake2.Blake2s256 },
+    .{ "blake3", std.crypto.hash.Blake3 },
+};
+
+const HmacTypes = .{
+    .{ "hmac_sha256", std.crypto.auth.hmac.sha2.HmacSha256 },
+    .{ "hmac_sha512", std.crypto.auth.hmac.sha2.HmacSha512 },
+};
+
 pub fn writeCryptoVectors(allocator: mem.Allocator) ![]u8 {
-    var list = std.ArrayListUnmanaged(u8){};
-    errdefer list.deinit(allocator);
-    const writer = list.writer(allocator);
+    var out: std.io.Writer.Allocating = .init(allocator);
+    errdefer out.deinit();
 
-    try writer.writeAll("{\n");
-    try writer.writeAll("  \"_meta\": {\n");
-    try writer.writeAll("    \"generated_by\": \"zig/tools/gen_test_vectors.zig\",\n");
-    try writer.writeAll("    \"description\": \"Deterministic test vectors for @zig-wasm/crypto\"\n");
-    try writer.writeAll("  },\n");
+    // Create a JSON writer that handles formatting and syntax automatically
+    var ws: std.json.Stringify = .{ .writer = &out.writer, .options = .{ .whitespace = .indent_2 } };
 
-    // MD5
-    try writer.writeAll("  \"md5\": {\n");
-    for (common.test_inputs, 0..) |input, idx| {
-        var digest: [std.crypto.hash.Md5.digest_length]u8 = undefined;
-        std.crypto.hash.Md5.hash(input.data, &digest, .{});
-        const hex = common.bytesToHex(std.crypto.hash.Md5.digest_length, &digest);
-        try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
-        if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
+    try ws.beginObject();
 
-    // SHA1
-    try writer.writeAll("  \"sha1\": {\n");
-    for (common.test_inputs, 0..) |input, idx| {
-        var digest: [std.crypto.hash.Sha1.digest_length]u8 = undefined;
-        std.crypto.hash.Sha1.hash(input.data, &digest, .{});
-        const hex = common.bytesToHex(std.crypto.hash.Sha1.digest_length, &digest);
-        try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
-        if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
+    // 1. Meta Section
+    try ws.objectField("_meta");
+    try ws.beginObject();
+    try ws.objectField("generated_by");
+    try ws.write("zig/tools/gen_test_vectors.zig");
+    try ws.objectField("description");
+    try ws.write("Deterministic test vectors for @zig-wasm/crypto");
+    try ws.endObject();
 
-    // SHA256
-    try writer.writeAll("  \"sha256\": {\n");
-    for (common.test_inputs, 0..) |input, idx| {
-        var digest: [std.crypto.hash.sha2.Sha256.digest_length]u8 = undefined;
-        std.crypto.hash.sha2.Sha256.hash(input.data, &digest, .{});
-        const hex = common.bytesToHex(std.crypto.hash.sha2.Sha256.digest_length, &digest);
-        try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
-        if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
+    // 2. Hash Functions Loop
+    // 'inline for' unrolls this loop at compile time, generating code for each type
+    inline for (HashTypes) |entry| {
+        const name = entry[0];
+        const Algo = entry[1];
 
-    // SHA384
-    try writer.writeAll("  \"sha384\": {\n");
-    for (common.test_inputs, 0..) |input, idx| {
-        var digest: [std.crypto.hash.sha2.Sha384.digest_length]u8 = undefined;
-        std.crypto.hash.sha2.Sha384.hash(input.data, &digest, .{});
-        const hex = common.bytesToHex(std.crypto.hash.sha2.Sha384.digest_length, &digest);
-        try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
-        if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
+        try ws.objectField(name);
+        try ws.beginObject();
+        for (common.test_inputs) |input| {
+            var digest: [Algo.digest_length]u8 = undefined;
+            Algo.hash(input.data, &digest, .{});
 
-    // SHA512
-    try writer.writeAll("  \"sha512\": {\n");
-    for (common.test_inputs, 0..) |input, idx| {
-        var digest: [std.crypto.hash.sha2.Sha512.digest_length]u8 = undefined;
-        std.crypto.hash.sha2.Sha512.hash(input.data, &digest, .{});
-        const hex = common.bytesToHex(std.crypto.hash.sha2.Sha512.digest_length, &digest);
-        try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
-        if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
-
-    // SHA3-256
-    try writer.writeAll("  \"sha3_256\": {\n");
-    for (common.test_inputs, 0..) |input, idx| {
-        var digest: [std.crypto.hash.sha3.Sha3_256.digest_length]u8 = undefined;
-        std.crypto.hash.sha3.Sha3_256.hash(input.data, &digest, .{});
-        const hex = common.bytesToHex(std.crypto.hash.sha3.Sha3_256.digest_length, &digest);
-        try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
-        if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
-
-    // SHA3-512
-    try writer.writeAll("  \"sha3_512\": {\n");
-    for (common.test_inputs, 0..) |input, idx| {
-        var digest: [std.crypto.hash.sha3.Sha3_512.digest_length]u8 = undefined;
-        std.crypto.hash.sha3.Sha3_512.hash(input.data, &digest, .{});
-        const hex = common.bytesToHex(std.crypto.hash.sha3.Sha3_512.digest_length, &digest);
-        try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
-        if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
-
-    // BLAKE2b-256
-    try writer.writeAll("  \"blake2b256\": {\n");
-    for (common.test_inputs, 0..) |input, idx| {
-        var digest: [std.crypto.hash.blake2.Blake2b256.digest_length]u8 = undefined;
-        std.crypto.hash.blake2.Blake2b256.hash(input.data, &digest, .{});
-        const hex = common.bytesToHex(std.crypto.hash.blake2.Blake2b256.digest_length, &digest);
-        try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
-        if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
-
-    // BLAKE2s-256
-    try writer.writeAll("  \"blake2s256\": {\n");
-    for (common.test_inputs, 0..) |input, idx| {
-        var digest: [std.crypto.hash.blake2.Blake2s256.digest_length]u8 = undefined;
-        std.crypto.hash.blake2.Blake2s256.hash(input.data, &digest, .{});
-        const hex = common.bytesToHex(std.crypto.hash.blake2.Blake2s256.digest_length, &digest);
-        try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
-        if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
-
-    // BLAKE3
-    try writer.writeAll("  \"blake3\": {\n");
-    for (common.test_inputs, 0..) |input, idx| {
-        var digest: [std.crypto.hash.Blake3.digest_length]u8 = undefined;
-        std.crypto.hash.Blake3.hash(input.data, &digest, .{});
-        const hex = common.bytesToHex(std.crypto.hash.Blake3.digest_length, &digest);
-        try writer.print("    \"{s}\": \"{s}\"", .{ input.name, hex });
-        if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-        try writer.writeAll("\n");
-    }
-    try writer.writeAll("  },\n");
-
-    // HMAC-SHA256
-    try writer.writeAll("  \"hmac_sha256\": {\n");
-    var first_hmac256 = true;
-    for (common.hmac_keys) |key_input| {
-        if (!first_hmac256) try writer.writeAll(",\n");
-        first_hmac256 = false;
-        try writer.print("    \"{s}\": {{\n", .{key_input.name});
-        for (common.test_inputs, 0..) |input, idx| {
-            const HmacSha256 = std.crypto.auth.hmac.sha2.HmacSha256;
-            var mac: [HmacSha256.mac_length]u8 = undefined;
-            HmacSha256.create(&mac, input.data, key_input.data);
-            const hex = common.bytesToHex(HmacSha256.mac_length, &mac);
-            try writer.print("      \"{s}\": \"{s}\"", .{ input.name, hex });
-            if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-            try writer.writeAll("\n");
+            try ws.objectField(input.name);
+            try ws.write(common.bytesToHex(Algo.digest_length, &digest));
         }
-        try writer.writeAll("    }");
+        try ws.endObject();
     }
-    try writer.writeAll("\n  },\n");
 
-    // HMAC-SHA512
-    try writer.writeAll("  \"hmac_sha512\": {\n");
-    var first_hmac512 = true;
-    for (common.hmac_keys) |key_input| {
-        if (!first_hmac512) try writer.writeAll(",\n");
-        first_hmac512 = false;
-        try writer.print("    \"{s}\": {{\n", .{key_input.name});
-        for (common.test_inputs, 0..) |input, idx| {
-            const HmacSha512 = std.crypto.auth.hmac.sha2.HmacSha512;
-            var mac: [HmacSha512.mac_length]u8 = undefined;
-            HmacSha512.create(&mac, input.data, key_input.data);
-            const hex = common.bytesToHex(HmacSha512.mac_length, &mac);
-            try writer.print("      \"{s}\": \"{s}\"", .{ input.name, hex });
-            if (idx < common.test_inputs.len - 1) try writer.writeAll(",");
-            try writer.writeAll("\n");
+    // 3. HMAC Functions Loop
+    inline for (HmacTypes) |entry| {
+        const name = entry[0];
+        const Algo = entry[1];
+
+        try ws.objectField(name);
+        try ws.beginObject();
+
+        for (common.hmac_keys) |key_input| {
+            try ws.objectField(key_input.name);
+            try ws.beginObject();
+
+            for (common.test_inputs) |input| {
+                var mac: [Algo.mac_length]u8 = undefined;
+                Algo.create(&mac, input.data, key_input.data);
+
+                try ws.objectField(input.name);
+                try ws.write(common.bytesToHex(Algo.mac_length, &mac));
+            }
+            try ws.endObject();
         }
-        try writer.writeAll("    }");
+        try ws.endObject();
     }
-    try writer.writeAll("\n  }\n");
 
-    try writer.writeAll("}\n");
+    try ws.endObject();
 
-    return list.toOwnedSlice(allocator);
+    // Add trailing newline for POSIX compliance
+    try out.writer.writeByte('\n');
+
+    return out.toOwnedSlice();
 }

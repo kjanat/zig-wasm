@@ -125,11 +125,72 @@ pub fn bytesToHex(comptime len: usize, bytes: *const [len]u8) [len * 2]u8 {
     return result;
 }
 
+// Buffer for seed string conversion (max u64 = 20 digits)
+var seed_buf: [20]u8 = undefined;
+
+pub fn seedToString(comptime T: type, seed: T) []const u8 {
+    return std.fmt.bufPrint(&seed_buf, "{d}", .{seed}) catch "0";
+}
+
+// ============================================================================
+// JSON sorting utilities
+// ============================================================================
+
+/// Sort all object keys in a JSON value recursively
+fn sortJsonValue(value: *std.json.Value) void {
+    switch (value.*) {
+        .object => |*obj| {
+            // Sort the keys using index-based comparison
+            const SortCtx = struct {
+                keys: []const []const u8,
+
+                pub fn lessThan(ctx: @This(), a_index: usize, b_index: usize) bool {
+                    return mem.order(u8, ctx.keys[a_index], ctx.keys[b_index]) == .lt;
+                }
+            };
+            obj.sort(SortCtx{ .keys = obj.keys() });
+            // Recursively sort nested objects
+            for (obj.values()) |*v| {
+                sortJsonValue(v);
+            }
+        },
+        .array => |*arr| {
+            for (arr.items) |*item| {
+                sortJsonValue(item);
+            }
+        },
+        else => {},
+    }
+}
+
+/// Parse JSON, sort all keys recursively, and re-serialize with indentation
+pub fn sortJsonKeys(allocator: mem.Allocator, json_data: []const u8) ![]u8 {
+    // Parse the JSON
+    const parsed = try std.json.parseFromSlice(std.json.Value, allocator, json_data, .{});
+    defer parsed.deinit();
+
+    // Sort keys recursively
+    var value = parsed.value;
+    sortJsonValue(&value);
+
+    // Re-serialize with sorted keys
+    var out: std.io.Writer.Allocating = .init(allocator);
+    errdefer out.deinit();
+
+    try std.json.Stringify.value(value, .{ .whitespace = .indent_2 }, &out.writer);
+    try out.writer.writeByte('\n');
+
+    return out.toOwnedSlice();
+}
+
 // ============================================================================
 // File writing utilities
 // ============================================================================
 
-pub fn writeToFile(path: []const u8, data: []const u8) !void {
+pub fn writeToFile(allocator: mem.Allocator, path: []const u8, data: []const u8) !void {
+    // Sort JSON keys before writing
+    const sorted_data = try sortJsonKeys(allocator, data);
+    defer allocator.free(sorted_data);
     const dir_path = fs.path.dirname(path) orelse ".";
     fs.cwd().makePath(dir_path) catch |err| {
         const stderr = fs.File.stderr();
@@ -148,7 +209,7 @@ pub fn writeToFile(path: []const u8, data: []const u8) !void {
     };
     defer file.close();
 
-    try file.writeAll(data);
+    try file.writeAll(sorted_data);
 
     const stdout = fs.File.stdout();
     var buf: [256]u8 = undefined;
