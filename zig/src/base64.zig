@@ -1,12 +1,27 @@
-///! Base64 encoding/decoding for WASM export
-///! Wraps Zig's std.base64 module
+//! Base64 and hexadecimal encoding/decoding for WASM export.
+//!
+//! Provides RFC 4648-compliant Base64 encoding with four variants:
+//! - **Standard**: Uses `+/` with `=` padding (RFC 4648 Section 4)
+//! - **Standard no-pad**: Uses `+/` without padding
+//! - **URL-safe**: Uses `-_` with `=` padding (RFC 4648 Section 5)
+//! - **URL-safe no-pad**: Uses `-_` without padding
+//!
+//! Also includes lowercase hexadecimal encoding/decoding utilities.
+//!
+//! All functions use WASM linear memory for data transfer. Callers must
+//! allocate output buffers using `alloc()` and free them with `free()`.
+
 const std = @import("std");
 const allocator_mod = @import("allocator.zig");
 
-// Re-export allocator functions
+/// Allocates memory in WASM linear memory.
+///
+/// Returns a pointer to the allocated region, or null if allocation fails.
 export fn alloc(size: usize) ?[*]u8 {
     return allocator_mod.alloc(size);
 }
+
+/// Frees previously allocated WASM memory.
 export fn free(ptr: [*]u8, size: usize) void {
     allocator_mod.free(ptr, size);
 }
@@ -20,13 +35,17 @@ const url_safe_no_pad = std.base64.url_safe_no_pad;
 // Standard Base64 (with padding)
 // ============================================================================
 
-/// Get encoded length for standard base64
+/// Returns the encoded length for standard Base64 (with padding).
+///
+/// Use this to allocate the output buffer before calling `base64_encode()`.
 export fn base64_encode_len(input_len: usize) usize {
     return standard.Encoder.calcSize(input_len);
 }
 
-/// Encode data to standard base64
-/// out_ptr must have at least base64_encode_len(data_len) bytes
+/// Encodes binary data to standard Base64 with `=` padding.
+///
+/// The output buffer must have at least `base64_encode_len(data_len)` bytes.
+/// Returns the number of bytes written to the output buffer.
 export fn base64_encode(
     data_ptr: [*]const u8,
     data_len: usize,
@@ -39,14 +58,18 @@ export fn base64_encode(
     return encoded_len;
 }
 
-/// Get maximum decoded length for standard base64
+/// Returns the maximum decoded length for standard Base64.
+///
+/// The actual decoded length may be less due to padding characters.
 export fn base64_decode_len(input_len: usize) usize {
     // Max decoded size is 3/4 of encoded size
     return (input_len / 4) * 3;
 }
 
-/// Decode standard base64 data
-/// Returns actual decoded length, or 0 on error
+/// Decodes standard Base64 data to binary.
+///
+/// Returns the actual number of decoded bytes, or 0 on invalid input.
+/// The output buffer must have at least `base64_decode_len(data_len)` bytes.
 export fn base64_decode(
     data_ptr: [*]const u8,
     data_len: usize,
@@ -68,12 +91,14 @@ export fn base64_decode(
 // Standard Base64 (no padding)
 // ============================================================================
 
-/// Get encoded length for base64 without padding
+/// Returns the encoded length for Base64 without padding.
 export fn base64_no_pad_encode_len(input_len: usize) usize {
     return standard_no_pad.Encoder.calcSize(input_len);
 }
 
-/// Encode data to base64 without padding
+/// Encodes binary data to Base64 without padding characters.
+///
+/// Returns the number of bytes written to the output buffer.
 export fn base64_no_pad_encode(
     data_ptr: [*]const u8,
     data_len: usize,
@@ -86,7 +111,7 @@ export fn base64_no_pad_encode(
     return encoded_len;
 }
 
-/// Get maximum decoded length for base64 without padding
+/// Returns the decoded length for Base64 without padding.
 export fn base64_no_pad_decode_len(input_len: usize) usize {
     const remainder = input_len % 4;
     const full_groups = input_len / 4;
@@ -99,7 +124,9 @@ export fn base64_no_pad_decode_len(input_len: usize) usize {
     return full_groups * 3 + extra_bytes;
 }
 
-/// Decode base64 without padding
+/// Decodes Base64 data without padding.
+///
+/// Returns the actual number of decoded bytes, or 0 on invalid input.
 export fn base64_no_pad_decode(
     data_ptr: [*]const u8,
     data_len: usize,
@@ -126,12 +153,15 @@ export fn base64_no_pad_decode(
 // URL-safe Base64 (with padding)
 // ============================================================================
 
-/// Get encoded length for URL-safe base64
+/// Returns the encoded length for URL-safe Base64 (with padding).
 export fn base64_url_encode_len(input_len: usize) usize {
     return url_safe.Encoder.calcSize(input_len);
 }
 
-/// Encode data to URL-safe base64
+/// Encodes binary data to URL-safe Base64 using `-_` alphabet with padding.
+///
+/// This variant is safe for use in URLs and filenames.
+/// Returns the number of bytes written to the output buffer.
 export fn base64_url_encode(
     data_ptr: [*]const u8,
     data_len: usize,
@@ -144,12 +174,14 @@ export fn base64_url_encode(
     return encoded_len;
 }
 
-/// Get maximum decoded length for URL-safe base64
+/// Returns the maximum decoded length for URL-safe Base64.
 export fn base64_url_decode_len(input_len: usize) usize {
     return (input_len / 4) * 3;
 }
 
-/// Decode URL-safe base64
+/// Decodes URL-safe Base64 data to binary.
+///
+/// Returns the actual number of decoded bytes, or 0 on invalid input.
 export fn base64_url_decode(
     data_ptr: [*]const u8,
     data_len: usize,
@@ -170,12 +202,15 @@ export fn base64_url_decode(
 // URL-safe Base64 (no padding)
 // ============================================================================
 
-/// Get encoded length for URL-safe base64 without padding
+/// Returns the encoded length for URL-safe Base64 without padding.
 export fn base64_url_no_pad_encode_len(input_len: usize) usize {
     return url_safe_no_pad.Encoder.calcSize(input_len);
 }
 
-/// Encode data to URL-safe base64 without padding
+/// Encodes binary data to URL-safe Base64 without padding.
+///
+/// This is the most compact URL-safe encoding variant.
+/// Returns the number of bytes written to the output buffer.
 export fn base64_url_no_pad_encode(
     data_ptr: [*]const u8,
     data_len: usize,
@@ -188,7 +223,7 @@ export fn base64_url_no_pad_encode(
     return encoded_len;
 }
 
-/// Get maximum decoded length for URL-safe base64 without padding
+/// Returns the decoded length for URL-safe Base64 without padding.
 export fn base64_url_no_pad_decode_len(input_len: usize) usize {
     const remainder = input_len % 4;
     const full_groups = input_len / 4;
@@ -201,7 +236,9 @@ export fn base64_url_no_pad_decode_len(input_len: usize) usize {
     return full_groups * 3 + extra_bytes;
 }
 
-/// Decode URL-safe base64 without padding
+/// Decodes URL-safe Base64 data without padding.
+///
+/// Returns the actual number of decoded bytes, or 0 on invalid input.
 export fn base64_url_no_pad_decode(
     data_ptr: [*]const u8,
     data_len: usize,
@@ -227,12 +264,15 @@ export fn base64_url_no_pad_decode(
 // Hex encoding
 // ============================================================================
 
-/// Get hex encoded length
+/// Returns the hex-encoded length (always `input_len * 2`).
 export fn hex_encode_len(input_len: usize) usize {
     return input_len * 2;
 }
 
-/// Encode data to lowercase hex
+/// Encodes binary data to lowercase hexadecimal.
+///
+/// Each input byte becomes two hex characters (e.g., `0xff` -> `"ff"`).
+/// Returns the number of bytes written (always `data_len * 2`).
 export fn hex_encode(
     data_ptr: [*]const u8,
     data_len: usize,
@@ -250,13 +290,16 @@ export fn hex_encode(
     return data_len * 2;
 }
 
-/// Get hex decoded length
+/// Returns the hex-decoded length (always `input_len / 2`).
 export fn hex_decode_len(input_len: usize) usize {
     return input_len / 2;
 }
 
-/// Decode hex string to bytes
-/// Returns actual decoded length, or 0 on error
+/// Decodes a hexadecimal string to binary data.
+///
+/// Accepts both uppercase and lowercase hex characters.
+/// Returns the number of decoded bytes, or 0 on invalid input
+/// (odd length or invalid hex characters).
 export fn hex_decode(
     data_ptr: [*]const u8,
     data_len: usize,
@@ -276,6 +319,7 @@ export fn hex_decode(
     return data_len / 2;
 }
 
+/// Converts a single hex character to its 4-bit value.
 fn hexCharToNibble(c: u8) ?u8 {
     return switch (c) {
         '0'...'9' => c - '0',

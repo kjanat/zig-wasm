@@ -186,6 +186,16 @@ export interface MathWasmExports extends WasmMemoryExports {
   /** Arc tangent of y/x (f64) */
   atan2_f64: (y: number, x: number) => number;
 
+  /** Convert degrees to radians (f32) */
+  deg2rad_f32: (deg: number) => number;
+  /** Convert degrees to radians (f64) */
+  deg2rad_f64: (deg: number) => number;
+
+  /** Convert radians to degrees (f32) */
+  rad2deg_f32: (rad: number) => number;
+  /** Convert radians to degrees (f64) */
+  rad2deg_f64: (rad: number) => number;
+
   // ============================================================================
   // Hyperbolic functions
   // ============================================================================
@@ -332,6 +342,11 @@ export interface MathWasmExports extends WasmMemoryExports {
   /** Greatest common divisor (u64) */
   gcd_u64: (a: bigint, b: bigint) => bigint;
 
+  /** Least common multiple (u32) */
+  lcm_u32: (a: number, b: number) => number;
+  /** Least common multiple (u64) */
+  lcm_u64: (a: bigint, b: bigint) => bigint;
+
   // ============================================================================
   // Floating-point utilities
   // ============================================================================
@@ -350,4 +365,9 @@ export interface MathWasmExports extends WasmMemoryExports {
   copysign_f32: (mag: number, sign: number) => number;
   /** Copy sign from one value to another (f64) */
   copysign_f64: (mag: number, sign: number) => number;
+
+  /** Fused multiply-add: x*y + z (f32) */
+  fma_f32: (x: number, y: number, z: number) => number;
+  /** Fused multiply-add: x*y + z (f64) */
+  fma_f64: (x: number, y: number, z: number) => number;
 }

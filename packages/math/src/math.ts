@@ -680,6 +680,48 @@ export async function atan2F32(y: number, x: number): Promise<number> {
   return (await ensureInit()).atan2_f32(y, x);
 }
 
+/**
+ * Convert degrees to radians (f64).
+ *
+ * @param deg - Angle in degrees
+ * @returns Angle in radians
+ *
+ * @example
+ * ```ts
+ * const rad = await deg2rad(180);  // ~3.14159 (PI)
+ * const rad90 = await deg2rad(90); // ~1.5708 (PI/2)
+ * ```
+ */
+export async function deg2rad(deg: number): Promise<number> {
+  return (await ensureInit()).deg2rad_f64(deg);
+}
+
+/** Convert degrees to radians (f32 single precision). See {@link deg2rad}. */
+export async function deg2radF32(deg: number): Promise<number> {
+  return (await ensureInit()).deg2rad_f32(deg);
+}
+
+/**
+ * Convert radians to degrees (f64).
+ *
+ * @param rad - Angle in radians
+ * @returns Angle in degrees
+ *
+ * @example
+ * ```ts
+ * const deg = await rad2deg(Math.PI);     // 180
+ * const deg90 = await rad2deg(Math.PI/2); // 90
+ * ```
+ */
+export async function rad2deg(rad: number): Promise<number> {
+  return (await ensureInit()).rad2deg_f64(rad);
+}
+
+/** Convert radians to degrees (f32 single precision). See {@link rad2deg}. */
+export async function rad2degF32(rad: number): Promise<number> {
+  return (await ensureInit()).rad2deg_f32(rad);
+}
+
 // ============================================================================
 // Hyperbolic functions
 // ============================================================================
@@ -1149,6 +1191,28 @@ export async function gcdU64(a: bigint, b: bigint): Promise<bigint> {
   return (await ensureInit()).gcd_u64(a, b);
 }
 
+/**
+ * Compute the least common multiple of two unsigned 32-bit integers.
+ *
+ * @param a - First value
+ * @param b - Second value
+ * @returns LCM of a and b
+ *
+ * @example
+ * ```ts
+ * const a = await lcm(4, 6);   // 12
+ * const b = await lcm(21, 6);  // 42
+ * ```
+ */
+export async function lcm(a: number, b: number): Promise<number> {
+  return (await ensureInit()).lcm_u32(a, b);
+}
+
+/** Compute LCM (u64). See {@link lcm}. */
+export async function lcmU64(a: bigint, b: bigint): Promise<bigint> {
+  return (await ensureInit()).lcm_u64(a, b);
+}
+
 // ============================================================================
 // Floating-point utilities
 // ============================================================================
@@ -1195,6 +1259,30 @@ export async function copysign(mag: number, sgn: number): Promise<number> {
 /** Copy sign (f32 single precision). See {@link copysign}. */
 export async function copysignF32(mag: number, sgn: number): Promise<number> {
   return (await ensureInit()).copysign_f32(mag, sgn);
+}
+
+/**
+ * Fused multiply-add: compute x*y + z with a single rounding (f64).
+ *
+ * More accurate than separate multiply and add operations for numerical algorithms.
+ *
+ * @param x - First multiplicand
+ * @param y - Second multiplicand
+ * @param z - Addend
+ * @returns x*y + z with single rounding
+ *
+ * @example
+ * ```ts
+ * const a = await fma(2, 3, 4);  // 10 (2*3 + 4)
+ * ```
+ */
+export async function fma(x: number, y: number, z: number): Promise<number> {
+  return (await ensureInit()).fma_f64(x, y, z);
+}
+
+/** Fused multiply-add (f32 single precision). See {@link fma}. */
+export async function fmaF32(x: number, y: number, z: number): Promise<number> {
+  return (await ensureInit()).fma_f32(x, y, z);
 }
 
 // ============================================================================
@@ -1407,6 +1495,22 @@ export function atan2F32Sync(y: number, x: number): number {
   return getSyncExports().atan2_f32(y, x);
 }
 
+/** Convert degrees to radians synchronously (f64). Requires {@link init} first. */
+export function deg2radSync(deg: number): number {
+  return getSyncExports().deg2rad_f64(deg);
+}
+export function deg2radF32Sync(deg: number): number {
+  return getSyncExports().deg2rad_f32(deg);
+}
+
+/** Convert radians to degrees synchronously (f64). Requires {@link init} first. */
+export function rad2degSync(rad: number): number {
+  return getSyncExports().rad2deg_f64(rad);
+}
+export function rad2degF32Sync(rad: number): number {
+  return getSyncExports().rad2deg_f32(rad);
+}
+
 // Hyperbolic - Sync variants
 
 /** Compute hyperbolic sine synchronously (f64). Requires {@link init} first. */
@@ -1578,6 +1682,14 @@ export function gcdU64Sync(a: bigint, b: bigint): bigint {
   return getSyncExports().gcd_u64(a, b);
 }
 
+/** Compute LCM synchronously (u32). Requires {@link init} first. */
+export function lcmSync(a: number, b: number): number {
+  return getSyncExports().lcm_u32(a, b);
+}
+export function lcmU64Sync(a: bigint, b: bigint): bigint {
+  return getSyncExports().lcm_u64(a, b);
+}
+
 // Floating-point utilities - Sync variants
 
 /** Compute fmod synchronously (f64). Requires {@link init} first. */
@@ -1592,4 +1704,12 @@ export function copysignSync(mag: number, sgn: number): number {
 }
 export function copysignF32Sync(mag: number, sgn: number): number {
   return getSyncExports().copysign_f32(mag, sgn);
+}
+
+/** Fused multiply-add synchronously (f64). Requires {@link init} first. */
+export function fmaSync(x: number, y: number, z: number): number {
+  return getSyncExports().fma_f64(x, y, z);
+}
+export function fmaF32Sync(x: number, y: number, z: number): number {
+  return getSyncExports().fma_f32(x, y, z);
 }
