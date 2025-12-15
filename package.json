@@ -35,7 +35,7 @@
     "publish:jsr": "pnpm -r publish:jsr",
     "publish:jsr:dry": "pnpm --parallel --aggregate-output -r publish:jsr --dry-run",
     "test": "vitest",
-    "test:cov": "pnpm run test --coverage",
+    "test:cov": "vitest --coverage",
     "test:run": "vitest run",
     "test:ui": "vitest --ui --coverage",
     "typecheck": "pnpm --parallel --aggregate-output -r typecheck"

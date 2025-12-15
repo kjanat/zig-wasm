@@ -185,7 +185,7 @@ jobs:
         run: pnpm build:ts
 
       - name: Run tests
-        run: pnpm -r test --coverage
+        run: pnpm test:cov
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
@@ -194,7 +194,6 @@ jobs:
           slug: kjanat/zig-wasm
           flags: unit
           name: coverage-node-${{ matrix.node-version }}
-          directory: packages
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
@@ -203,4 +202,3 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unit
           name: test-results-node-${{ matrix.node-version }}
-          directory: packages
