@@ -35,7 +35,7 @@
     "build": "tsdown",
     "check-published": "./bin/check-published.sh",
     "clean": "rm -rf dist",
-    "fmt": "dprint fmt",
+    "fmt": "dprint fmt --allow-no-files",
     "lint": "biome lint",
     "lint:fix": "biome check --write && pnpm fmt",
     "publish:jsr": "pnpm dlx jsr publish --allow-dirty",
