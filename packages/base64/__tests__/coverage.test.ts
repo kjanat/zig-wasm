@@ -264,7 +264,7 @@ describe("@zig-wasm/base64 - Cross-variant compatibility", () => {
   it("sync and async decode produce same results", async () => {
     const encoded = "dGVzdCBkYXRhIDEyMw==";
     const encodedNoPad = "dGVzdCBkYXRhIDEyMw";
-    const hex = "7465737420646174612031323300";
+    const hex = "74657374206461746120313233";
 
     expect(base64.decodeSync(encoded)).toEqual(await base64.decode(encoded));
     expect(base64.decodeNoPaddingSync(encodedNoPad)).toEqual(await base64.decodeNoPadding(encodedNoPad));
