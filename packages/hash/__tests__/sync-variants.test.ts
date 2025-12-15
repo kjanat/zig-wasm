@@ -1,6 +1,7 @@
 /**
  * Tests for sync variants and hex output functions
  */
+
 import * as hash from "@zig-wasm/hash";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";

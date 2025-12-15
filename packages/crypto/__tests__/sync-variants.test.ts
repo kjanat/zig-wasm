@@ -1,8 +1,9 @@
 /**
  * Tests for crypto sync variant functions
  */
+
+import * as crypto from "@zig-wasm/crypto";
 import { beforeAll, describe, expect, it } from "vitest";
-import * as crypto from "../src/index.ts";
 
 describe("@zig-wasm/crypto - Sync Hash Algorithm Variants", () => {
   beforeAll(async () => {
@@ -97,7 +98,7 @@ describe("@zig-wasm/crypto - Sync Hash Algorithm Variants", () => {
 
 describe("@zig-wasm/crypto - Concurrent Initialization", () => {
   it("handles concurrent init calls safely", async () => {
-    const cryptoModule = await import("../src/index.ts");
+    const cryptoModule = await import("@zig-wasm/crypto");
 
     const promises = [
       cryptoModule.init(),

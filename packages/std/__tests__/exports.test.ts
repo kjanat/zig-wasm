@@ -1,5 +1,5 @@
+import * as std from "@zig-wasm/std";
 import { describe, expect, it } from "vitest";
-import * as std from "../src/index.ts";
 
 describe("@zig-wasm/std exports", () => {
   describe("Module Structure", () => {

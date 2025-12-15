@@ -1,7 +1,7 @@
+import * as compress from "@zig-wasm/compress";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import * as compress from "../src/index.ts";
 
 const fixturesDir = join(import.meta.dirname, "fixtures");
 

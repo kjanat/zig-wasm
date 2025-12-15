@@ -1,12 +1,12 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import * as envModule from "../src/env.ts";
-import type { WasmModule, ZigWasmExports } from "../src/index.ts";
+import type { WasmModule, ZigWasmExports } from "@zig-wasm/core";
+import * as envModule from "@zig-wasm/core/env.ts";
 import {
   createWasmModule,
   NotInitializedError,
   resolveWasmPathForNode,
   resolveWasmUrlForBrowser,
-} from "../src/wasm-module.ts";
+} from "@zig-wasm/core/wasm-module.ts";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createMinimalWasmWithMemory } from "./wasm-gen/index.ts";
 
 // Mock WASM exports for testing

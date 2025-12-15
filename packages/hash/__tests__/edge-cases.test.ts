@@ -3,6 +3,7 @@
  *
  * Tests empty strings, binary data, Unicode, and large inputs for all algorithms.
  */
+
 import * as hash from "@zig-wasm/hash";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";

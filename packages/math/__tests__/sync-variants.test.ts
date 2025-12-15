@@ -2,8 +2,9 @@
  * Tests for sync API variants to ensure complete coverage
  * Focuses on F32, U64, and less commonly used sync functions
  */
+
+import * as math from "@zig-wasm/math";
 import { beforeAll, describe, expect, it } from "vitest";
-import * as math from "../src/index.ts";
 
 beforeAll(async () => {
   await math.init();

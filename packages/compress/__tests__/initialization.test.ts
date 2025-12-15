@@ -18,7 +18,7 @@ describe("@zig-wasm/compress - NotInitializedError", () => {
   it("throws NotInitializedError when calling sync function before init", async () => {
     // Use vi.resetModules to get fresh module state
     vi.resetModules();
-    const { decompressXzSync, NotInitializedError, isInitialized } = await import("../src/index.ts");
+    const { decompressXzSync, NotInitializedError, isInitialized } = await import("@zig-wasm/compress");
 
     expect(isInitialized()).toBe(false);
     expect(() => decompressXzSync(new Uint8Array([1, 2, 3]))).toThrow(NotInitializedError);
@@ -26,7 +26,7 @@ describe("@zig-wasm/compress - NotInitializedError", () => {
 
   it("throws NotInitializedError for decompressLzmaSync before init", async () => {
     vi.resetModules();
-    const { decompressLzmaSync, NotInitializedError, isInitialized } = await import("../src/index.ts");
+    const { decompressLzmaSync, NotInitializedError, isInitialized } = await import("@zig-wasm/compress");
 
     expect(isInitialized()).toBe(false);
     expect(() => decompressLzmaSync(new Uint8Array([1, 2, 3]))).toThrow(NotInitializedError);
@@ -34,7 +34,7 @@ describe("@zig-wasm/compress - NotInitializedError", () => {
 
   it("NotInitializedError has descriptive message", async () => {
     vi.resetModules();
-    const { decompressXzSync, NotInitializedError } = await import("../src/index.ts");
+    const { decompressXzSync, NotInitializedError } = await import("@zig-wasm/compress");
 
     try {
       decompressXzSync(new Uint8Array([1, 2, 3]));
@@ -49,7 +49,7 @@ describe("@zig-wasm/compress - NotInitializedError", () => {
 describe("@zig-wasm/compress - init() options", () => {
   it("supports wasmPath option", async () => {
     vi.resetModules();
-    const { init, isInitialized, decompressXzSync } = await import("../src/index.ts");
+    const { init, isInitialized, decompressXzSync } = await import("@zig-wasm/compress");
 
     expect(isInitialized()).toBe(false);
     await init({ wasmPath });
@@ -62,7 +62,7 @@ describe("@zig-wasm/compress - init() options", () => {
 
   it("supports wasmBytes option", async () => {
     vi.resetModules();
-    const { init, isInitialized, decompressXzSync } = await import("../src/index.ts");
+    const { init, isInitialized, decompressXzSync } = await import("@zig-wasm/compress");
 
     const wasmBytes = new Uint8Array(readFileSync(wasmPath));
 
@@ -77,7 +77,7 @@ describe("@zig-wasm/compress - init() options", () => {
 
   it("supports wasmUrl with custom fetchFn", async () => {
     vi.resetModules();
-    const { init, isInitialized, decompressXzSync } = await import("../src/index.ts");
+    const { init, isInitialized, decompressXzSync } = await import("@zig-wasm/compress");
     const { readFile } = await import("node:fs/promises");
     const { pathToFileURL } = await import("node:url");
 
@@ -101,7 +101,7 @@ describe("@zig-wasm/compress - init() options", () => {
 
   it("init is idempotent - second call is a no-op", async () => {
     vi.resetModules();
-    const { init, isInitialized, decompressXzSync } = await import("../src/index.ts");
+    const { init, isInitialized, decompressXzSync } = await import("@zig-wasm/compress");
 
     await init({ wasmPath });
     expect(isInitialized()).toBe(true);
@@ -118,7 +118,7 @@ describe("@zig-wasm/compress - init() options", () => {
 
   it("handles concurrent init calls safely", async () => {
     vi.resetModules();
-    const { init, isInitialized, decompressXzSync } = await import("../src/index.ts");
+    const { init, isInitialized, decompressXzSync } = await import("@zig-wasm/compress");
 
     expect(isInitialized()).toBe(false);
 
@@ -136,7 +136,7 @@ describe("@zig-wasm/compress - init() options", () => {
 
   it("init returns on concurrent call while first is in progress", async () => {
     vi.resetModules();
-    const { init, isInitialized } = await import("../src/index.ts");
+    const { init, isInitialized } = await import("@zig-wasm/compress");
 
     expect(isInitialized()).toBe(false);
 
@@ -155,7 +155,7 @@ describe("@zig-wasm/compress - init() options", () => {
 describe("@zig-wasm/compress - init() with default path (Node/Bun)", () => {
   it("auto-detects environment and loads WASM", async () => {
     vi.resetModules();
-    const { init, isInitialized, decompressXzSync } = await import("../src/index.ts");
+    const { init, isInitialized, decompressXzSync } = await import("@zig-wasm/compress");
 
     expect(isInitialized()).toBe(false);
 
@@ -172,7 +172,7 @@ describe("@zig-wasm/compress - init() with default path (Node/Bun)", () => {
 describe("@zig-wasm/compress - Error recovery after init failure attempt", () => {
   it("recovers when init fails with invalid wasmPath", async () => {
     vi.resetModules();
-    const { isInitialized, decompressXz } = await import("../src/index.ts");
+    const { isInitialized, decompressXz } = await import("@zig-wasm/compress");
 
     expect(isInitialized()).toBe(false);
 
@@ -187,7 +187,7 @@ describe("@zig-wasm/compress - Error recovery after init failure attempt", () =>
 describe("@zig-wasm/compress - Edge cases for decompression", () => {
   it("handles truncated XZ data", async () => {
     vi.resetModules();
-    const { decompressXz } = await import("../src/index.ts");
+    const { decompressXz } = await import("@zig-wasm/compress");
 
     // Take valid XZ file and truncate it
     const valid = loadFixture("hello.txt.xz");
@@ -198,7 +198,7 @@ describe("@zig-wasm/compress - Edge cases for decompression", () => {
 
   it("handles truncated LZMA data", async () => {
     vi.resetModules();
-    const { decompressLzma } = await import("../src/index.ts");
+    const { decompressLzma } = await import("@zig-wasm/compress");
 
     // Take valid LZMA file and truncate it
     const valid = loadFixture("hello.txt.lzma");
@@ -209,7 +209,7 @@ describe("@zig-wasm/compress - Edge cases for decompression", () => {
 
   it("handles XZ with corrupted middle bytes", async () => {
     vi.resetModules();
-    const { decompressXz } = await import("../src/index.ts");
+    const { decompressXz } = await import("@zig-wasm/compress");
 
     const valid = loadFixture("text.txt.xz");
     const corrupted = new Uint8Array(valid);
@@ -223,7 +223,7 @@ describe("@zig-wasm/compress - Edge cases for decompression", () => {
 
   it("handles LZMA with corrupted middle bytes", async () => {
     vi.resetModules();
-    const { decompressLzma } = await import("../src/index.ts");
+    const { decompressLzma } = await import("@zig-wasm/compress");
 
     const valid = loadFixture("text.txt.lzma");
     const corrupted = new Uint8Array(valid);
@@ -237,7 +237,7 @@ describe("@zig-wasm/compress - Edge cases for decompression", () => {
 
   it("handles single byte input (too small for valid header)", async () => {
     vi.resetModules();
-    const { decompressXz, decompressLzma } = await import("../src/index.ts");
+    const { decompressXz, decompressLzma } = await import("@zig-wasm/compress");
 
     const tiny = new Uint8Array([0x00]);
 
@@ -247,7 +247,7 @@ describe("@zig-wasm/compress - Edge cases for decompression", () => {
 
   it("handles XZ magic bytes but no content", async () => {
     vi.resetModules();
-    const { decompressXz } = await import("../src/index.ts");
+    const { decompressXz } = await import("@zig-wasm/compress");
 
     // XZ magic: FD 37 7A 58 5A 00
     const xzMagicOnly = new Uint8Array([0xfd, 0x37, 0x7a, 0x58, 0x5a, 0x00]);
@@ -260,7 +260,7 @@ describe("@zig-wasm/compress - Sync API after async init", () => {
   it("sync functions work after async function auto-initializes", async () => {
     vi.resetModules();
     const { decompressXz, decompressXzSync, decompressLzmaSync, isInitialized } = await import(
-      "../src/index.ts"
+      "@zig-wasm/compress"
     );
 
     expect(isInitialized()).toBe(false);

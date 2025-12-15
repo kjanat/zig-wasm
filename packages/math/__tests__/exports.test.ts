@@ -1,5 +1,5 @@
+import * as math from "@zig-wasm/math";
 import { beforeAll, describe, expect, it } from "vitest";
-import * as math from "../src/index.ts";
 
 beforeAll(async () => {
   await math.init();

@@ -1,5 +1,5 @@
+import * as crypto from "@zig-wasm/crypto";
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import * as crypto from "../src/index.ts";
 
 describe("@zig-wasm/crypto exports", () => {
   it("exposes lifecycle helpers", () => {
@@ -434,7 +434,7 @@ describe("@zig-wasm/crypto - Sync API", () => {
 describe("@zig-wasm/crypto - NotInitializedError", () => {
   it("throws NotInitializedError when using sync method before init", async () => {
     vi.resetModules();
-    const { sha256Sync, NotInitializedError } = await import("../src/index.ts");
+    const { sha256Sync, NotInitializedError } = await import("@zig-wasm/crypto");
     expect(() => sha256Sync("test")).toThrow(NotInitializedError);
   });
 });

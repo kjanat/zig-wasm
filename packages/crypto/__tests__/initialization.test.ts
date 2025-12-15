@@ -23,7 +23,7 @@ describe("@zig-wasm/crypto - NotInitializedError", () => {
   it("throws NotInitializedError when calling sync functions before init", async () => {
     // Use dynamic import to get a fresh module instance
     vi.resetModules();
-    const freshCrypto = await import("../src/crypto.ts");
+    const freshCrypto = await import("@zig-wasm/crypto");
 
     // Verify module is not initialized
     expect(freshCrypto.isInitialized()).toBe(false);
@@ -50,7 +50,7 @@ describe("@zig-wasm/crypto - NotInitializedError", () => {
 
   it("error message includes module name", async () => {
     vi.resetModules();
-    const freshCrypto = await import("../src/crypto.ts");
+    const freshCrypto = await import("@zig-wasm/crypto");
 
     try {
       freshCrypto.sha256Sync("test");
@@ -66,7 +66,7 @@ describe("@zig-wasm/crypto - NotInitializedError", () => {
 describe("@zig-wasm/crypto - Init with wasmPath option", () => {
   it("initializes with custom wasmPath", async () => {
     vi.resetModules();
-    const freshCrypto = await import("../src/crypto.ts");
+    const freshCrypto = await import("@zig-wasm/crypto");
     const { fileURLToPath } = await import("node:url");
     const { dirname, join } = await import("node:path");
 
@@ -85,7 +85,7 @@ describe("@zig-wasm/crypto - Init with wasmPath option", () => {
 describe("@zig-wasm/crypto - Init with wasmBytes option", () => {
   it("initializes with pre-loaded WASM bytes", async () => {
     vi.resetModules();
-    const freshCrypto = await import("../src/crypto.ts");
+    const freshCrypto = await import("@zig-wasm/crypto");
     const { readFile } = await import("node:fs/promises");
     const { fileURLToPath } = await import("node:url");
     const { dirname, join } = await import("node:path");
@@ -105,7 +105,7 @@ describe("@zig-wasm/crypto - Init with wasmBytes option", () => {
 describe("@zig-wasm/crypto - Init with wasmUrl option", () => {
   it("initializes with wasmUrl and custom fetchFn", async () => {
     vi.resetModules();
-    const freshCrypto = await import("../src/crypto.ts");
+    const freshCrypto = await import("@zig-wasm/crypto");
     const { readFile } = await import("node:fs/promises");
     const { fileURLToPath, pathToFileURL } = await import("node:url");
     const { dirname, join } = await import("node:path");
@@ -133,7 +133,7 @@ describe("@zig-wasm/crypto - Init with wasmUrl option", () => {
 describe("@zig-wasm/crypto - HMAC-SHA512 Sync", () => {
   it("computes HMAC-SHA512 synchronously", async () => {
     vi.resetModules();
-    const crypto = await import("../src/crypto.ts");
+    const crypto = await import("@zig-wasm/crypto");
     await crypto.init();
 
     const result = crypto.hmacSha512Sync("key", "data");
@@ -143,7 +143,7 @@ describe("@zig-wasm/crypto - HMAC-SHA512 Sync", () => {
 
   it("matches async HMAC-SHA512 result", async () => {
     vi.resetModules();
-    const crypto = await import("../src/crypto.ts");
+    const crypto = await import("@zig-wasm/crypto");
     await crypto.init();
 
     const syncResult = crypto.hmacSha512Sync("secret", "message");
@@ -153,7 +153,7 @@ describe("@zig-wasm/crypto - HMAC-SHA512 Sync", () => {
 
   it("handles RFC 4231 Test Case 1 synchronously", async () => {
     vi.resetModules();
-    const crypto = await import("../src/crypto.ts");
+    const crypto = await import("@zig-wasm/crypto");
     await crypto.init();
 
     const key = hexToBytes("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b");
@@ -166,7 +166,7 @@ describe("@zig-wasm/crypto - HMAC-SHA512 Sync", () => {
 
   it("handles empty key synchronously", async () => {
     vi.resetModules();
-    const crypto = await import("../src/crypto.ts");
+    const crypto = await import("@zig-wasm/crypto");
     await crypto.init();
 
     const result = crypto.hmacSha512Sync("", "data");
@@ -176,7 +176,7 @@ describe("@zig-wasm/crypto - HMAC-SHA512 Sync", () => {
 
   it("handles empty data synchronously", async () => {
     vi.resetModules();
-    const crypto = await import("../src/crypto.ts");
+    const crypto = await import("@zig-wasm/crypto");
     await crypto.init();
 
     const result = crypto.hmacSha512Sync("key", "");
@@ -186,7 +186,7 @@ describe("@zig-wasm/crypto - HMAC-SHA512 Sync", () => {
 
   it("handles long key (> block size) synchronously", async () => {
     vi.resetModules();
-    const crypto = await import("../src/crypto.ts");
+    const crypto = await import("@zig-wasm/crypto");
     await crypto.init();
 
     // Key longer than SHA-512 block size (128 bytes)
@@ -198,7 +198,7 @@ describe("@zig-wasm/crypto - HMAC-SHA512 Sync", () => {
 
   it("handles Uint8Array inputs synchronously", async () => {
     vi.resetModules();
-    const crypto = await import("../src/crypto.ts");
+    const crypto = await import("@zig-wasm/crypto");
     await crypto.init();
 
     const key = new TextEncoder().encode("secret");
@@ -212,7 +212,7 @@ describe("@zig-wasm/crypto - HMAC-SHA512 Sync", () => {
 describe("@zig-wasm/crypto - Additional HMAC edge cases", () => {
   it("handles HMAC-SHA512 with very long data", async () => {
     vi.resetModules();
-    const crypto = await import("../src/crypto.ts");
+    const crypto = await import("@zig-wasm/crypto");
     await crypto.init();
 
     const longData = "a".repeat(10000);
@@ -223,7 +223,7 @@ describe("@zig-wasm/crypto - Additional HMAC edge cases", () => {
 
   it("handles HMAC with Unicode key and data", async () => {
     vi.resetModules();
-    const crypto = await import("../src/crypto.ts");
+    const crypto = await import("@zig-wasm/crypto");
     await crypto.init();
 
     const result = crypto.hmacSha256Sync("secret", "Hello");
@@ -239,7 +239,7 @@ describe("@zig-wasm/crypto - Additional HMAC edge cases", () => {
 describe("@zig-wasm/crypto - Generic hmacSync with sha512", () => {
   it("computes HMAC via hmacSync with sha512 algorithm", async () => {
     vi.resetModules();
-    const crypto = await import("../src/crypto.ts");
+    const crypto = await import("@zig-wasm/crypto");
     await crypto.init();
 
     const result = crypto.hmacSync("sha512", "key", "data");
@@ -249,7 +249,7 @@ describe("@zig-wasm/crypto - Generic hmacSync with sha512", () => {
 
   it("computes hmacHexSync with sha512 algorithm", async () => {
     vi.resetModules();
-    const crypto = await import("../src/crypto.ts");
+    const crypto = await import("@zig-wasm/crypto");
     await crypto.init();
 
     const result = crypto.hmacHexSync("sha512", "key", "data");
@@ -261,7 +261,7 @@ describe("@zig-wasm/crypto - Generic hmacSync with sha512", () => {
 describe("@zig-wasm/crypto - Init idempotency", () => {
   it("calling init multiple times is safe", async () => {
     vi.resetModules();
-    const crypto = await import("../src/crypto.ts");
+    const crypto = await import("@zig-wasm/crypto");
 
     await crypto.init();
     expect(crypto.isInitialized()).toBe(true);
@@ -277,7 +277,7 @@ describe("@zig-wasm/crypto - Init idempotency", () => {
 
   it("handles concurrent init calls", async () => {
     vi.resetModules();
-    const crypto = await import("../src/crypto.ts");
+    const crypto = await import("@zig-wasm/crypto");
 
     const results = await Promise.all([
       crypto.init(),
@@ -298,7 +298,7 @@ describe("@zig-wasm/crypto - All hash algorithms with all input types", () => {
 
   it("all algorithms work with string input", async () => {
     vi.resetModules();
-    const crypto = await import("../src/crypto.ts");
+    const crypto = await import("@zig-wasm/crypto");
     await crypto.init();
 
     const algorithms = [
@@ -322,7 +322,7 @@ describe("@zig-wasm/crypto - All hash algorithms with all input types", () => {
 
   it("all algorithms work with Uint8Array input", async () => {
     vi.resetModules();
-    const crypto = await import("../src/crypto.ts");
+    const crypto = await import("@zig-wasm/crypto");
     await crypto.init();
 
     const algorithms = [

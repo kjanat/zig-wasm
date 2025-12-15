@@ -20,7 +20,7 @@ describe("@zig-wasm/math - Module Initialization", () => {
 
   describe("isInitialized", () => {
     it("returns true after init completes", async () => {
-      const math = await import("../src/index.ts");
+      const math = await import("@zig-wasm/math");
       // Module may already be initialized from other tests
       await math.init();
       expect(math.isInitialized()).toBe(true);
@@ -29,7 +29,7 @@ describe("@zig-wasm/math - Module Initialization", () => {
 
   describe("getExports and getExportsSync", () => {
     it("getExports returns WASM exports after init", async () => {
-      const math = await import("../src/index.ts");
+      const math = await import("@zig-wasm/math");
       await math.init();
 
       const exports = await math.getExports();
@@ -41,7 +41,7 @@ describe("@zig-wasm/math - Module Initialization", () => {
     });
 
     it("getExportsSync returns WASM exports after init", async () => {
-      const math = await import("../src/index.ts");
+      const math = await import("@zig-wasm/math");
       await math.init();
 
       const exports = math.getExportsSync();
@@ -54,7 +54,7 @@ describe("@zig-wasm/math - Module Initialization", () => {
 
   describe("init idempotency", () => {
     it("multiple init calls return immediately", async () => {
-      const math = await import("../src/index.ts");
+      const math = await import("@zig-wasm/math");
 
       // First init
       await math.init();
@@ -68,7 +68,7 @@ describe("@zig-wasm/math - Module Initialization", () => {
     });
 
     it("handles concurrent init calls safely", async () => {
-      const math = await import("../src/index.ts");
+      const math = await import("@zig-wasm/math");
 
       // Start multiple inits concurrently
       const promises = [
@@ -88,7 +88,7 @@ describe("@zig-wasm/math - Module Initialization", () => {
 
   describe("async API auto-initialization", () => {
     it("async functions auto-initialize on first call", async () => {
-      const math = await import("../src/index.ts");
+      const math = await import("@zig-wasm/math");
       await math.init(); // Ensure we're initialized
 
       // Call should work regardless of init state
@@ -97,7 +97,7 @@ describe("@zig-wasm/math - Module Initialization", () => {
     });
 
     it("multiple async calls trigger single initialization", async () => {
-      const math = await import("../src/index.ts");
+      const math = await import("@zig-wasm/math");
 
       // Multiple concurrent async calls
       const results = await Promise.all([
@@ -137,7 +137,7 @@ describe("@zig-wasm/math - NotInitializedError behavior", () => {
 
 describe("@zig-wasm/math - Additional async coverage", () => {
   it("absF32 async variant works", async () => {
-    const math = await import("../src/index.ts");
+    const math = await import("@zig-wasm/math");
     await math.init();
 
     expect(await math.absF32(-42.5)).toBeCloseTo(42.5, 5);
@@ -145,7 +145,7 @@ describe("@zig-wasm/math - Additional async coverage", () => {
   });
 
   it("minF32 async variant works", async () => {
-    const math = await import("../src/index.ts");
+    const math = await import("@zig-wasm/math");
     await math.init();
 
     expect(await math.minF32(5.5, 10.5)).toBeCloseTo(5.5, 5);
@@ -153,7 +153,7 @@ describe("@zig-wasm/math - Additional async coverage", () => {
   });
 
   it("maxF32 async variant works", async () => {
-    const math = await import("../src/index.ts");
+    const math = await import("@zig-wasm/math");
     await math.init();
 
     expect(await math.maxF32(5.5, 10.5)).toBeCloseTo(10.5, 5);
@@ -161,7 +161,7 @@ describe("@zig-wasm/math - Additional async coverage", () => {
   });
 
   it("clampF32 async variant works", async () => {
-    const math = await import("../src/index.ts");
+    const math = await import("@zig-wasm/math");
     await math.init();
 
     expect(await math.clampF32(5.0, 0.0, 10.0)).toBeCloseTo(5.0, 5);
