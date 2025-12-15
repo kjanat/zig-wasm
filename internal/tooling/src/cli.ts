@@ -1,13 +1,13 @@
 /**
- * Minimal CLI runner that executes the given async main function and exits
- * with its returned numeric code. Errors default to exit code 2.
+ * Minimal CLI runner that executes the given async main function and sets
+ * process.exitCode to its returned numeric code. Errors default to exit code 2.
+ * Uses process.exitCode instead of process.exit() to allow graceful shutdown.
  */
 export async function runCli(main: () => Promise<number>): Promise<void> {
   try {
-    const code = await main();
-    process.exit(code);
+    process.exitCode = await main();
   } catch (error) {
     console.error(error);
-    process.exit(2);
+    process.exitCode = 2;
   }
 }

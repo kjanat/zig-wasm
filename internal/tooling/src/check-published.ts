@@ -127,11 +127,25 @@ export async function checkPublished(
   const packageJsonPath: string = resolvePackageJsonPath(pkgPath, findMonorepoRoot());
   const { name, version } = await readPackageJson(packageJsonPath);
 
-  return {
-    name,
-    version,
-    published: (await fetch(`${registryUrl}/${name}/${version}`)).ok,
-  };
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+
+  let published: boolean;
+  try {
+    const response = await fetch(`${registryUrl}/${name}/${version}`, {
+      signal: controller.signal,
+    });
+    published = response.ok;
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error(`Request timed out checking ${name}@${version}`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  return { name, version, published };
 }
 
 // CLI entry point
@@ -144,7 +158,7 @@ if (import.meta.main) {
 
     if (!process.argv[2]) {
       printHelp(CHECK_PUBLISHED_USAGE, "error");
-      return 1;
+      return 2;
     }
 
     console.log(`Checking if package is published...`);

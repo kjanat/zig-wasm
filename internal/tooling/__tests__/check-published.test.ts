@@ -183,6 +183,7 @@ describe("checkPublished", () => {
 
       expect(fetch).toHaveBeenCalledWith(
         "https://registry.npmjs.org/@zig-wasm/std/0.1.0",
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
       );
       expect(result.published).toBe(true);
     });
@@ -304,6 +305,7 @@ describe("checkPublished", () => {
       expect(result.version).toBe("1.0.0-beta.1");
       expect(fetch).toHaveBeenCalledWith(
         "https://registry.npmjs.org/@test/pkg/1.0.0-beta.1",
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
       );
     });
 
@@ -353,10 +355,10 @@ describe("checkPublished", () => {
   });
 
   describe("CLI entry point", () => {
-    it("exits with code 1 and shows usage when no arguments provided", async () => {
+    it("exits with code 2 and shows usage when no arguments provided", async () => {
       const result = await runCli([]);
 
-      expect(result.code).toBe(1);
+      expect(result.code).toBe(2);
       expect(result.stderr).toContain("Usage: check-published");
       expect(result.stderr).toContain("Examples:");
     });

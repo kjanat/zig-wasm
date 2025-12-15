@@ -13,7 +13,7 @@ const printers: Record<SeverityStatus, typeof console.log> = {
  * Print a usage message to the console.
  * @param usage The message to print
  * @param status The severity
- * @defaults info
+ * @default info
  */
 export const printHelp = (usage: UsageMessage, status: SeverityStatus = "info") => {
   const print = printers[status];
@@ -57,4 +57,5 @@ export const SYNC_VERSIONS_USAGE: UsageMessage = [
   "Exit codes:",
   "  0 - All versions in sync (or successfully synced)",
   "  1 - Mismatches found (--check) or sync failed",
+  "  2 - Error occurred (e.g., no runtime found)",
 ];
