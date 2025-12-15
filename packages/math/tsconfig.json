@@ -3,9 +3,9 @@
   "compilerOptions": {
     "paths": {
       "$/*": ["./src/*"],
-      "~/*": ["../../*"],
-      "@zig-wasm/math/*": ["./src/*"],
       "@zig-wasm/math": ["./src/index.ts"],
+      "@zig-wasm/math/*": ["./src/*"],
+      "~/*": ["../../*"]
     }
   }
 }
