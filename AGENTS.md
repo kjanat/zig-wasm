@@ -1,5 +1,10 @@
 # AGENTS.md
 
+## Docs
+
+- **Zig**: Pull docs from [ziglang.org/documentation/0.15.2][zig:docs] if you
+  need reference for Zig language features.
+
 ## Commands
 
 - **Build:** `pnpm build` (full), `pnpm build:zig` (WASM), `pnpm build:ts`
@@ -32,3 +37,5 @@
   sync APIs need `init()` first
 - **Async:** Async wrappers auto-init;\
   sync variants (`*Sync`) require explicit `init()`
+
+[zig:docs]: https://ziglang.org/documentation/0.15.2
