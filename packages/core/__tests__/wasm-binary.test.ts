@@ -237,5 +237,81 @@ describe("wasm-binary", () => {
     it("throws on invalid header", () => {
       expect(() => parseWasmSections([0, 0, 0, 0])).toThrow("Invalid WASM header");
     });
+
+    describe("bounds checking", () => {
+      it("throws RangeError for incomplete section header (section ID only)", () => {
+        // Header + section ID but no size byte
+        const wasm = [...WASM_HEADER, Section.Memory];
+        expect(() => parseWasmSections(wasm)).toThrow(RangeError);
+        expect(() => parseWasmSections(wasm)).toThrow("Incomplete section header");
+      });
+
+      it("throws RangeError when section claims more bytes than available", () => {
+        // Header + section ID + size claiming 10 bytes but only 2 content bytes
+        const wasm = [
+          ...WASM_HEADER,
+          Section.Memory, // section id
+          0x0a, // size = 10 bytes
+          0x01, // only 2 bytes of content...
+          0x00, // ...when 10 were claimed
+        ];
+        expect(() => parseWasmSections(wasm)).toThrow(RangeError);
+        expect(() => parseWasmSections(wasm)).toThrow("extends beyond data bounds");
+      });
+
+      it("throws RangeError when second section extends beyond bounds", () => {
+        const wasm = [
+          ...WASM_HEADER,
+          // Valid first section
+          Section.Type,
+          0x04,
+          0x01,
+          0x60,
+          0x00,
+          0x00,
+          // Invalid second section - claims more than available
+          Section.Memory,
+          0x10, // claims 16 bytes
+          0x01, // only 1 byte
+        ];
+        expect(() => parseWasmSections(wasm)).toThrow(RangeError);
+        expect(() => parseWasmSections(wasm)).toThrow("extends beyond data bounds");
+      });
+
+      it("throws when ULEB128 size is truncated", () => {
+        // Header + section ID + incomplete multi-byte ULEB128
+        // 0x80 indicates continuation but no following byte
+        const wasm = [...WASM_HEADER, Section.Memory, 0x80];
+        // decodeUleb128 throws Error (not RangeError) for unterminated sequences
+        expect(() => parseWasmSections(wasm)).toThrow("Unterminated LEB128");
+      });
+
+      it("handles section with zero-length content", () => {
+        const wasm = [
+          ...WASM_HEADER,
+          Section.Custom, // section id
+          0x00, // size = 0
+        ];
+        const sections = parseWasmSections(wasm);
+        expect(sections.has(Section.Custom)).toBe(true);
+        expect(sections.get(Section.Custom)!.contentSize).toBe(0);
+        expect(sections.get(Section.Custom)!.totalSize).toBe(2);
+      });
+
+      it("handles section with exact bounds", () => {
+        // Section exactly fills remaining space
+        const wasm = [
+          ...WASM_HEADER,
+          Section.Memory, // section id
+          0x03, // size = 3
+          0x01,
+          0x00,
+          0x01, // exactly 3 bytes
+        ];
+        const sections = parseWasmSections(wasm);
+        expect(sections.has(Section.Memory)).toBe(true);
+        expect(sections.get(Section.Memory)!.contentSize).toBe(3);
+      });
+    });
   });
 });

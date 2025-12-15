@@ -338,7 +338,8 @@ export function isValidWasmHeader(data: ArrayLike<number>): boolean {
  *
  * @param data - Complete WASM binary
  * @returns Map of section ID to parsed section info
- * @throws {Error} If header is invalid or sections are malformed
+ * @throws {Error} If header is invalid
+ * @throws {RangeError} If section header is incomplete or section extends beyond data bounds
  *
  * @example
  * ```ts
@@ -358,9 +359,30 @@ export function parseWasmSections(data: ArrayLike<number>): Map<Section, ParsedS
   let pos = 8; // After header
 
   while (pos < data.length) {
+    // Validate section ID byte is accessible (always true here due to loop condition,
+    // but explicit for clarity)
+    if (pos >= data.length) {
+      throw new RangeError(`Unexpected end of data at position ${pos}`);
+    }
+
     const sectionId = data[pos] as Section;
+
+    // Validate at least one byte exists for ULEB128 size
+    if (pos + 1 >= data.length) {
+      throw new RangeError(`Incomplete section header at position ${pos}`);
+    }
+
+    // decodeUleb128 will throw RangeError if ULEB128 is truncated or overflows
     const [contentSize, sizeBytes] = decodeUleb128(data, pos + 1);
     const totalSize = 1 + sizeBytes + contentSize;
+
+    // Validate section content fits within data bounds
+    if (pos + totalSize > data.length) {
+      throw new RangeError(
+        `Section ${sectionId} extends beyond data bounds: `
+          + `expected ${totalSize} bytes at position ${pos}, but only ${data.length - pos} bytes remain`,
+      );
+    }
 
     sections.set(sectionId, {
       offset: pos,
