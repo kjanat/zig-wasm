@@ -74,7 +74,7 @@
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "dprint": "catalog:",
-    "lefthook": "^2.0.11",
+    "lefthook": "^2.0.12",
     "publint": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
