@@ -99,9 +99,24 @@ describe('@zig-wasm/base64 standard encoding', () => {
 			expect(result.length).toBeGreaterThan(1000);
 		});
 
-		// Note: Decode tests skipped - WASM decode appears to have issues with the current build
-		// The encode functions are working correctly and produce valid base64 output
-		// TODO: Investigate WASM decode implementation or rebuild with updated Zig
+		it('decodes base64 to bytes', async () => {
+			const result = await base64.decode('aGVsbG8=');
+			expect(result).toBeInstanceOf(Uint8Array);
+			expect(new TextDecoder().decode(result)).toBe('hello');
+		});
+
+		it('round-trips encode/decode', async () => {
+			const original = 'Hello, World!';
+			const encoded = await base64.encode(original);
+			const decoded = await base64.decode(encoded);
+			expect(new TextDecoder().decode(decoded)).toBe(original);
+		});
+
+		it('decodes to known values', async () => {
+			expect(new TextDecoder().decode(await base64.decode('YQ=='))).toBe('a');
+			expect(new TextDecoder().decode(await base64.decode('YWI='))).toBe('ab');
+			expect(new TextDecoder().decode(await base64.decode('YWJj'))).toBe('abc');
+		});
 
 		it('encodes to known base64 values', async () => {
 			// Test encoding produces expected standard base64
@@ -136,7 +151,18 @@ describe('@zig-wasm/base64 standard encoding', () => {
 			expect(result).toBe('aGVsbG8=');
 		});
 
-		// Skipping decode test - see note above about WASM decode issues
+		it('decodes base64', () => {
+			const result = base64.decodeSync('aGVsbG8=');
+			expect(result).toBeInstanceOf(Uint8Array);
+			expect(new TextDecoder().decode(result)).toBe('hello');
+		});
+
+		it('round-trips encode/decode sync', () => {
+			const original = 'Hello, World!';
+			const encoded = base64.encodeSync(original);
+			const decoded = base64.decodeSync(encoded);
+			expect(new TextDecoder().decode(decoded)).toBe(original);
+		});
 
 		it('matches async results', async () => {
 			const input = 'test data';
@@ -164,7 +190,17 @@ describe('@zig-wasm/base64 no-padding variant', () => {
 		expect(result).not.toContain('=');
 	});
 
-	// Skipping decode test - see note in standard encoding section about WASM decode issues
+	it('decodes no-padding variant', async () => {
+		const decoded = await base64.decodeNoPadding('YWI');
+		expect(new TextDecoder().decode(decoded)).toBe('ab');
+	});
+
+	it('round-trips no-padding encode/decode', async () => {
+		const original = 'test data';
+		const encoded = await base64.encodeNoPadding(original);
+		const decoded = await base64.decodeNoPadding(encoded);
+		expect(new TextDecoder().decode(decoded)).toBe(original);
+	});
 
 	it('sync variant encodes without padding', () => {
 		const encoded = base64.encodeNoPaddingSync('test');
