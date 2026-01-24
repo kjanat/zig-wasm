@@ -106,6 +106,10 @@ runs:
       shell: bash
       run: zig build -Doptimize=${{ inputs.optimize }}
 
+    - name: Generate test vectors
+      shell: bash
+      run: zig build gen-test-vectors -Doptimize=ReleaseSmall
+
     - name: Build TypeScript
       shell: bash
       run: pnpm build:ts
@@ -119,4 +123,5 @@ runs:
         path: |
           ${{ steps.config.outputs.wasm-path }}
           ${{ steps.config.outputs.dist-path }}
+          packages/**/__tests__/fixtures/*.json
         retention-days: ${{ inputs.retention-days }}

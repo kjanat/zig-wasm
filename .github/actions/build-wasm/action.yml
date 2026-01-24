@@ -87,6 +87,10 @@ runs:
       shell: bash
       run: zig build -Doptimize=${{ inputs.optimize }}
 
+    - name: Generate test vectors
+      shell: bash
+      run: zig build gen-test-vectors -Doptimize=ReleaseSmall
+
     - name: Upload WASM artifacts
       id: upload
       if: inputs.upload == 'true'

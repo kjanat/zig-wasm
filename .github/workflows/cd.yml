@@ -150,7 +150,7 @@ jobs:
         run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Run tests
-        run: pnpm test
+        run: pnpm exec vitest run
 
   publish-preview:
     name: Publish Preview
