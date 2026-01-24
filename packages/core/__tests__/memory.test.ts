@@ -1,6 +1,6 @@
-import type { WasmMemoryExports } from "@zig-wasm/core";
-import { AllocationScope, WasmMemory } from "@zig-wasm/core";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { WasmMemoryExports } from '@zig-wasm/core';
+import { AllocationScope, WasmMemory } from '@zig-wasm/core';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
  * Create a mock WASM memory environment for testing
@@ -27,7 +27,7 @@ function createMockMemory(): WasmMemoryExports {
 	};
 }
 
-describe("WasmMemory", () => {
+describe('WasmMemory', () => {
 	let mockExports: WasmMemoryExports;
 	let mem: WasmMemory;
 
@@ -36,30 +36,30 @@ describe("WasmMemory", () => {
 		mem = new WasmMemory(mockExports);
 	});
 
-	describe("allocation", () => {
-		it("allocates memory and returns valid pointer", () => {
+	describe('allocation', () => {
+		it('allocates memory and returns valid pointer', () => {
 			const ptr = mem.allocate(100);
 			expect(ptr).toBeGreaterThan(0);
 			expect(mockExports.alloc).toHaveBeenCalledWith(100);
 		});
 
-		it("throws on zero-size allocation", () => {
-			expect(() => mem.allocate(0)).toThrow("Allocation size must be positive");
+		it('throws on zero-size allocation', () => {
+			expect(() => mem.allocate(0)).toThrow('Allocation size must be positive');
 		});
 
-		it("throws on negative-size allocation", () => {
+		it('throws on negative-size allocation', () => {
 			expect(() => mem.allocate(-5)).toThrow(
-				"Allocation size must be positive",
+				'Allocation size must be positive',
 			);
 		});
 
-		it("throws when allocation fails (returns 0)", () => {
+		it('throws when allocation fails (returns 0)', () => {
 			mockExports.alloc = vi.fn(() => 0);
 			mem = new WasmMemory(mockExports);
-			expect(() => mem.allocate(100)).toThrow("Failed to allocate 100 bytes");
+			expect(() => mem.allocate(100)).toThrow('Failed to allocate 100 bytes');
 		});
 
-		it("tracks multiple allocations independently", () => {
+		it('tracks multiple allocations independently', () => {
 			const ptr1 = mem.allocate(50);
 			const ptr2 = mem.allocate(100);
 			const ptr3 = mem.allocate(25);
@@ -70,42 +70,42 @@ describe("WasmMemory", () => {
 		});
 	});
 
-	describe("deallocation", () => {
-		it("frees allocated memory", () => {
+	describe('deallocation', () => {
+		it('frees allocated memory', () => {
 			const ptr = mem.allocate(100);
 			mem.deallocate(ptr, 100);
 			expect(mockExports.free).toHaveBeenCalledWith(ptr, 100);
 		});
 
-		it("ignores null pointer deallocation", () => {
+		it('ignores null pointer deallocation', () => {
 			mem.deallocate(0, 100);
 			expect(mockExports.free).not.toHaveBeenCalled();
 		});
 
-		it("ignores zero-size deallocation", () => {
+		it('ignores zero-size deallocation', () => {
 			mem.deallocate(1000, 0);
 			expect(mockExports.free).not.toHaveBeenCalled();
 		});
 
-		it("handles both null pointer and zero size", () => {
+		it('handles both null pointer and zero size', () => {
 			mem.deallocate(0, 0);
 			expect(mockExports.free).not.toHaveBeenCalled();
 		});
 	});
 
-	describe("memory views", () => {
-		it("provides access to underlying buffer", () => {
+	describe('memory views', () => {
+		it('provides access to underlying buffer', () => {
 			expect(mem.buffer).toBeInstanceOf(ArrayBuffer);
 			expect(mem.buffer).toBe(mockExports.memory.buffer);
 		});
 
-		it("provides Uint8Array view of memory", () => {
+		it('provides Uint8Array view of memory', () => {
 			const view = mem.view;
 			expect(view).toBeInstanceOf(Uint8Array);
 			expect(view.buffer).toBe(mockExports.memory.buffer);
 		});
 
-		it("returns fresh view that reflects memory state", () => {
+		it('returns fresh view that reflects memory state', () => {
 			const view1 = mem.view;
 			const view2 = mem.view;
 			expect(view1).not.toBe(view2); // Different objects
@@ -113,8 +113,8 @@ describe("WasmMemory", () => {
 		});
 	});
 
-	describe("copyIn/copyOut", () => {
-		it("copies data into WASM memory", () => {
+	describe('copyIn/copyOut', () => {
+		it('copies data into WASM memory', () => {
 			const data = new Uint8Array([1, 2, 3, 4, 5]);
 			const ptr = mem.allocate(data.length);
 			mem.copyIn(ptr, data);
@@ -123,7 +123,7 @@ describe("WasmMemory", () => {
 			expect(Array.from(view)).toEqual([1, 2, 3, 4, 5]);
 		});
 
-		it("copies data out of WASM memory", () => {
+		it('copies data out of WASM memory', () => {
 			const original = new Uint8Array([10, 20, 30, 40]);
 			const ptr = mem.allocate(original.length);
 			mem.copyIn(ptr, original);
@@ -132,7 +132,7 @@ describe("WasmMemory", () => {
 			expect(Array.from(result)).toEqual([10, 20, 30, 40]);
 		});
 
-		it("copyOut creates independent copy", () => {
+		it('copyOut creates independent copy', () => {
 			const data = new Uint8Array([1, 2, 3]);
 			const ptr = mem.allocate(data.length);
 			mem.copyIn(ptr, data);
@@ -144,7 +144,7 @@ describe("WasmMemory", () => {
 			expect(view[0]).toBe(1); // Original unchanged
 		});
 
-		it("handles empty data", () => {
+		it('handles empty data', () => {
 			const ptr = mem.allocate(1);
 			mem.copyIn(ptr, new Uint8Array([]));
 			const result = mem.copyOut(ptr, 0);
@@ -152,8 +152,8 @@ describe("WasmMemory", () => {
 		});
 	});
 
-	describe("getView", () => {
-		it("returns view without copying", () => {
+	describe('getView', () => {
+		it('returns view without copying', () => {
 			const data = new Uint8Array([5, 10, 15]);
 			const ptr = mem.allocate(data.length);
 			mem.copyIn(ptr, data);
@@ -162,7 +162,7 @@ describe("WasmMemory", () => {
 			expect(Array.from(view)).toEqual([5, 10, 15]);
 		});
 
-		it("view reflects changes to underlying memory", () => {
+		it('view reflects changes to underlying memory', () => {
 			const ptr = mem.allocate(3);
 			const view = mem.getView(ptr, 3);
 
@@ -170,7 +170,7 @@ describe("WasmMemory", () => {
 			expect(Array.from(view)).toEqual([1, 2, 3]);
 		});
 
-		it("modifying view modifies memory", () => {
+		it('modifying view modifies memory', () => {
 			const ptr = mem.allocate(3);
 			const view = mem.getView(ptr, 3);
 			view[0] = 42;
@@ -180,8 +180,8 @@ describe("WasmMemory", () => {
 		});
 	});
 
-	describe("allocateAndCopy", () => {
-		it("allocates and copies in one operation", () => {
+	describe('allocateAndCopy', () => {
+		it('allocates and copies in one operation', () => {
 			const data = new Uint8Array([7, 14, 21, 28]);
 			const slice = mem.allocateAndCopy(data);
 
@@ -192,7 +192,7 @@ describe("WasmMemory", () => {
 			expect(Array.from(readBack)).toEqual([7, 14, 21, 28]);
 		});
 
-		it("tracks allocation correctly", () => {
+		it('tracks allocation correctly', () => {
 			const data = new Uint8Array([1, 2, 3]);
 			const slice = mem.allocateAndCopy(data);
 
@@ -201,7 +201,7 @@ describe("WasmMemory", () => {
 			expect(mockExports.free).toHaveBeenCalledWith(slice.ptr, 3);
 		});
 
-		it("handles empty array without allocation", () => {
+		it('handles empty array without allocation', () => {
 			const data = new Uint8Array([]);
 			const slice = mem.allocateAndCopy(data);
 
@@ -213,7 +213,7 @@ describe("WasmMemory", () => {
 			expect(mockExports.alloc).not.toHaveBeenCalled();
 		});
 
-		it("deallocating empty slice is safe", () => {
+		it('deallocating empty slice is safe', () => {
 			const slice = mem.allocateAndCopy(new Uint8Array([]));
 
 			// Should not throw and should not call free
@@ -222,8 +222,8 @@ describe("WasmMemory", () => {
 		});
 	});
 
-	describe("copyOutAndFree", () => {
-		it("copies out and deallocates in one operation", () => {
+	describe('copyOutAndFree', () => {
+		it('copies out and deallocates in one operation', () => {
 			const data = new Uint8Array([100, 101, 102]);
 			const ptr = mem.allocate(data.length);
 			mem.copyIn(ptr, data);
@@ -234,7 +234,7 @@ describe("WasmMemory", () => {
 			expect(mockExports.free).toHaveBeenCalledWith(ptr, 3);
 		});
 
-		it("result is independent copy after free", () => {
+		it('result is independent copy after free', () => {
 			const data = new Uint8Array([1, 2, 3]);
 			const ptr = mem.allocate(data.length);
 			mem.copyIn(ptr, data);
@@ -247,9 +247,9 @@ describe("WasmMemory", () => {
 		});
 	});
 
-	describe("string operations", () => {
-		it("encodes string to UTF-8", () => {
-			const slice = mem.encodeString("hello");
+	describe('string operations', () => {
+		it('encodes string to UTF-8', () => {
+			const slice = mem.encodeString('hello');
 
 			expect(slice.ptr).toBeGreaterThan(0);
 			expect(slice.len).toBe(5);
@@ -258,24 +258,24 @@ describe("WasmMemory", () => {
 			expect(Array.from(bytes)).toEqual([104, 101, 108, 108, 111]); // "hello"
 		});
 
-		it("handles Unicode strings", () => {
-			const emoji = "👋🌍";
+		it('handles Unicode strings', () => {
+			const emoji = '👋🌍';
 			const slice = mem.encodeString(emoji);
 
 			const decoded = mem.decodeString(slice.ptr, slice.len);
 			expect(decoded).toBe(emoji);
 		});
 
-		it("decodes UTF-8 from memory", () => {
-			const original = "test string";
+		it('decodes UTF-8 from memory', () => {
+			const original = 'test string';
 			const slice = mem.encodeString(original);
 			const decoded = mem.decodeString(slice.ptr, slice.len);
 
 			expect(decoded).toBe(original);
 		});
 
-		it("decodeStringAndFree decodes and deallocates", () => {
-			const original = "cleanup test";
+		it('decodeStringAndFree decodes and deallocates', () => {
+			const original = 'cleanup test';
 			const slice = mem.encodeString(original);
 			const decoded = mem.decodeStringAndFree(slice.ptr, slice.len);
 
@@ -283,8 +283,8 @@ describe("WasmMemory", () => {
 			expect(mockExports.free).toHaveBeenCalledWith(slice.ptr, slice.len);
 		});
 
-		it("handles empty string", () => {
-			const slice = mem.encodeString("");
+		it('handles empty string', () => {
+			const slice = mem.encodeString('');
 
 			// Empty string returns null slice (no allocation needed)
 			expect(slice.ptr).toBe(0);
@@ -295,16 +295,16 @@ describe("WasmMemory", () => {
 			expect(mockExports.free).not.toHaveBeenCalled();
 		});
 
-		it("preserves multi-byte characters", () => {
-			const chinese = "你好世界";
+		it('preserves multi-byte characters', () => {
+			const chinese = '你好世界';
 			const slice = mem.encodeString(chinese);
 			const decoded = mem.decodeString(slice.ptr, slice.len);
 			expect(decoded).toBe(chinese);
 		});
 	});
 
-	describe("numeric type operations", () => {
-		it("writes and reads u32", () => {
+	describe('numeric type operations', () => {
+		it('writes and reads u32', () => {
 			const ptr = mem.allocate(4);
 			mem.writeU32(ptr, 0x12345678);
 
@@ -312,7 +312,7 @@ describe("WasmMemory", () => {
 			expect(value).toBe(0x12345678);
 		});
 
-		it("writes and reads u64", () => {
+		it('writes and reads u64', () => {
 			const ptr = mem.allocate(8);
 			const value = 0x123456789abcdefn;
 			mem.writeU64(ptr, value);
@@ -321,7 +321,7 @@ describe("WasmMemory", () => {
 			expect(read).toBe(value);
 		});
 
-		it("handles u32 boundaries", () => {
+		it('handles u32 boundaries', () => {
 			const ptr = mem.allocate(4);
 			mem.writeU32(ptr, 0xffffffff);
 			expect(mem.readU32(ptr)).toBe(0xffffffff);
@@ -330,7 +330,7 @@ describe("WasmMemory", () => {
 			expect(mem.readU32(ptr)).toBe(0);
 		});
 
-		it("handles u64 boundaries", () => {
+		it('handles u64 boundaries', () => {
 			const ptr = mem.allocate(8);
 			mem.writeU64(ptr, 0xffffffffffffffffn);
 			expect(mem.readU64(ptr)).toBe(0xffffffffffffffffn);
@@ -339,7 +339,7 @@ describe("WasmMemory", () => {
 			expect(mem.readU64(ptr)).toBe(0n);
 		});
 
-		it("writes and reads f32", () => {
+		it('writes and reads f32', () => {
 			const ptr = mem.allocate(4);
 			const view = new DataView(mockExports.memory.buffer);
 			view.setFloat32(ptr, Math.PI, true);
@@ -348,7 +348,7 @@ describe("WasmMemory", () => {
 			expect(value).toBeCloseTo(Math.PI, 5);
 		});
 
-		it("writes and reads f64", () => {
+		it('writes and reads f64', () => {
 			const ptr = mem.allocate(8);
 			const view = new DataView(mockExports.memory.buffer);
 			view.setFloat64(ptr, Math.PI, true);
@@ -357,7 +357,7 @@ describe("WasmMemory", () => {
 			expect(value).toBe(Math.PI);
 		});
 
-		it("uses little-endian byte order", () => {
+		it('uses little-endian byte order', () => {
 			const ptr = mem.allocate(4);
 			mem.writeU32(ptr, 0x01020304);
 
@@ -368,7 +368,7 @@ describe("WasmMemory", () => {
 	});
 });
 
-describe("AllocationScope", () => {
+describe('AllocationScope', () => {
 	let mockExports: WasmMemoryExports;
 	let mem: WasmMemory;
 
@@ -377,8 +377,8 @@ describe("AllocationScope", () => {
 		mem = new WasmMemory(mockExports);
 	});
 
-	describe("RAII pattern", () => {
-		it("creates scope and tracks allocations", () => {
+	describe('RAII pattern', () => {
+		it('creates scope and tracks allocations', () => {
 			const scope = new AllocationScope(mem);
 			const ptr1 = scope.alloc(100);
 			const ptr2 = scope.alloc(50);
@@ -388,7 +388,7 @@ describe("AllocationScope", () => {
 			expect(ptr1).not.toBe(ptr2);
 		});
 
-		it("dispose frees all allocations", () => {
+		it('dispose frees all allocations', () => {
 			const scope = new AllocationScope(mem);
 			const ptr1 = scope.alloc(100);
 			const ptr2 = scope.alloc(50);
@@ -400,7 +400,7 @@ describe("AllocationScope", () => {
 			expect(mockExports.free).toHaveBeenCalledTimes(2);
 		});
 
-		it("dispose is safe to call multiple times", () => {
+		it('dispose is safe to call multiple times', () => {
 			const scope = new AllocationScope(mem);
 			scope.alloc(100);
 
@@ -413,15 +413,15 @@ describe("AllocationScope", () => {
 			expect(secondCallCount).toBe(firstCallCount); // No additional frees
 		});
 
-		it("dispose works with no allocations", () => {
+		it('dispose works with no allocations', () => {
 			const scope = new AllocationScope(mem);
 			expect(() => scope.dispose()).not.toThrow();
 			expect(mockExports.free).not.toHaveBeenCalled();
 		});
 	});
 
-	describe("allocation methods", () => {
-		it("allocAndCopy tracks allocation", () => {
+	describe('allocation methods', () => {
+		it('allocAndCopy tracks allocation', () => {
 			const scope = new AllocationScope(mem);
 			const data = new Uint8Array([1, 2, 3, 4]);
 			const slice = scope.allocAndCopy(data);
@@ -431,20 +431,20 @@ describe("AllocationScope", () => {
 			expect(mockExports.free).toHaveBeenCalledWith(slice.ptr, slice.len);
 		});
 
-		it("encodeString tracks allocation", () => {
+		it('encodeString tracks allocation', () => {
 			const scope = new AllocationScope(mem);
-			const slice = scope.encodeString("test");
+			const slice = scope.encodeString('test');
 
 			scope.dispose();
 
 			expect(mockExports.free).toHaveBeenCalledWith(slice.ptr, slice.len);
 		});
 
-		it("multiple operations tracked correctly", () => {
+		it('multiple operations tracked correctly', () => {
 			const scope = new AllocationScope(mem);
 			scope.alloc(10);
 			scope.allocAndCopy(new Uint8Array([1, 2]));
-			scope.encodeString("hi");
+			scope.encodeString('hi');
 
 			scope.dispose();
 
@@ -452,8 +452,8 @@ describe("AllocationScope", () => {
 		});
 	});
 
-	describe("static use method", () => {
-		it("executes callback with scope", () => {
+	describe('static use method', () => {
+		it('executes callback with scope', () => {
 			const result = AllocationScope.use(mem, (scope) => {
 				const slice = scope.allocAndCopy(new Uint8Array([5, 10]));
 				return mem.copyOut(slice.ptr, slice.len);
@@ -462,7 +462,7 @@ describe("AllocationScope", () => {
 			expect(Array.from(result)).toEqual([5, 10]);
 		});
 
-		it("disposes scope after callback", () => {
+		it('disposes scope after callback', () => {
 			let ptr: number | undefined;
 
 			AllocationScope.use(mem, (scope) => {
@@ -473,21 +473,21 @@ describe("AllocationScope", () => {
 			expect(mockExports.free).toHaveBeenCalledWith(ptr, 100);
 		});
 
-		it("disposes even if callback throws", () => {
+		it('disposes even if callback throws', () => {
 			let ptr: number | undefined;
 
 			expect(() => {
 				AllocationScope.use(mem, (scope) => {
 					ptr = scope.alloc(100);
-					throw new Error("test error");
+					throw new Error('test error');
 				});
-			}).toThrow("test error");
+			}).toThrow('test error');
 
 			expect(ptr).toBeDefined();
 			expect(mockExports.free).toHaveBeenCalledWith(ptr, 100);
 		});
 
-		it("propagates callback return value", () => {
+		it('propagates callback return value', () => {
 			const result = AllocationScope.use(mem, () => {
 				return { success: true, value: 42 };
 			});
@@ -495,17 +495,17 @@ describe("AllocationScope", () => {
 			expect(result).toEqual({ success: true, value: 42 });
 		});
 
-		it("propagates callback errors", () => {
+		it('propagates callback errors', () => {
 			expect(() => {
 				AllocationScope.use(mem, () => {
-					throw new TypeError("custom error");
+					throw new TypeError('custom error');
 				});
 			}).toThrow(TypeError);
 		});
 	});
 
-	describe("memory leak prevention", () => {
-		it("scope prevents leaks in normal flow", () => {
+	describe('memory leak prevention', () => {
+		it('scope prevents leaks in normal flow', () => {
 			const iterations = 100;
 
 			for (let i = 0; i < iterations; i++) {
@@ -518,14 +518,14 @@ describe("AllocationScope", () => {
 			expect(mockExports.free).toHaveBeenCalledTimes(iterations);
 		});
 
-		it("scope prevents leaks in error flow", () => {
+		it('scope prevents leaks in error flow', () => {
 			const iterations = 50;
 
 			for (let i = 0; i < iterations; i++) {
 				try {
 					AllocationScope.use(mem, (scope) => {
 						scope.alloc(100);
-						if (i % 3 === 0) throw new Error("periodic error");
+						if (i % 3 === 0) throw new Error('periodic error');
 					});
 				} catch {
 					// Expected errors
@@ -537,8 +537,8 @@ describe("AllocationScope", () => {
 		});
 	});
 
-	describe("real-world patterns", () => {
-		it("handles typical WASM function call pattern", () => {
+	describe('real-world patterns', () => {
+		it('handles typical WASM function call pattern', () => {
 			const mockWasmFn = (inputPtr: number, inputLen: number): number => {
 				// Simulate WASM function reading input and returning result ptr
 				const input = mem.copyOut(inputPtr, inputLen);
@@ -558,7 +558,7 @@ describe("AllocationScope", () => {
 			expect(mockExports.free).toHaveBeenCalledTimes(2);
 		});
 
-		it("handles string processing pattern", () => {
+		it('handles string processing pattern', () => {
 			const mockProcessString = (
 				ptr: number,
 				len: number,
@@ -569,12 +569,12 @@ describe("AllocationScope", () => {
 			};
 
 			const result = AllocationScope.use(mem, (scope) => {
-				const input = scope.encodeString("hello world");
+				const input = scope.encodeString('hello world');
 				const output = mockProcessString(input.ptr, input.len);
 				return mem.decodeStringAndFree(output.ptr, output.len);
 			});
 
-			expect(result).toBe("HELLO WORLD");
+			expect(result).toBe('HELLO WORLD');
 		});
 	});
 });

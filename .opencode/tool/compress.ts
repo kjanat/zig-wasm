@@ -1,22 +1,22 @@
 /// <reference types="bun-types" />
 /// <reference types="@opencode-ai/plugin" />
-import { tool } from "@opencode-ai/plugin";
+import { tool } from '@opencode-ai/plugin';
 
-import { decompressLzma, decompressXz } from "@zig-wasm/compress";
+import { decompressLzma, decompressXz } from '@zig-wasm/compress';
 
 // ---------- compressXz: placeholder using system xz until Zig WASM compressor exists ----------
 
 export const compressXz = tool({
 	description:
-		"Compress a file using xz (placeholder until Zig WASM compressor exists).",
+		'Compress a file using xz (placeholder until Zig WASM compressor exists).',
 	args: {
-		input: tool.schema.string().describe("Input file path"),
-		output: tool.schema.string().describe("Output .xz file path"),
+		input: tool.schema.string().describe('Input file path'),
+		output: tool.schema.string().describe('Output .xz file path'),
 	},
 	async execute({ input, output }) {
-		const proc = Bun.spawn(["xz", "-c", input], {
-			stdout: "pipe",
-			stderr: "pipe",
+		const proc = Bun.spawn(['xz', '-c', input], {
+			stdout: 'pipe',
+			stderr: 'pipe',
 		});
 
 		const [stdout, stderr] = await Promise.all([
@@ -30,7 +30,7 @@ export const compressXz = tool({
 		}
 
 		return JSON.stringify({
-			tool: "compress_compressXz",
+			tool: 'compress_compressXz',
 			command: `xz -c ${input} > ${output}`,
 			input,
 			output,
@@ -46,15 +46,15 @@ export const compressXz = tool({
 
 export const compressLzma = tool({
 	description:
-		"Compress a file using lzma (placeholder until Zig WASM compressor exists).",
+		'Compress a file using lzma (placeholder until Zig WASM compressor exists).',
 	args: {
-		input: tool.schema.string().describe("Input file path"),
-		output: tool.schema.string().describe("Output .lzma file path"),
+		input: tool.schema.string().describe('Input file path'),
+		output: tool.schema.string().describe('Output .lzma file path'),
 	},
 	async execute({ input, output }) {
-		const proc = Bun.spawn(["lzma", "-c", input], {
-			stdout: "pipe",
-			stderr: "pipe",
+		const proc = Bun.spawn(['lzma', '-c', input], {
+			stdout: 'pipe',
+			stderr: 'pipe',
 		});
 
 		const [stdout, stderr] = await Promise.all([
@@ -68,7 +68,7 @@ export const compressLzma = tool({
 		}
 
 		return JSON.stringify({
-			tool: "compress_compressLzma",
+			tool: 'compress_compressLzma',
 			command: `lzma -c ${input} > ${output}`,
 			input,
 			output,
@@ -83,23 +83,23 @@ export const compressLzma = tool({
 // ---------- compressGzip: using system gzip ----------
 
 export const compressGzip = tool({
-	description: "Compress a file using gzip. Uses system gzip command.",
+	description: 'Compress a file using gzip. Uses system gzip command.',
 	args: {
-		input: tool.schema.string().describe("Input file path"),
-		output: tool.schema.string().describe("Output .gz file path"),
+		input: tool.schema.string().describe('Input file path'),
+		output: tool.schema.string().describe('Output .gz file path'),
 		level: tool.schema
 			.number()
 			.int()
 			.min(1)
 			.max(9)
 			.default(6)
-			.describe("Compression level 1-9 (default: 6)"),
+			.describe('Compression level 1-9 (default: 6)'),
 	},
 	async execute({ input, output, level }) {
 		const lvl = level ?? 6;
-		const proc = Bun.spawn(["gzip", `-${lvl}`, "-c", input], {
-			stdout: "pipe",
-			stderr: "pipe",
+		const proc = Bun.spawn(['gzip', `-${lvl}`, '-c', input], {
+			stdout: 'pipe',
+			stderr: 'pipe',
 		});
 
 		const [stdout, stderr] = await Promise.all([
@@ -113,7 +113,7 @@ export const compressGzip = tool({
 		}
 
 		return JSON.stringify({
-			tool: "compress_compressGzip",
+			tool: 'compress_compressGzip',
 			command: `gzip -${lvl} -c ${input} > ${output}`,
 			input,
 			output,
@@ -129,15 +129,15 @@ export const compressGzip = tool({
 // ---------- decompressGzip: using system gunzip ----------
 
 export const decompressGzip = tool({
-	description: "Decompress a gzip file. Uses system gunzip command.",
+	description: 'Decompress a gzip file. Uses system gunzip command.',
 	args: {
-		input: tool.schema.string().describe("Input .gz file path"),
-		output: tool.schema.string().describe("Output file path"),
+		input: tool.schema.string().describe('Input .gz file path'),
+		output: tool.schema.string().describe('Output file path'),
 	},
 	async execute({ input, output }) {
-		const proc = Bun.spawn(["gunzip", "-c", input], {
-			stdout: "pipe",
-			stderr: "pipe",
+		const proc = Bun.spawn(['gunzip', '-c', input], {
+			stdout: 'pipe',
+			stderr: 'pipe',
 		});
 
 		const [stdout, stderr] = await Promise.all([
@@ -151,7 +151,7 @@ export const decompressGzip = tool({
 		}
 
 		return JSON.stringify({
-			tool: "compress_decompressGzip",
+			tool: 'compress_decompressGzip',
 			command: `gunzip -c ${input} > ${output}`,
 			input,
 			output,
@@ -166,23 +166,23 @@ export const decompressGzip = tool({
 // ---------- compressZstd: using system zstd ----------
 
 export const compressZstd = tool({
-	description: "Compress a file using zstd. Uses system zstd command.",
+	description: 'Compress a file using zstd. Uses system zstd command.',
 	args: {
-		input: tool.schema.string().describe("Input file path"),
-		output: tool.schema.string().describe("Output .zst file path"),
+		input: tool.schema.string().describe('Input file path'),
+		output: tool.schema.string().describe('Output .zst file path'),
 		level: tool.schema
 			.number()
 			.int()
 			.min(1)
 			.max(19)
 			.default(3)
-			.describe("Compression level 1-19 (default: 3)"),
+			.describe('Compression level 1-19 (default: 3)'),
 	},
 	async execute({ input, output, level }) {
 		const lvl = level ?? 3;
-		const proc = Bun.spawn(["zstd", `-${lvl}`, "-c", input], {
-			stdout: "pipe",
-			stderr: "pipe",
+		const proc = Bun.spawn(['zstd', `-${lvl}`, '-c', input], {
+			stdout: 'pipe',
+			stderr: 'pipe',
 		});
 
 		const [stdout, stderr] = await Promise.all([
@@ -196,7 +196,7 @@ export const compressZstd = tool({
 		}
 
 		return JSON.stringify({
-			tool: "compress_compressZstd",
+			tool: 'compress_compressZstd',
 			command: `zstd -${lvl} -c ${input} > ${output}`,
 			input,
 			output,
@@ -212,15 +212,15 @@ export const compressZstd = tool({
 // ---------- decompressZstd: using system zstd ----------
 
 export const decompressZstd = tool({
-	description: "Decompress a zstd file. Uses system zstd command.",
+	description: 'Decompress a zstd file. Uses system zstd command.',
 	args: {
-		input: tool.schema.string().describe("Input .zst file path"),
-		output: tool.schema.string().describe("Output file path"),
+		input: tool.schema.string().describe('Input .zst file path'),
+		output: tool.schema.string().describe('Output file path'),
 	},
 	async execute({ input, output }) {
-		const proc = Bun.spawn(["zstd", "-d", "-c", input], {
-			stdout: "pipe",
-			stderr: "pipe",
+		const proc = Bun.spawn(['zstd', '-d', '-c', input], {
+			stdout: 'pipe',
+			stderr: 'pipe',
 		});
 
 		const [stdout, stderr] = await Promise.all([
@@ -234,7 +234,7 @@ export const decompressZstd = tool({
 		}
 
 		return JSON.stringify({
-			tool: "compress_decompressZstd",
+			tool: 'compress_decompressZstd',
 			command: `zstd -d -c ${input} > ${output}`,
 			input,
 			output,
@@ -250,16 +250,16 @@ export const decompressZstd = tool({
 
 export const compressDeflate = tool({
 	description:
-		"Compress a file using raw deflate (no gzip headers). Uses pigz --zlib or falls back to gzip.",
+		'Compress a file using raw deflate (no gzip headers). Uses pigz --zlib or falls back to gzip.',
 	args: {
-		input: tool.schema.string().describe("Input file path"),
-		output: tool.schema.string().describe("Output .deflate file path"),
+		input: tool.schema.string().describe('Input file path'),
+		output: tool.schema.string().describe('Output .deflate file path'),
 	},
 	async execute({ input, output }) {
 		// Try pigz first (supports --zlib for raw deflate), fallback to gzip
-		let proc = Bun.spawn(["pigz", "--zlib", "-c", input], {
-			stdout: "pipe",
-			stderr: "pipe",
+		let proc = Bun.spawn(['pigz', '--zlib', '-c', input], {
+			stdout: 'pipe',
+			stderr: 'pipe',
 		});
 
 		let [stdout, stderr] = await Promise.all([
@@ -270,10 +270,10 @@ export const compressDeflate = tool({
 		let command = `pigz --zlib -c ${input} > ${output}`;
 
 		// If pigz not available, use gzip (note: gzip doesn't have raw deflate option)
-		if (exitCode !== 0 && stderr.includes("not found")) {
-			proc = Bun.spawn(["gzip", "-c", input], {
-				stdout: "pipe",
-				stderr: "pipe",
+		if (exitCode !== 0 && stderr.includes('not found')) {
+			proc = Bun.spawn(['gzip', '-c', input], {
+				stdout: 'pipe',
+				stderr: 'pipe',
 			});
 			[stdout, stderr] = await Promise.all([
 				new Response(proc.stdout).arrayBuffer(),
@@ -288,7 +288,7 @@ export const compressDeflate = tool({
 		}
 
 		return JSON.stringify({
-			tool: "compress_compressDeflate",
+			tool: 'compress_compressDeflate',
 			command,
 			input,
 			output,
@@ -296,7 +296,7 @@ export const compressDeflate = tool({
 			ok: exitCode === 0,
 			outputSize: exitCode === 0 ? stdout.byteLength : null,
 			stderr,
-			note: "For true raw deflate, pigz with --zlib is required",
+			note: 'For true raw deflate, pigz with --zlib is required',
 		});
 	},
 });
@@ -311,7 +311,7 @@ async function handleDecompress(
 	data_base64: string,
 	asText: boolean,
 ): Promise<DecompressResult> {
-	const compressed = Buffer.from(data_base64, "base64");
+	const compressed = Buffer.from(data_base64, 'base64');
 	const decompressed = await fn(
 		new Uint8Array(
 			compressed.buffer,
@@ -322,7 +322,7 @@ async function handleDecompress(
 
 	const buf = Buffer.from(decompressed);
 	const result: DecompressResult = {
-		data_base64: buf.toString("base64"),
+		data_base64: buf.toString('base64'),
 	};
 
 	if (asText) {
@@ -334,13 +334,13 @@ async function handleDecompress(
 
 export const decompressXzTool = tool({
 	description:
-		"Decompress XZ/LZMA2 data using @zig-wasm/compress. Input and output are base64-encoded.",
+		'Decompress XZ/LZMA2 data using @zig-wasm/compress. Input and output are base64-encoded.',
 	args: {
-		data_base64: tool.schema.string().describe("Compressed XZ data as base64"),
+		data_base64: tool.schema.string().describe('Compressed XZ data as base64'),
 		asText: tool.schema
 			.boolean()
 			.default(false)
-			.describe("Also decode output as UTF-8 text (for text payloads)"),
+			.describe('Also decode output as UTF-8 text (for text payloads)'),
 	},
 	async execute({ data_base64, asText }): Promise<string> {
 		const result = await handleDecompress(decompressXz, data_base64, asText);
@@ -350,15 +350,15 @@ export const decompressXzTool = tool({
 
 export const decompressLzmaTool = tool({
 	description:
-		"Decompress raw LZMA data using @zig-wasm/compress. Input and output are base64-encoded.",
+		'Decompress raw LZMA data using @zig-wasm/compress. Input and output are base64-encoded.',
 	args: {
 		data_base64: tool.schema
 			.string()
-			.describe("Compressed LZMA data as base64"),
+			.describe('Compressed LZMA data as base64'),
 		asText: tool.schema
 			.boolean()
 			.default(false)
-			.describe("Also decode output as UTF-8 text (for text payloads)"),
+			.describe('Also decode output as UTF-8 text (for text payloads)'),
 	},
 	async execute({ data_base64, asText }): Promise<string> {
 		const result = await handleDecompress(decompressLzma, data_base64, asText);

@@ -109,7 +109,7 @@
  */
 
 // Lifecycle
-export { init, isInitialized } from "./base64.ts";
+export { init, isInitialized } from './base64.ts';
 
 // Async API
 // dprint-ignore
@@ -124,7 +124,7 @@ export {
 	encodeUrlNoPadding,
 	hexDecode,
 	hexEncode,
-} from "./base64.ts";
+} from './base64.ts';
 
 // Sync API
 // dprint-ignore
@@ -139,11 +139,11 @@ export {
 	encodeUrlSync,
 	hexDecodeSync,
 	hexEncodeSync,
-} from "./base64.ts";
+} from './base64.ts';
 
 // Types
-export type { Base64WasmExports } from "./types.ts";
+export type { Base64WasmExports } from './types.ts';
 
 // Re-export error for convenience
-export { NotInitializedError } from "@zig-wasm/core";
-export type { InitOptions } from "@zig-wasm/core";
+export { NotInitializedError } from '@zig-wasm/core';
+export type { InitOptions } from '@zig-wasm/core';

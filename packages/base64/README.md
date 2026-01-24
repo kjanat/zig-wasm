@@ -9,19 +9,19 @@ Base64 and hex encoding/decoding powered by Zig via WebAssembly.
 ## Quick start
 
 ```ts
-import { decode, encode } from "@zig-wasm/base64";
+import { decode, encode } from '@zig-wasm/base64';
 
-const encoded = await encode("hello");
+const encoded = await encode('hello');
 const bytes = await decode(encoded); // Uint8Array -> TextDecoder if needed
 ```
 
 Sync helpers require an explicit init:
 
 ```ts
-import { encodeSync, init } from "@zig-wasm/base64";
+import { encodeSync, init } from '@zig-wasm/base64';
 
 await init(); // idempotent
-const encoded = encodeSync("hello");
+const encoded = encodeSync('hello');
 ```
 
 ## WASM loading options

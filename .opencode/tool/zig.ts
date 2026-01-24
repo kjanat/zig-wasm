@@ -1,17 +1,17 @@
 /// <reference types="bun-types" />
 /// <reference types="@opencode-ai/plugin" />
-import { tool } from "@opencode-ai/plugin";
+import { tool } from '@opencode-ai/plugin';
 
 // ---------- test: run zig tests ----------
 
 export const test = tool({
 	description:
-		"Run Zig tests. Either `zig test <file>` or `zig build <step>` (default: test). Returns stdout/stderr/exitCode.",
+		'Run Zig tests. Either `zig test <file>` or `zig build <step>` (default: test). Returns stdout/stderr/exitCode.',
 	args: {
 		mode: tool.schema
-			.enum(["file", "build"])
-			.describe("file: run `zig test <file>`; build: run `zig build <step>`")
-			.default("build"),
+			.enum(['file', 'build'])
+			.describe('file: run `zig test <file>`; build: run `zig build <step>`')
+			.default('build'),
 		file: tool.schema
 			.string()
 			.optional()
@@ -19,17 +19,17 @@ export const test = tool({
 		step: tool.schema
 			.string()
 			.optional()
-			.default("test")
+			.default('test')
 			.describe("Build step to run when mode = 'build', e.g. 'test'"),
 	},
 	async execute(args) {
-		if (args.mode === "file") {
+		if (args.mode === 'file') {
 			if (!args.file) {
 				throw new Error("file is required when mode = 'file'");
 			}
-			const proc = Bun.spawn(["zig", "test", args.file], {
-				stdout: "pipe",
-				stderr: "pipe",
+			const proc = Bun.spawn(['zig', 'test', args.file], {
+				stdout: 'pipe',
+				stderr: 'pipe',
 			});
 			const [stdout, stderr] = await Promise.all([
 				new Response(proc.stdout).text(),
@@ -38,8 +38,8 @@ export const test = tool({
 			const exitCode = await proc.exited;
 
 			return JSON.stringify({
-				tool: "zig_test",
-				mode: "file",
+				tool: 'zig_test',
+				mode: 'file',
 				command: `zig test ${args.file}`,
 				file: args.file,
 				exitCode,
@@ -50,10 +50,10 @@ export const test = tool({
 		}
 
 		// mode === "build"
-		const step = args.step ?? "test";
-		const proc = Bun.spawn(["zig", "build", step], {
-			stdout: "pipe",
-			stderr: "pipe",
+		const step = args.step ?? 'test';
+		const proc = Bun.spawn(['zig', 'build', step], {
+			stdout: 'pipe',
+			stderr: 'pipe',
 		});
 		const [stdout, stderr] = await Promise.all([
 			new Response(proc.stdout).text(),
@@ -62,8 +62,8 @@ export const test = tool({
 		const exitCode = await proc.exited;
 
 		return JSON.stringify({
-			tool: "zig_test",
-			mode: "build",
+			tool: 'zig_test',
+			mode: 'build',
 			command: `zig build ${step}`,
 			step,
 			exitCode,
@@ -78,14 +78,14 @@ export const test = tool({
 
 export const fmt = tool({
 	description:
-		"Format Zig code using `zig fmt`. Supports formatting a file in-place or formatting a snippet via stdin.",
+		'Format Zig code using `zig fmt`. Supports formatting a file in-place or formatting a snippet via stdin.',
 	args: {
 		mode: tool.schema
-			.enum(["file", "snippet"])
+			.enum(['file', 'snippet'])
 			.describe(
-				"file: run `zig fmt <path>`; snippet: format provided code via stdin",
+				'file: run `zig fmt <path>`; snippet: format provided code via stdin',
 			)
-			.default("file"),
+			.default('file'),
 		path: tool.schema
 			.string()
 			.optional()
@@ -96,14 +96,14 @@ export const fmt = tool({
 			.describe("Zig source code when mode = 'snippet'"),
 	},
 	async execute(args) {
-		if (args.mode === "file") {
+		if (args.mode === 'file') {
 			if (!args.path) {
 				throw new Error("path is required when mode = 'file'");
 			}
 
-			const proc = Bun.spawn(["zig", "fmt", args.path], {
-				stdout: "pipe",
-				stderr: "pipe",
+			const proc = Bun.spawn(['zig', 'fmt', args.path], {
+				stdout: 'pipe',
+				stderr: 'pipe',
 			});
 			const [stdout, stderr] = await Promise.all([
 				new Response(proc.stdout).text(),
@@ -119,8 +119,8 @@ export const fmt = tool({
 			}
 
 			return JSON.stringify({
-				tool: "zig_fmt",
-				mode: "file",
+				tool: 'zig_fmt',
+				mode: 'file',
 				command: `zig fmt ${args.path}`,
 				path: args.path,
 				exitCode,
@@ -136,10 +136,10 @@ export const fmt = tool({
 			throw new Error("code is required when mode = 'snippet'");
 		}
 
-		const proc = Bun.spawn(["zig", "fmt", "--stdin"], {
+		const proc = Bun.spawn(['zig', 'fmt', '--stdin'], {
 			stdin: new TextEncoder().encode(args.code),
-			stdout: "pipe",
-			stderr: "pipe",
+			stdout: 'pipe',
+			stderr: 'pipe',
 		});
 		const [stdout, stderr] = await Promise.all([
 			new Response(proc.stdout).text(),
@@ -148,9 +148,9 @@ export const fmt = tool({
 		const exitCode = await proc.exited;
 
 		return JSON.stringify({
-			tool: "zig_fmt",
-			mode: "snippet",
-			command: "zig fmt --stdin",
+			tool: 'zig_fmt',
+			mode: 'snippet',
+			command: 'zig fmt --stdin',
 			exitCode,
 			ok: exitCode === 0,
 			stdout,
@@ -164,12 +164,12 @@ export const fmt = tool({
 
 type StdItem = {
 	name: string;
-	kind: "namespace" | "type" | "function";
+	kind: 'namespace' | 'type' | 'function';
 	description: string;
 };
 
-const mdCodefence = (code: string, lang: string | null = "zig") => {
-	return `${"```"}${lang ?? ""}\n${code}\n${"```"}`;
+const mdCodefence = (code: string, lang: string | null = 'zig') => {
+	return `${'```'}${lang ?? ''}\n${code}\n${'```'}`;
 };
 
 const mdCode = (code: string) => {
@@ -178,104 +178,104 @@ const mdCode = (code: string) => {
 
 const STD_ITEMS: StdItem[] = [
 	{
-		name: "std.mem",
-		kind: "namespace",
+		name: 'std.mem',
+		kind: 'namespace',
 		description:
-			"Slices, copying, searching, equality, byte utilities; core []T helpers.",
+			'Slices, copying, searching, equality, byte utilities; core []T helpers.',
 	},
 	{
-		name: "std.heap",
-		kind: "namespace",
+		name: 'std.heap',
+		kind: 'namespace',
 		description:
-			"Allocators (DebugAllocator, wasm_allocator, ArenaAllocator, etc).",
+			'Allocators (DebugAllocator, wasm_allocator, ArenaAllocator, etc).',
 	},
 	{
-		name: "std.ArrayList",
-		kind: "type",
-		description: "Resizable array backed by an allocator; append/pop, etc.",
+		name: 'std.ArrayList',
+		kind: 'type',
+		description: 'Resizable array backed by an allocator; append/pop, etc.',
 	},
 	{
-		name: "std.AutoArrayHashMap",
-		kind: "type",
-		description: "Hash map that owns its own backing memory via an allocator.",
+		name: 'std.AutoArrayHashMap',
+		kind: 'type',
+		description: 'Hash map that owns its own backing memory via an allocator.',
 	},
 	{
-		name: "std.StringHashMap",
-		kind: "type",
+		name: 'std.StringHashMap',
+		kind: 'type',
 		description:
-			"Hash map keyed by strings; great for small-ish maps, configs, etc.",
+			'Hash map keyed by strings; great for small-ish maps, configs, etc.',
 	},
 	{
-		name: "std.fs",
-		kind: "namespace",
+		name: 'std.fs',
+		kind: 'namespace',
 		description:
-			"Filesystem access: opening files, dirs, reading/writing, paths.",
+			'Filesystem access: opening files, dirs, reading/writing, paths.',
 	},
 	{
-		name: "std.io",
-		kind: "namespace",
+		name: 'std.io',
+		kind: 'namespace',
 		description:
-			"Buffered I/O, readers/writers, stdin/stdout, streaming interfaces.",
+			'Buffered I/O, readers/writers, stdin/stdout, streaming interfaces.',
 	},
 	{
-		name: "std.net",
-		kind: "namespace",
-		description: "TCP/UDP sockets, networking utilities.",
+		name: 'std.net',
+		kind: 'namespace',
+		description: 'TCP/UDP sockets, networking utilities.',
 	},
 	{
-		name: "std.fmt",
-		kind: "namespace",
-		description: "Formatting into slices/allocators; print-style functions.",
+		name: 'std.fmt',
+		kind: 'namespace',
+		description: 'Formatting into slices/allocators; print-style functions.',
 	},
 	{
-		name: "std.crypto",
-		kind: "namespace",
-		description: "Hashing, AEAD, key derivation, random bytes, etc.",
+		name: 'std.crypto',
+		kind: 'namespace',
+		description: 'Hashing, AEAD, key derivation, random bytes, etc.',
 	},
 	{
-		name: "std.hash",
-		kind: "namespace",
-		description: "Hash functions (e.g. Wyhash, CRC, SHA wrappers).",
+		name: 'std.hash',
+		kind: 'namespace',
+		description: 'Hash functions (e.g. Wyhash, CRC, SHA wrappers).',
 	},
 	{
-		name: "std.math",
-		kind: "namespace",
-		description: "Math utilities: trig, pow, clamping, floats/ints helpers.",
+		name: 'std.math',
+		kind: 'namespace',
+		description: 'Math utilities: trig, pow, clamping, floats/ints helpers.',
 	},
 	{
-		name: "std.rand",
-		kind: "namespace",
-		description: "Random number generators, seeds, distributions.",
+		name: 'std.rand',
+		kind: 'namespace',
+		description: 'Random number generators, seeds, distributions.',
 	},
 	{
-		name: "std.time",
-		kind: "namespace",
-		description: "Timestamps, timers, durations, sleep, clocks.",
+		name: 'std.time',
+		kind: 'namespace',
+		description: 'Timestamps, timers, durations, sleep, clocks.',
 	},
 	{
-		name: "std.process",
-		kind: "namespace",
-		description: "Spawning processes, argv/env, exit codes.",
+		name: 'std.process',
+		kind: 'namespace',
+		description: 'Spawning processes, argv/env, exit codes.',
 	},
 	{
-		name: "std.testing",
-		kind: "namespace",
-		description: "Testing helpers, test allocator, failing allocator.",
+		name: 'std.testing',
+		kind: 'namespace',
+		description: 'Testing helpers, test allocator, failing allocator.',
 	},
 	{
-		name: "std.wasm",
-		kind: "namespace",
-		description: "Low-level wasm page/memory helpers and intrinsics.",
+		name: 'std.wasm',
+		kind: 'namespace',
+		description: 'Low-level wasm page/memory helpers and intrinsics.',
 	},
 	{
-		name: "std.json",
-		kind: "namespace",
-		description: "JSON parsing/printing; DOM-style and streaming APIs.",
+		name: 'std.json',
+		kind: 'namespace',
+		description: 'JSON parsing/printing; DOM-style and streaming APIs.',
 	},
 	{
-		name: "std.log",
-		kind: "namespace",
-		description: "Logging with compile-time log levels and scopes.",
+		name: 'std.log',
+		kind: 'namespace',
+		description: 'Logging with compile-time log levels and scopes.',
 	},
 ];
 
@@ -302,14 +302,14 @@ export const stdlib = tool({
 			),
 	},
 	async execute(args) {
-		const url = "https://ziglang.org/documentation/master/std/";
+		const url = 'https://ziglang.org/documentation/master/std/';
 
 		const raw = args.query.trim();
 		if (raw.length === 0) {
 			const top = STD_ITEMS.slice(0, 10);
 			const list = top
 				.map((i) => `- **${i.name}** (${i.kind}) — ${i.description}`)
-				.join("\n");
+				.join('\n');
 
 			return `# Zig stdlib overview
 
@@ -319,8 +319,8 @@ You gave an empty query, so here's a small tour of the usual suspects:
 
 ${list}
 
-Open the docs and hit ${mdCode("s")} to search for the symbol name, e.g. ${mdCode("mem")}, ${mdCode("heap")}, ${mdCode(
-				"ArrayList",
+Open the docs and hit ${mdCode('s')} to search for the symbol name, e.g. ${mdCode('mem')}, ${mdCode('heap')}, ${mdCode(
+				'ArrayList',
 			)}.`;
 		}
 
@@ -341,13 +341,13 @@ Base docs: ${url}
 Couldn't find anything obvious for ${mdCode(raw)} in the small built-in index.
 
 Tips:
-- Try a more generic term (e.g. ${mdCode("heap")} instead of ${mdCode("WasmAllocator")})
-- Open ${url} and press ${mdCode("s")} to use the official search UI`;
+- Try a more generic term (e.g. ${mdCode('heap')} instead of ${mdCode('WasmAllocator')})
+- Open ${url} and press ${mdCode('s')} to use the official search UI`;
 		}
 
 		const list = matches
 			.map((i) => `- **${i.name}** (${i.kind}) — ${i.description}`)
-			.join("\n");
+			.join('\n');
 
 		return `# Zig stdlib search
 
@@ -357,8 +357,8 @@ Matches for ${mdCode(raw)}:
 
 ${list}
 
-Open the docs and press ${mdCode("s")}, then type the symbol (e.g. ${mdCode("mem")}, ${mdCode("heap")}, ${mdCode(
-			"ArrayList",
+Open the docs and press ${mdCode('s')}, then type the symbol (e.g. ${mdCode('mem')}, ${mdCode('heap')}, ${mdCode(
+			'ArrayList',
 		)}) to jump to details.`;
 	},
 });
@@ -367,31 +367,31 @@ Open the docs and press ${mdCode("s")}, then type the symbol (e.g. ${mdCode("mem
 
 export const build = tool({
 	description:
-		"Zig build system cheatsheet. Use for build.zig APIs, WASM targets, cross-compilation, steps, install, etc.",
+		'Zig build system cheatsheet. Use for build.zig APIs, WASM targets, cross-compilation, steps, install, etc.',
 	args: {
 		topic: tool.schema
 			.enum([
-				"general",
-				"wasm",
-				"addExecutable",
-				"addSharedLibrary",
-				"createModule",
-				"targets",
-				"options",
-				"steps",
-				"install",
+				'general',
+				'wasm',
+				'addExecutable',
+				'addSharedLibrary',
+				'createModule',
+				'targets',
+				'options',
+				'steps',
+				'install',
 			])
-			.describe("Build topic to show docs for."),
+			.describe('Build topic to show docs for.'),
 	},
 	async execute(args) {
 		const docs: Record<string, string> = {
 			general: `# Zig build.zig – mental model
 
-- ${mdCode("pub fn build(b: *std.Build) void")} is the entrypoint for ${mdCode("zig build")}.
-- You create **artifacts** (executables, libraries, tests) with things like ${mdCode("b.addExecutable")}.
-- You wire them into **steps** (${mdCode("b.installArtifact")}, custom steps via ${mdCode("b.step")}).
-- Running ${mdCode("zig build")} executes the default step (usually ${mdCode("b.getInstallStep()")} or ${mdCode(
-				"b.default_step",
+- ${mdCode('pub fn build(b: *std.Build) void')} is the entrypoint for ${mdCode('zig build')}.
+- You create **artifacts** (executables, libraries, tests) with things like ${mdCode('b.addExecutable')}.
+- You wire them into **steps** (${mdCode('b.installArtifact')}, custom steps via ${mdCode('b.step')}).
+- Running ${mdCode('zig build')} executes the default step (usually ${mdCode('b.getInstallStep()')} or ${mdCode(
+				'b.default_step',
 			)}).
 
 Basic hello world executable:
@@ -418,9 +418,9 @@ pub fn build(b: *std.Build) void {
 
 Then:
 
-- ${mdCode("zig build")} – builds and installs to ${mdCode("zig-out/bin/hello")}
-- ${mdCode("zig build -Doptimize=ReleaseFast")} – same, but release mode
-- ${mdCode("zig build --help")} – see all options and custom steps
+- ${mdCode('zig build')} – builds and installs to ${mdCode('zig-out/bin/hello')}
+- ${mdCode('zig build -Doptimize=ReleaseFast')} – same, but release mode
+- ${mdCode('zig build --help')} – see all options and custom steps
 `,
 
 			wasm: `# WASM build (wasm32-freestanding)
@@ -466,21 +466,21 @@ fn buildWasmModule(
     b.installArtifact(lib);
 }`)}
 
-For your project you can wrap this in a loop and call it for ${mdCode("crypto")}, ${mdCode("hash")}, ${mdCode(
-				"base64",
+For your project you can wrap this in a loop and call it for ${mdCode('crypto')}, ${mdCode('hash')}, ${mdCode(
+				'base64',
 			)}, etc.
 
 Notes:
 
-- Use ${mdCode("std.heap.wasm_allocator")} inside the WASM module for heap allocations.
-- Avoid ${mdCode("std.fs")}, ${mdCode("std.net")}, and most ${mdCode("std.os")} stuff on ${mdCode(
-				".freestanding",
+- Use ${mdCode('std.heap.wasm_allocator')} inside the WASM module for heap allocations.
+- Avoid ${mdCode('std.fs')}, ${mdCode('std.net')}, and most ${mdCode('std.os')} stuff on ${mdCode(
+				'.freestanding',
 			)} – there is no OS.
 `,
 
 			addExecutable: `# b.addExecutable – modern (0.14+) usage
 
-Always go through a ${mdCode("std.Build.Module")} from ${mdCode("b.createModule")}:
+Always go through a ${mdCode('std.Build.Module')} from ${mdCode('b.createModule')}:
 
 ${mdCodefence(`const exe_mod = b.createModule(.{
     .root_source_file = b.path("src/main.zig"),
@@ -497,7 +497,7 @@ b.installArtifact(exe);`)}
 
 Why:
 
-- Future-proof: direct ${mdCode(".root_source_file")} on ${mdCode("addExecutable")} is deprecated.
+- Future-proof: direct ${mdCode('.root_source_file')} on ${mdCode('addExecutable')} is deprecated.
 - You can **reuse** the same module for tests, benchmarks, etc.
 - Cleaner when you start adding imports and extra modules.
 
@@ -536,7 +536,7 @@ const lib = b.addSharedLibrary(.{
 b.installArtifact(lib);`)}
 
 Use this when you actually need a platform native shared library (dll/so/dylib).
-For WebAssembly use ${mdCode("addExecutable")} like in the WASM snippet, not ${mdCode("addSharedLibrary")}.
+For WebAssembly use ${mdCode('addExecutable')} like in the WASM snippet, not ${mdCode('addSharedLibrary')}.
 `,
 
 			createModule: `# b.createModule – building a module graph
@@ -553,7 +553,7 @@ const cli_mod = b.createModule(.{
     .optimize = optimize,
 });
 
-// Make ${"`core`"} importable as ${'`@import("core")`'}
+// Make ${'`core`'} importable as ${'`@import("core")`'}
 cli_mod.addImport("core", core_mod);
 
 const exe = b.addExecutable(.{
@@ -565,14 +565,14 @@ b.installArtifact(exe);`)}
 
 Key points:
 
-- One ${mdCode("std.Build.Module")} per logical module of your project.
-- You can add imports between modules with ${mdCode("addImport(name, module)")}.
+- One ${mdCode('std.Build.Module')} per logical module of your project.
+- You can add imports between modules with ${mdCode('addImport(name, module)')}.
 - The same module can back an executable, tests, or other libs.
 `,
 
 			targets: `# Targets – choosing where to build for
 
-Let the person running ${mdCode("zig build")} choose:
+Let the person running ${mdCode('zig build')} choose:
 
 ${mdCodefence(`const target = b.standardTargetOptions(.{});`)}
 
@@ -594,8 +594,8 @@ ${mdCodefence(`const target = b.standardTargetOptions(.{
 
 Typical WASM choices:
 
-- ${mdCode(".wasm32")} + ${mdCode(".freestanding")} – browser / JS runtime with custom host.
-- ${mdCode(".wasm32")} + ${mdCode(".wasi")} – WASI runtimes (wasmtime, wasmer, wazero, etc).
+- ${mdCode('.wasm32')} + ${mdCode('.freestanding')} – browser / JS runtime with custom host.
+- ${mdCode('.wasm32')} + ${mdCode('.wasi')} – WASI runtimes (wasmtime, wasmer, wazero, etc).
 `,
 
 			options: `# Optimize modes and build options
@@ -641,8 +641,8 @@ run_step.dependOn(&run_artifact.step);`)}
 
 Then from the shell:
 
-- ${mdCode("zig build run")} – builds + runs the executable.
-- ${mdCode("zig build")} – still does the default install step unless you change it.
+- ${mdCode('zig build run')} – builds + runs the executable.
+- ${mdCode('zig build')} – still does the default install step unless you change it.
 
 You can chain steps:
 
@@ -657,7 +657,7 @@ fmt_step.makeFn = struct {
 
 run_step.dependOn(fmt_step);`)}
 
-Now ${mdCode("zig build run")} will also run your format step first.
+Now ${mdCode('zig build run')} will also run your format step first.
 `,
 
 			install: `# Installing artifacts – where binaries end up
@@ -669,8 +669,8 @@ ${mdCodefence(`b.installArtifact(exe);`)}
 That:
 
 - Builds the executable
-- Puts it under ${mdCode("zig-out/bin/")}
-- Wires it into the default install step used by ${mdCode("zig build")}
+- Puts it under ${mdCode('zig-out/bin/')}
+- Wires it into the default install step used by ${mdCode('zig build')}
 
 For custom locations (common with WASM):
 
@@ -684,12 +684,12 @@ b.getInstallStep().dependOn(&install.step);`)}
 
 Then:
 
-- ${mdCode("zig build")} puts the wasm at ${mdCode("../packages/crypto/dist/crypto.wasm")}
-- You can also expose this via a named step and run ${mdCode("zig build crypto")} if you want per-module build targets.
+- ${mdCode('zig build')} puts the wasm at ${mdCode('../packages/crypto/dist/crypto.wasm')}
+- You can also expose this via a named step and run ${mdCode('zig build crypto')} if you want per-module build targets.
 `,
 		};
 
-		return docs[args.topic] ?? "Unknown topic";
+		return docs[args.topic] ?? 'Unknown topic';
 	},
 });
 
@@ -697,21 +697,21 @@ Then:
 
 export const wasm_memory = tool({
 	description:
-		"Zig WASM memory patterns: std.heap.wasm_allocator, passing slices/strings to/from JS, memory sizing.",
+		'Zig WASM memory patterns: std.heap.wasm_allocator, passing slices/strings to/from JS, memory sizing.',
 	args: {},
 	async execute() {
 		return `# Zig WASM memory patterns
 
 ## Allocator choice
 
-For ${mdCode("wasm32-freestanding")} or ${mdCode("wasm32-wasi")} without an OS, use the dedicated allocator:
+For ${mdCode('wasm32-freestanding')} or ${mdCode('wasm32-wasi')} without an OS, use the dedicated allocator:
 
 ${mdCodefence(`const std = @import("std");
 
 const allocator = std.heap.wasm_allocator;`)}
 
-It talks directly to WASM memory via ${mdCode("memory.grow")} and is much better than ${mdCode(
-			"page_allocator",
+It talks directly to WASM memory via ${mdCode('memory.grow')} and is much better than ${mdCode(
+			'page_allocator',
 		)} in this context.
 
 ## Exporting memory
@@ -729,7 +729,7 @@ ${mdCodefence(
 
 const memory = instance.exports.memory as WebAssembly.Memory
 const view = new Uint8Array(memory.buffer)`,
-	"ts",
+	'ts',
 )}
 
 ## Exporting alloc/free for JS
@@ -768,7 +768,7 @@ function writeBytes(data: Uint8Array): number {
 function readBytes(ptr: number, len: number): Uint8Array {
   return new Uint8Array(memory.buffer, ptr, len)
 }`,
-	"ts",
+	'ts',
 )}
 
 ## Passing strings JS -> Zig
@@ -798,7 +798,7 @@ ${mdCodefence(
 const ptr = utf8ToCString("world")
 hello(ptr)
 free(ptr, "world".length + 1)`,
-	"ts",
+	'ts',
 )}
 
 ## Passing strings Zig -> JS
@@ -822,7 +822,7 @@ const ptr = ptrOut[0]
 const len = lenOut[0]
 const bytes = new Uint8Array(memory.buffer, ptr, len)
 const text = new TextDecoder().decode(bytes)`,
-	"ts",
+	'ts',
 )}
 
 Key idea: **WASM memory is just a big byte buffer**. You pass indices + lengths around; both Zig and JS agree on the layout.
@@ -834,23 +834,23 @@ Key idea: **WASM memory is just a big byte buffer**. You pass indices + lengths 
 
 export const docs = tool({
 	description:
-		"Generate documentation for a Zig file or module. Uses `zig build-lib -femit-docs` to generate HTML docs.",
+		'Generate documentation for a Zig file or module. Uses `zig build-lib -femit-docs` to generate HTML docs.',
 	args: {
-		path: tool.schema.string().describe("Path to the .zig file to document"),
+		path: tool.schema.string().describe('Path to the .zig file to document'),
 		outputDir: tool.schema
 			.string()
-			.default("./zig-docs")
-			.describe("Output directory for generated docs (default: ./zig-docs)"),
+			.default('./zig-docs')
+			.describe('Output directory for generated docs (default: ./zig-docs)'),
 	},
 	async execute(args) {
-		const outDir = args.outputDir ?? "./zig-docs";
+		const outDir = args.outputDir ?? './zig-docs';
 
 		// Use zig build-lib with -femit-docs
 		const proc = Bun.spawn(
-			["zig", "build-lib", args.path, `-femit-docs=${outDir}`, "-fno-emit-bin"],
+			['zig', 'build-lib', args.path, `-femit-docs=${outDir}`, '-fno-emit-bin'],
 			{
-				stdout: "pipe",
-				stderr: "pipe",
+				stdout: 'pipe',
+				stderr: 'pipe',
 			},
 		);
 
@@ -866,7 +866,7 @@ export const docs = tool({
 		const indexExists = await indexFile.exists();
 
 		return JSON.stringify({
-			tool: "zig_docs",
+			tool: 'zig_docs',
 			command: `zig build-lib ${args.path} -femit-docs=${outDir} -fno-emit-bin`,
 			path: args.path,
 			outputDir: outDir,
@@ -878,7 +878,7 @@ export const docs = tool({
 			stderr,
 			note: indexExists
 				? `Open ${indexPath} in a browser to view docs`
-				: "Documentation may not have been generated - check stderr for errors",
+				: 'Documentation may not have been generated - check stderr for errors',
 		});
 	},
 });
@@ -887,14 +887,14 @@ export const docs = tool({
 
 export const ast = tool({
 	description:
-		"Parse Zig source and return AST info. Uses `zig ast-check` to validate syntax and dump AST structure for a file or snippet.",
+		'Parse Zig source and return AST info. Uses `zig ast-check` to validate syntax and dump AST structure for a file or snippet.',
 	args: {
 		mode: tool.schema
-			.enum(["file", "snippet"])
+			.enum(['file', 'snippet'])
 			.describe(
-				"file: check a .zig file; snippet: check provided code via stdin",
+				'file: check a .zig file; snippet: check provided code via stdin',
 			)
-			.default("file"),
+			.default('file'),
 		path: tool.schema
 			.string()
 			.optional()
@@ -906,18 +906,18 @@ export const ast = tool({
 		dump: tool.schema
 			.boolean()
 			.default(false)
-			.describe("If true, also run with --dump to show AST structure"),
+			.describe('If true, also run with --dump to show AST structure'),
 	},
 	async execute(args) {
-		if (args.mode === "file") {
+		if (args.mode === 'file') {
 			if (!args.path) {
 				throw new Error("path is required when mode = 'file'");
 			}
 
 			// First run ast-check
-			const checkProc = Bun.spawn(["zig", "ast-check", args.path], {
-				stdout: "pipe",
-				stderr: "pipe",
+			const checkProc = Bun.spawn(['zig', 'ast-check', args.path], {
+				stdout: 'pipe',
+				stderr: 'pipe',
 			});
 			const [checkStdout, checkStderr] = await Promise.all([
 				new Response(checkProc.stdout).text(),
@@ -926,8 +926,8 @@ export const ast = tool({
 			const checkExitCode = await checkProc.exited;
 
 			const result: Record<string, unknown> = {
-				tool: "zig_ast",
-				mode: "file",
+				tool: 'zig_ast',
+				mode: 'file',
 				command: `zig ast-check ${args.path}`,
 				path: args.path,
 				exitCode: checkExitCode,
@@ -938,9 +938,9 @@ export const ast = tool({
 
 			// If dump requested and check passed, also dump
 			if (args.dump && checkExitCode === 0) {
-				const dumpProc = Bun.spawn(["zig", "ast-check", "--dump", args.path], {
-					stdout: "pipe",
-					stderr: "pipe",
+				const dumpProc = Bun.spawn(['zig', 'ast-check', '--dump', args.path], {
+					stdout: 'pipe',
+					stderr: 'pipe',
 				});
 				const [dumpStdout, dumpStderr] = await Promise.all([
 					new Response(dumpProc.stdout).text(),
@@ -958,10 +958,10 @@ export const ast = tool({
 			throw new Error("code is required when mode = 'snippet'");
 		}
 
-		const checkProc = Bun.spawn(["zig", "ast-check", "--stdin"], {
+		const checkProc = Bun.spawn(['zig', 'ast-check', '--stdin'], {
 			stdin: new TextEncoder().encode(args.code),
-			stdout: "pipe",
-			stderr: "pipe",
+			stdout: 'pipe',
+			stderr: 'pipe',
 		});
 		const [checkStdout, checkStderr] = await Promise.all([
 			new Response(checkProc.stdout).text(),
@@ -970,9 +970,9 @@ export const ast = tool({
 		const checkExitCode = await checkProc.exited;
 
 		const result: Record<string, unknown> = {
-			tool: "zig_ast",
-			mode: "snippet",
-			command: "zig ast-check --stdin",
+			tool: 'zig_ast',
+			mode: 'snippet',
+			command: 'zig ast-check --stdin',
 			exitCode: checkExitCode,
 			ok: checkExitCode === 0,
 			stdout: checkStdout,
@@ -980,10 +980,10 @@ export const ast = tool({
 		};
 
 		if (args.dump && checkExitCode === 0) {
-			const dumpProc = Bun.spawn(["zig", "ast-check", "--dump", "--stdin"], {
+			const dumpProc = Bun.spawn(['zig', 'ast-check', '--dump', '--stdin'], {
 				stdin: new TextEncoder().encode(args.code),
-				stdout: "pipe",
-				stderr: "pipe",
+				stdout: 'pipe',
+				stderr: 'pipe',
 			});
 			const [dumpStdout, dumpStderr] = await Promise.all([
 				new Response(dumpProc.stdout).text(),
@@ -1001,19 +1001,19 @@ export const ast = tool({
 
 export const patterns = tool({
 	description:
-		"Zig language patterns: error handling, optionals, comptime, generics, defer/errdefer, slices, structs.",
+		'Zig language patterns: error handling, optionals, comptime, generics, defer/errdefer, slices, structs.',
 	args: {
 		topic: tool.schema
 			.enum([
-				"errors",
-				"optionals",
-				"comptime",
-				"generics",
-				"defer",
-				"slices",
-				"structs",
+				'errors',
+				'optionals',
+				'comptime',
+				'generics',
+				'defer',
+				'slices',
+				'structs',
 			])
-			.describe("Language pattern topic"),
+			.describe('Language pattern topic'),
 	},
 	async execute(args) {
 		const docs: Record<string, string> = {
@@ -1026,9 +1026,9 @@ ${mdCodefence(`fn openFile(path: []const u8) !std.fs.File {
     return cwd.openFile(path, .{ .mode = .read_only });
 }`)}
 
-Type is ${mdCode("!T")} ("T or error"), like ${mdCode("Result<T, E>")} but built-in.
+Type is ${mdCode('!T')} ("T or error"), like ${mdCode('Result<T, E>')} but built-in.
 
-## ${mdCode("try")} + ${mdCode("catch")}
+## ${mdCode('try')} + ${mdCode('catch')}
 
 ${mdCodefence(`fn readConfig(path: []const u8) !Config {
     const file = try openFile(path);
@@ -1050,7 +1050,7 @@ ${mdCodefence(`const config = readConfig("config.json") catch |err| switch (err)
     else => return err,
 };`)}
 
-## ${mdCode("errdefer")}
+## ${mdCode('errdefer')}
 
 ${mdCodefence(`fn doStuff() !void {
     const handle = try acquire();
@@ -1064,7 +1064,7 @@ ${mdCodefence(`fn doStuff() !void {
 
 			optionals: `# Optionals
 
-Optional type is ${mdCode("?T")} ("maybe T, maybe null").
+Optional type is ${mdCode('?T')} ("maybe T, maybe null").
 
 ${mdCodefence(`var maybe_int: ?u32 = null;
 
@@ -1095,7 +1095,7 @@ const node = head orelse return;`)}
 
 			comptime: `# comptime
 
-Use ${mdCode("comptime")} for stuff known at compile time.
+Use ${mdCode('comptime')} for stuff known at compile time.
 
 ${mdCodefence(`fn arrayOf(comptime T: type, n: usize) type {
     return [n]T;
@@ -1124,7 +1124,7 @@ pub fn main() void {
 }`)}
 `,
 
-			generics: `# Generics (using ${mdCode("comptime T: type")})
+			generics: `# Generics (using ${mdCode('comptime T: type')})
 
 ${mdCodefence(`fn max(comptime T: type, a: T, b: T) T {
     return if (a > b) a else b;
@@ -1144,16 +1144,16 @@ ${mdCodefence(`fn parse(comptime T: type, text: []const u8) !T { ... }`)}
 
 			defer: `# defer & errdefer
 
-${mdCode("defer")} runs on every exit from the scope (success or error):
+${mdCode('defer')} runs on every exit from the scope (success or error):
 
 ${mdCodefence(`fn doStuff() !void {
     const file = try std.fs.cwd().openFile("data.bin", .{});
     defer file.close();
 
-    // ... may ${"`try`"} and error out here ...
+    // ... may ${'`try`'} and error out here ...
 }`)}
 
-${mdCode("errdefer")} only runs when the scope exits with an error:
+${mdCode('errdefer')} only runs when the scope exits with an error:
 
 ${mdCodefence(`fn transact() !void {
     try beginTransaction();
@@ -1168,9 +1168,9 @@ ${mdCodefence(`fn transact() !void {
 
 			slices: `# Arrays, slices, and pointers
 
-- **Array**: ${mdCode("[N]T")} – fixed size, lives by value.
-- **Slice**: ${mdCode("[]T")} or ${mdCode("[]const T")} – pointer + length, not owning.
-- **Pointer**: ${mdCode("*T")} / ${mdCode("[*]T")} / ${mdCode("[*:0]T")} – raw pointer(s).
+- **Array**: ${mdCode('[N]T')} – fixed size, lives by value.
+- **Slice**: ${mdCode('[]T')} or ${mdCode('[]const T')} – pointer + length, not owning.
+- **Pointer**: ${mdCode('*T')} / ${mdCode('[*]T')} / ${mdCode('[*:0]T')} – raw pointer(s).
 
 Examples:
 
@@ -1195,7 +1195,7 @@ const c_str: [*:0]const u8 = s;`)}
 Key takeaways:
 
 - Use **slices** whenever you can; arrays mostly for local buffers / fixed data.
-- For C / JS interop, you'll see ${mdCode("[*]T")} and ${mdCode("[*:0]T")} a lot.
+- For C / JS interop, you'll see ${mdCode('[*]T')} and ${mdCode('[*:0]T')} a lot.
 `,
 
 			structs: `# Structs and init patterns
@@ -1232,11 +1232,11 @@ pub fn main() void {
 }`)}
 
 You can also add ${mdCode(
-				"comptime",
+				'comptime',
 			)} fields, nested types, and so on – structs are the main "everything lives here" container in Zig.
 `,
 		};
 
-		return docs[args.topic] ?? "Unknown topic";
+		return docs[args.topic] ?? 'Unknown topic';
 	},
 });

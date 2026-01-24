@@ -32,7 +32,7 @@ export {
 	createWasmThatCallsPanic,
 	createWasmWithoutMemory,
 	createWasmWithPanicImport,
-} from "./builders.ts";
+} from './builders.ts';
 
 // Invalid WASM builders
 export {
@@ -51,7 +51,7 @@ export {
 	createWrongSectionOrder,
 	createZeroSizeSection,
 	getAllInvalidWasm,
-} from "./invalid.ts";
+} from './invalid.ts';
 
 // Types
-export type { InvalidWasm } from "./invalid.ts";
+export type { InvalidWasm } from './invalid.ts';

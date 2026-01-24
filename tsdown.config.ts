@@ -1,73 +1,73 @@
-import { codecovRollupPlugin } from "@codecov/rollup-plugin";
-import { execSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { defineConfig, type UserConfig } from "tsdown";
-import rootPkg from "./package.json" with { type: "json" };
+import { codecovRollupPlugin } from '@codecov/rollup-plugin';
+import { execSync } from 'node:child_process';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { defineConfig, type UserConfig } from 'tsdown';
+import rootPkg from './package.json' with { type: 'json' };
 
-const repoUrl = "https://github.com/kjanat/zig-wasm";
+const repoUrl = 'https://github.com/kjanat/zig-wasm';
 const repoRoot = dirname(fileURLToPath(import.meta.url));
 
 /** Extract the relative wasm directory from the CI config (last segment of path) */
 function getWasmDir(): string {
 	const wasmPath = rootPkg.config.ci.paths.wasm;
-	const segments = wasmPath.split("/").filter(Boolean);
-	return segments.at(-1) ?? "wasm";
+	const segments = wasmPath.split('/').filter(Boolean);
+	return segments.at(-1) ?? 'wasm';
 }
 
 const licenseInfo = (() => {
 	try {
-		const content = readFileSync(join(repoRoot, "LICENSE"), "utf-8");
+		const content = readFileSync(join(repoRoot, 'LICENSE'), 'utf-8');
 		const match = content.match(/Copyright \(c\)\s+(\d+)\s+(.+)/);
-		if (!match || !match[1] || !match[2]) return { year: "", holder: "" };
+		if (!match || !match[1] || !match[2]) return { year: '', holder: '' };
 		return { year: match[1], holder: match[2].trim() };
 	} catch {
-		return { year: "", holder: "" };
+		return { year: '', holder: '' };
 	}
 })();
 
 const gitInfo = (() => {
 	const buildTime = new Date().toISOString();
-	let hash = "unknown";
-	let dirty = "";
+	let hash = 'unknown';
+	let dirty = '';
 	try {
 		hash =
-			execSync("git rev-parse --short HEAD", { encoding: "utf-8" }).trim() ||
+			execSync('git rev-parse --short HEAD', { encoding: 'utf-8' }).trim() ||
 			hash;
 	} catch {}
 	try {
-		const status = execSync("git status --porcelain", {
-			encoding: "utf-8",
+		const status = execSync('git status --porcelain', {
+			encoding: 'utf-8',
 		}).trim();
-		if (status) dirty = "+dirty";
+		if (status) dirty = '+dirty';
 	} catch {}
 	return { hash, dirty, buildTime };
 })();
 
 function getPackageVersion(packageName: string): string {
 	try {
-		const pkgPath = join(repoRoot, "packages", packageName, "package.json");
-		const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
-		return typeof pkg.version === "string" ? pkg.version : "";
+		const pkgPath = join(repoRoot, 'packages', packageName, 'package.json');
+		const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+		return typeof pkg.version === 'string' ? pkg.version : '';
 	} catch {
-		return "";
+		return '';
 	}
 }
 
 function resolveWorkspaceVersion(dependencyName: string): string {
-	const name = dependencyName.replace(/^@zig-wasm\//, "");
-	const fallback = "0.1.0";
+	const name = dependencyName.replace(/^@zig-wasm\//, '');
+	const fallback = '0.1.0';
 	const candidates = [
-		join(repoRoot, "packages", name, "package.json"),
-		join(repoRoot, "internal", name, "package.json"),
+		join(repoRoot, 'packages', name, 'package.json'),
+		join(repoRoot, 'internal', name, 'package.json'),
 	];
 
 	for (const candidate of candidates) {
 		try {
 			if (!existsSync(candidate)) continue;
-			const pkg = JSON.parse(readFileSync(candidate, "utf-8"));
-			const version = typeof pkg.version === "string" ? pkg.version : "";
+			const pkg = JSON.parse(readFileSync(candidate, 'utf-8'));
+			const version = typeof pkg.version === 'string' ? pkg.version : '';
 			if (version) return version;
 		} catch {}
 	}
@@ -76,30 +76,30 @@ function resolveWorkspaceVersion(dependencyName: string): string {
 }
 
 function injectJsrImports(packageRoot: string): void {
-	const jsrPath = join(packageRoot, "jsr.json");
-	const packageJsonPath = join(packageRoot, "package.json");
+	const jsrPath = join(packageRoot, 'jsr.json');
+	const packageJsonPath = join(packageRoot, 'package.json');
 
 	if (!existsSync(jsrPath) || !existsSync(packageJsonPath)) return;
 
 	try {
-		const jsrConfig = JSON.parse(readFileSync(jsrPath, "utf-8"));
-		const pkgConfig = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+		const jsrConfig = JSON.parse(readFileSync(jsrPath, 'utf-8'));
+		const pkgConfig = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 
 		const imports =
-			typeof jsrConfig.imports === "object" && jsrConfig.imports !== null
+			typeof jsrConfig.imports === 'object' && jsrConfig.imports !== null
 				? { ...jsrConfig.imports }
 				: {};
 
 		const dependencies =
-			pkgConfig.dependencies && typeof pkgConfig.dependencies === "object"
+			pkgConfig.dependencies && typeof pkgConfig.dependencies === 'object'
 				? pkgConfig.dependencies
 				: {};
 
 		for (const [dep, range] of Object.entries(dependencies)) {
 			if (
-				dep.startsWith("@zig-wasm/") &&
-				typeof range === "string" &&
-				range.startsWith("workspace:")
+				dep.startsWith('@zig-wasm/') &&
+				typeof range === 'string' &&
+				range.startsWith('workspace:')
 			) {
 				const version = resolveWorkspaceVersion(dep);
 				imports[dep] = `jsr:${dep}@^${version}`;
@@ -116,28 +116,28 @@ function injectJsrImports(packageRoot: string): void {
 }
 
 export function ensureJsrImports(packageName: string): void {
-	const packageRoot = join(repoRoot, "packages", packageName);
+	const packageRoot = join(repoRoot, 'packages', packageName);
 	injectJsrImports(packageRoot);
 }
 
 export function getBanner(packageName: string): string {
 	const version = getPackageVersion(packageName);
-	const versionSuffix = version ? ` v${version}` : "";
+	const versionSuffix = version ? ` v${version}` : '';
 
 	const lines = [
-		"/**",
+		'/**',
 		` * @zig-wasm/${packageName}${versionSuffix}`,
 		...(licenseInfo.year && licenseInfo.holder
 			? [` * (c) ${licenseInfo.year} ${licenseInfo.holder}`]
 			: []),
-		" * @license MIT",
+		' * @license MIT',
 		` * @source ${repoUrl}/tree/master/packages/${packageName}`,
-		` * @build ${gitInfo.hash}${gitInfo.dirty}${gitInfo.buildTime ? ` ${gitInfo.buildTime}` : ""}`,
-		" */",
-		"",
+		` * @build ${gitInfo.hash}${gitInfo.dirty}${gitInfo.buildTime ? ` ${gitInfo.buildTime}` : ''}`,
+		' */',
+		'',
 	];
 
-	return lines.join("\n");
+	return lines.join('\n');
 }
 
 export function getCodecovPlugin(bundleName: string) {
@@ -154,8 +154,8 @@ export function getCodecovPlugin(bundleName: string) {
 }
 
 export const baseConfig: UserConfig = {
-	entry: ["./src/index.ts"],
-	format: ["esm", "cjs"],
+	entry: ['./src/index.ts'],
+	format: ['esm', 'cjs'],
 	dts: true,
 	clean: false,
 	sourcemap: true,
@@ -168,37 +168,37 @@ export function wasmConfig(
 	packageName: string,
 	overrides: Partial<UserConfig> = {},
 ): UserConfig {
-	const packageRoot = join(repoRoot, "packages", packageName);
+	const packageRoot = join(repoRoot, 'packages', packageName);
 
-	const jsrPath = join(packageRoot, "jsr.json");
-	const packageJsonPath = join(packageRoot, "package.json");
+	const jsrPath = join(packageRoot, 'jsr.json');
+	const packageJsonPath = join(packageRoot, 'package.json');
 
 	try {
 		if (existsSync(jsrPath)) {
-			const jsrContent = readFileSync(jsrPath, "utf-8");
+			const jsrContent = readFileSync(jsrPath, 'utf-8');
 			const jsrConfig = JSON.parse(jsrContent);
 
 			const wasmDir = getWasmDir();
 			jsrConfig.exports = {
-				".":
-					typeof jsrConfig.exports === "string"
+				'.':
+					typeof jsrConfig.exports === 'string'
 						? jsrConfig.exports
-						: "./src/index.ts",
+						: './src/index.ts',
 				[`./${packageName}.wasm`]: `./${wasmDir}/${packageName}.wasm`,
 			};
 
 			if (!jsrConfig.publish) {
-				jsrConfig.publish = { exclude: ["!wasm"] };
+				jsrConfig.publish = { exclude: ['!wasm'] };
 			}
 
 			writeFileSync(jsrPath, `${JSON.stringify(jsrConfig, null, 2)}\n`);
 		}
 
 		if (existsSync(packageJsonPath)) {
-			const pkgContent = readFileSync(packageJsonPath, "utf-8");
+			const pkgContent = readFileSync(packageJsonPath, 'utf-8');
 			const pkgConfig = JSON.parse(pkgContent);
 			const hasExportsObject =
-				typeof pkgConfig.exports === "object" && pkgConfig.exports !== null;
+				typeof pkgConfig.exports === 'object' && pkgConfig.exports !== null;
 
 			if (hasExportsObject) {
 				const wasmDir = getWasmDir();
@@ -261,7 +261,7 @@ export function packageConfig(
 	];
 
 	const banner = overrides.banner ?? getBanner(packageName);
-	const packageRoot = join(repoRoot, "packages", packageName);
+	const packageRoot = join(repoRoot, 'packages', packageName);
 
 	try {
 		injectJsrImports(packageRoot);
@@ -277,13 +277,13 @@ export function packageConfig(
 }
 
 function ensureStdImports(): void {
-	const stdRoot = join(repoRoot, "packages", "std");
+	const stdRoot = join(repoRoot, 'packages', 'std');
 	injectJsrImports(stdRoot);
 }
 
 export default defineConfig({
-	workspace: ["./packages/*", "./internal/*"],
+	workspace: ['./packages/*', './internal/*'],
 	hooks: {
-		"build:before": ensureStdImports,
+		'build:before': ensureStdImports,
 	},
 });

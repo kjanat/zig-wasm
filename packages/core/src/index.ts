@@ -94,10 +94,10 @@ export {
 	WasmLoadError,
 	WasmMemoryError,
 	ZigWasmError,
-} from "./errors.ts";
+} from './errors.ts';
 
 // Environment detection
-export { detectEnvironment, getEnvironment } from "./env.ts";
+export { detectEnvironment, getEnvironment } from './env.ts';
 
 // Module loading
 export {
@@ -105,22 +105,22 @@ export {
 	defaultFetchFn,
 	loadWasm,
 	resolveWasmPath,
-} from "./loader.ts";
+} from './loader.ts';
 
 // WASM module factory (init/sync pattern)
 export {
 	createWasmModule,
 	resolveWasmPathForNode,
 	resolveWasmUrlForBrowser,
-} from "./wasm-module.ts";
+} from './wasm-module.ts';
 export type {
 	InitOptions,
 	WasmModule,
 	WasmModuleConfig,
-} from "./wasm-module.ts";
+} from './wasm-module.ts';
 
 // Memory management
-export { AllocationScope, WasmMemory } from "./memory.ts";
+export { AllocationScope, WasmMemory } from './memory.ts';
 
 // Types
 export type {
@@ -133,7 +133,7 @@ export type {
 	WasmSize,
 	WasmSlice,
 	ZigWasmExports,
-} from "./types.ts";
+} from './types.ts';
 
 // Utilities
 export {
@@ -143,7 +143,7 @@ export {
 	fromHex,
 	stringToBytes,
 	toHex,
-} from "./utils.ts";
+} from './utils.ts';
 
 // LEB128 encoding/decoding
 export {
@@ -151,7 +151,7 @@ export {
 	decodeUleb128,
 	encodeSleb128,
 	encodeUleb128,
-} from "./leb128.ts";
+} from './leb128.ts';
 
 // WASM binary format utilities
 export {
@@ -172,5 +172,5 @@ export {
 	WASM_HEADER,
 	WASM_MAGIC,
 	WASM_VERSION,
-} from "./wasm-binary.ts";
-export type { ParsedSection } from "./wasm-binary.ts";
+} from './wasm-binary.ts';
+export type { ParsedSection } from './wasm-binary.ts';

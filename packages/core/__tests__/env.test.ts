@@ -1,7 +1,7 @@
-import { detectEnvironment, getEnvironment } from "@zig-wasm/core";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { detectEnvironment, getEnvironment } from '@zig-wasm/core';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-describe("detectEnvironment", () => {
+describe('detectEnvironment', () => {
 	let originalProcess: typeof globalThis.process | undefined;
 	let originalWindow: typeof globalThis.window | undefined;
 	let originalDeno: unknown;
@@ -34,19 +34,19 @@ describe("detectEnvironment", () => {
 		}
 	});
 
-	describe("Node.js detection", () => {
-		it("detects Node.js environment", () => {
+	describe('Node.js detection', () => {
+		it('detects Node.js environment', () => {
 			// In actual test environment (vitest with Node), this should be true
 			const env = detectEnvironment();
 
-			if (typeof process !== "undefined" && process.versions?.node) {
+			if (typeof process !== 'undefined' && process.versions?.node) {
 				expect(env.isNode).toBe(true);
 				expect(env.isBrowser).toBe(false);
 				expect(env.isDeno).toBe(false);
 			}
 		});
 
-		it("requires process.versions.node", () => {
+		it('requires process.versions.node', () => {
 			// Mock environment without Node
 			delete (globalThis as { process?: unknown }).process;
 
@@ -55,8 +55,8 @@ describe("detectEnvironment", () => {
 		});
 	});
 
-	describe("Browser detection", () => {
-		it("detects browser when window and document exist", () => {
+	describe('Browser detection', () => {
+		it('detects browser when window and document exist', () => {
 			// In Node test environment, we can't easily simulate browser
 			// Just verify the logic works with current environment
 			const env = detectEnvironment();
@@ -67,7 +67,7 @@ describe("detectEnvironment", () => {
 			}
 		});
 
-		it("requires both window and document", () => {
+		it('requires both window and document', () => {
 			// Window alone is not sufficient
 			const env = detectEnvironment();
 
@@ -75,14 +75,14 @@ describe("detectEnvironment", () => {
 			// unless we're running in a browser-like environment
 			if (!env.isBrowser) {
 				expect(
-					typeof window === "undefined" || typeof document === "undefined",
+					typeof window === 'undefined' || typeof document === 'undefined',
 				).toBe(true);
 			}
 		});
 	});
 
-	describe("Deno detection", () => {
-		it("detects Deno environment", () => {
+	describe('Deno detection', () => {
+		it('detects Deno environment', () => {
 			// Would need to mock Deno global for this test
 			// In actual Deno environment, this would be true
 			const env = detectEnvironment();
@@ -94,13 +94,13 @@ describe("detectEnvironment", () => {
 		});
 	});
 
-	describe("Bun detection", () => {
-		it("detects Bun environment", () => {
+	describe('Bun detection', () => {
+		it('detects Bun environment', () => {
 			const env = detectEnvironment();
 
 			// Check if we're running in Bun
 			if (
-				typeof process !== "undefined" &&
+				typeof process !== 'undefined' &&
 				(process.versions as { bun?: string })?.bun
 			) {
 				expect(env.isBun).toBe(true);
@@ -109,12 +109,12 @@ describe("detectEnvironment", () => {
 		});
 	});
 
-	describe("streaming support detection", () => {
-		it("detects WebAssembly.instantiateStreaming availability", () => {
+	describe('streaming support detection', () => {
+		it('detects WebAssembly.instantiateStreaming availability', () => {
 			const env = detectEnvironment();
 
 			const hasStreamingAPI =
-				typeof WebAssembly.instantiateStreaming === "function";
+				typeof WebAssembly.instantiateStreaming === 'function';
 
 			if (hasStreamingAPI && (env.isBrowser || env.isDeno)) {
 				expect(env.supportsStreaming).toBe(true);
@@ -123,7 +123,7 @@ describe("detectEnvironment", () => {
 			}
 		});
 
-		it("requires browser or Deno for streaming", () => {
+		it('requires browser or Deno for streaming', () => {
 			const env = detectEnvironment();
 
 			// Node.js and Bun typically don't support streaming
@@ -133,8 +133,8 @@ describe("detectEnvironment", () => {
 		});
 	});
 
-	describe("mutually exclusive environments", () => {
-		it("can only be one primary environment", () => {
+	describe('mutually exclusive environments', () => {
+		it('can only be one primary environment', () => {
 			const env = detectEnvironment();
 
 			const primaryEnvs = [env.isNode, env.isBrowser, env.isDeno, env.isBun];
@@ -144,7 +144,7 @@ describe("detectEnvironment", () => {
 			expect(trueCount).toBeLessThanOrEqual(1);
 		});
 
-		it("Bun takes precedence over Node", () => {
+		it('Bun takes precedence over Node', () => {
 			// If Bun is detected, Node should be false
 			const env = detectEnvironment();
 
@@ -153,7 +153,7 @@ describe("detectEnvironment", () => {
 			}
 		});
 
-		it("browser excludes Node, Deno, and Bun", () => {
+		it('browser excludes Node, Deno, and Bun', () => {
 			const env = detectEnvironment();
 
 			if (env.isBrowser) {
@@ -164,34 +164,34 @@ describe("detectEnvironment", () => {
 		});
 	});
 
-	describe("environment properties", () => {
-		it("returns all expected properties", () => {
+	describe('environment properties', () => {
+		it('returns all expected properties', () => {
 			const env = detectEnvironment();
 
-			expect(env).toHaveProperty("isNode");
-			expect(env).toHaveProperty("isBrowser");
-			expect(env).toHaveProperty("isDeno");
-			expect(env).toHaveProperty("isBun");
-			expect(env).toHaveProperty("supportsStreaming");
+			expect(env).toHaveProperty('isNode');
+			expect(env).toHaveProperty('isBrowser');
+			expect(env).toHaveProperty('isDeno');
+			expect(env).toHaveProperty('isBun');
+			expect(env).toHaveProperty('supportsStreaming');
 		});
 
-		it("all properties are booleans", () => {
+		it('all properties are booleans', () => {
 			const env = detectEnvironment();
 
-			expect(typeof env.isNode).toBe("boolean");
-			expect(typeof env.isBrowser).toBe("boolean");
-			expect(typeof env.isDeno).toBe("boolean");
-			expect(typeof env.isBun).toBe("boolean");
-			expect(typeof env.supportsStreaming).toBe("boolean");
+			expect(typeof env.isNode).toBe('boolean');
+			expect(typeof env.isBrowser).toBe('boolean');
+			expect(typeof env.isDeno).toBe('boolean');
+			expect(typeof env.isBun).toBe('boolean');
+			expect(typeof env.supportsStreaming).toBe('boolean');
 		});
 	});
 
-	describe("real environment detection", () => {
-		it("detects current test environment correctly", () => {
+	describe('real environment detection', () => {
+		it('detects current test environment correctly', () => {
 			const env = detectEnvironment();
 
 			// In vitest with Node, should detect Node
-			if (typeof process !== "undefined" && process.versions?.node) {
+			if (typeof process !== 'undefined' && process.versions?.node) {
 				expect(env.isNode).toBe(true);
 			}
 
@@ -201,19 +201,19 @@ describe("detectEnvironment", () => {
 			expect(hasEnvironment).toBe(true);
 		});
 
-		it("streaming support matches environment capabilities", () => {
+		it('streaming support matches environment capabilities', () => {
 			const env = detectEnvironment();
 
 			if (env.supportsStreaming) {
-				expect(typeof WebAssembly.instantiateStreaming).toBe("function");
+				expect(typeof WebAssembly.instantiateStreaming).toBe('function');
 				expect(env.isBrowser || env.isDeno).toBe(true);
 			}
 		});
 	});
 });
 
-describe("getEnvironment", () => {
-	it("returns same result as detectEnvironment", () => {
+describe('getEnvironment', () => {
+	it('returns same result as detectEnvironment', () => {
 		const detected = detectEnvironment();
 		const cached = getEnvironment();
 
@@ -224,7 +224,7 @@ describe("getEnvironment", () => {
 		expect(cached.supportsStreaming).toBe(detected.supportsStreaming);
 	});
 
-	it("caches result across calls", () => {
+	it('caches result across calls', () => {
 		const first = getEnvironment();
 		const second = getEnvironment();
 
@@ -232,8 +232,8 @@ describe("getEnvironment", () => {
 		expect(first).toBe(second);
 	});
 
-	it("only detects once", () => {
-		const _spy = vi.spyOn({ detectEnvironment }, "detectEnvironment");
+	it('only detects once', () => {
+		const _spy = vi.spyOn({ detectEnvironment }, 'detectEnvironment');
 
 		getEnvironment();
 		getEnvironment();
@@ -245,7 +245,7 @@ describe("getEnvironment", () => {
 		expect(result).toBeDefined();
 	});
 
-	it("returns consistent results", () => {
+	it('returns consistent results', () => {
 		const results = Array.from({ length: 100 }, () => getEnvironment());
 
 		const first = results[0];
@@ -254,20 +254,20 @@ describe("getEnvironment", () => {
 		});
 	});
 
-	it("result has all expected properties", () => {
+	it('result has all expected properties', () => {
 		const env = getEnvironment();
 
-		expect(env).toHaveProperty("isNode");
-		expect(env).toHaveProperty("isBrowser");
-		expect(env).toHaveProperty("isDeno");
-		expect(env).toHaveProperty("isBun");
-		expect(env).toHaveProperty("supportsStreaming");
+		expect(env).toHaveProperty('isNode');
+		expect(env).toHaveProperty('isBrowser');
+		expect(env).toHaveProperty('isDeno');
+		expect(env).toHaveProperty('isBun');
+		expect(env).toHaveProperty('supportsStreaming');
 	});
 });
 
-describe("environment-specific behavior", () => {
-	describe("for Node.js", () => {
-		it("indicates no streaming support", () => {
+describe('environment-specific behavior', () => {
+	describe('for Node.js', () => {
+		it('indicates no streaming support', () => {
 			const env = getEnvironment();
 
 			if (env.isNode) {
@@ -275,7 +275,7 @@ describe("environment-specific behavior", () => {
 			}
 		});
 
-		it("is not browser", () => {
+		it('is not browser', () => {
 			const env = getEnvironment();
 
 			if (env.isNode) {
@@ -284,18 +284,18 @@ describe("environment-specific behavior", () => {
 		});
 	});
 
-	describe("for browsers", () => {
-		it("may support streaming", () => {
+	describe('for browsers', () => {
+		it('may support streaming', () => {
 			const env = getEnvironment();
 
 			if (env.isBrowser) {
 				// Modern browsers support streaming
-				const hasAPI = typeof WebAssembly.instantiateStreaming === "function";
+				const hasAPI = typeof WebAssembly.instantiateStreaming === 'function';
 				expect(env.supportsStreaming).toBe(hasAPI);
 			}
 		});
 
-		it("is not Node", () => {
+		it('is not Node', () => {
 			const env = getEnvironment();
 
 			if (env.isBrowser) {
@@ -304,8 +304,8 @@ describe("environment-specific behavior", () => {
 		});
 	});
 
-	describe("for Bun", () => {
-		it("indicates no streaming support", () => {
+	describe('for Bun', () => {
+		it('indicates no streaming support', () => {
 			const env = getEnvironment();
 
 			if (env.isBun) {
@@ -313,7 +313,7 @@ describe("environment-specific behavior", () => {
 			}
 		});
 
-		it("is distinct from Node", () => {
+		it('is distinct from Node', () => {
 			const env = getEnvironment();
 
 			if (env.isBun) {
@@ -322,20 +322,20 @@ describe("environment-specific behavior", () => {
 		});
 	});
 
-	describe("for Deno", () => {
-		it("may support streaming", () => {
+	describe('for Deno', () => {
+		it('may support streaming', () => {
 			const env = getEnvironment();
 
 			if (env.isDeno) {
-				const hasAPI = typeof WebAssembly.instantiateStreaming === "function";
+				const hasAPI = typeof WebAssembly.instantiateStreaming === 'function';
 				expect(env.supportsStreaming).toBe(hasAPI);
 			}
 		});
 	});
 });
 
-describe("real-world usage patterns", () => {
-	it("conditional WASM loading based on environment", () => {
+describe('real-world usage patterns', () => {
+	it('conditional WASM loading based on environment', () => {
 		const env = getEnvironment();
 
 		if (env.isNode || env.isBun) {
@@ -347,17 +347,17 @@ describe("real-world usage patterns", () => {
 		}
 	});
 
-	it("selecting loader strategy", () => {
+	it('selecting loader strategy', () => {
 		const env = getEnvironment();
 
-		const loaderStrategy = env.supportsStreaming ? "streaming" : "buffer";
+		const loaderStrategy = env.supportsStreaming ? 'streaming' : 'buffer';
 
 		if (env.isNode || env.isBun) {
-			expect(loaderStrategy).toBe("buffer");
+			expect(loaderStrategy).toBe('buffer');
 		}
 	});
 
-	it("feature detection for optimizations", () => {
+	it('feature detection for optimizations', () => {
 		const env = getEnvironment();
 
 		const canUseOptimization = env.isBrowser && env.supportsStreaming;
@@ -367,23 +367,23 @@ describe("real-world usage patterns", () => {
 		}
 	});
 
-	it("environment-specific error messages", () => {
+	it('environment-specific error messages', () => {
 		const env = getEnvironment();
 
 		const envName = env.isNode
-			? "Node.js"
+			? 'Node.js'
 			: env.isBrowser
-				? "Browser"
+				? 'Browser'
 				: env.isDeno
-					? "Deno"
+					? 'Deno'
 					: env.isBun
-						? "Bun"
-						: "Unknown";
+						? 'Bun'
+						: 'Unknown';
 
-		expect(["Node.js", "Browser", "Deno", "Bun", "Unknown"]).toContain(envName);
+		expect(['Node.js', 'Browser', 'Deno', 'Bun', 'Unknown']).toContain(envName);
 	});
 
-	it("platform-specific WASM path resolution", () => {
+	it('platform-specific WASM path resolution', () => {
 		const env = getEnvironment();
 
 		const needsPathResolution = env.isNode || env.isBun;
@@ -394,20 +394,20 @@ describe("real-world usage patterns", () => {
 	});
 });
 
-describe("edge cases", () => {
-	it("handles missing globals gracefully", () => {
+describe('edge cases', () => {
+	it('handles missing globals gracefully', () => {
 		// Should not throw even with missing globals
 		expect(() => detectEnvironment()).not.toThrow();
 	});
 
-	it("handles undefined process.versions", () => {
+	it('handles undefined process.versions', () => {
 		const env = detectEnvironment();
 
 		// Should handle gracefully even if versions is undefined
-		expect(typeof env.isNode).toBe("boolean");
+		expect(typeof env.isNode).toBe('boolean');
 	});
 
-	it("result is immutable in practice", () => {
+	it('result is immutable in practice', () => {
 		const env = getEnvironment();
 		const _original = { ...env };
 
@@ -416,10 +416,10 @@ describe("edge cases", () => {
 
 		const fresh = getEnvironment();
 		// Cache might be modified, but detection logic is sound
-		expect(typeof fresh.isNode).toBe("boolean");
+		expect(typeof fresh.isNode).toBe('boolean');
 	});
 
-	it("handles null process.versions", () => {
+	it('handles null process.versions', () => {
 		// Save original
 		const originalProcess = globalThis.process;
 
@@ -437,7 +437,7 @@ describe("edge cases", () => {
 		}
 	});
 
-	it("handles partial process object", () => {
+	it('handles partial process object', () => {
 		const originalProcess = globalThis.process;
 
 		try {
@@ -453,7 +453,7 @@ describe("edge cases", () => {
 	});
 });
 
-describe("browser environment simulation", () => {
+describe('browser environment simulation', () => {
 	let originalProcess: typeof globalThis.process | undefined;
 	let originalWindow: typeof globalThis.window | undefined;
 	let originalDocument: typeof globalThis.document | undefined;
@@ -481,7 +481,7 @@ describe("browser environment simulation", () => {
 		}
 	});
 
-	it("detects browser when window and document exist without Node/Deno/Bun", () => {
+	it('detects browser when window and document exist without Node/Deno/Bun', () => {
 		// Remove Node/Deno/Bun markers
 		delete (globalThis as { process?: typeof process }).process;
 		delete (globalThis as { Deno?: unknown }).Deno;
@@ -498,7 +498,7 @@ describe("browser environment simulation", () => {
 		expect(env.isBun).toBe(false);
 	});
 
-	it("is not browser when window exists but document does not", () => {
+	it('is not browser when window exists but document does not', () => {
 		delete (globalThis as { process?: typeof process }).process;
 		delete (globalThis as { Deno?: unknown }).Deno;
 		delete (globalThis as { document?: typeof document }).document;
@@ -510,7 +510,7 @@ describe("browser environment simulation", () => {
 		expect(env.isBrowser).toBe(false);
 	});
 
-	it("is not browser when document exists but window does not", () => {
+	it('is not browser when document exists but window does not', () => {
 		delete (globalThis as { process?: typeof process }).process;
 		delete (globalThis as { Deno?: unknown }).Deno;
 		delete (globalThis as { window?: typeof window }).window;
@@ -522,10 +522,10 @@ describe("browser environment simulation", () => {
 		expect(env.isBrowser).toBe(false);
 	});
 
-	it("Node takes precedence over browser markers", () => {
+	it('Node takes precedence over browser markers', () => {
 		// Set up both Node and browser markers
 		(globalThis as { process: unknown }).process = {
-			versions: { node: "18.0.0" },
+			versions: { node: '18.0.0' },
 		};
 		(globalThis as { window: unknown }).window = {};
 		(globalThis as { document: unknown }).document = {};
@@ -537,8 +537,8 @@ describe("browser environment simulation", () => {
 	});
 });
 
-describe("type safety", () => {
-	it("return type has all required fields", () => {
+describe('type safety', () => {
+	it('return type has all required fields', () => {
 		const env = getEnvironment();
 
 		// TypeScript compile-time check
@@ -551,11 +551,11 @@ describe("type safety", () => {
 		expect(true).toBe(true);
 	});
 
-	it("properties are readonly in practice", () => {
+	it('properties are readonly in practice', () => {
 		const env = getEnvironment();
 
 		// Should not have setters
-		const descriptor = Object.getOwnPropertyDescriptor(env, "isNode");
+		const descriptor = Object.getOwnPropertyDescriptor(env, 'isNode');
 		if (descriptor) {
 			// If property exists directly, it should be a value
 			expect(

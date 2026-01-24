@@ -9,11 +9,11 @@ Cryptographic hash functions powered by Zig's `std.crypto` via WebAssembly.
 ## Quick start
 
 ```ts
-import { hashHex, hmacSha256, sha256 } from "@zig-wasm/crypto";
+import { hashHex, hmacSha256, sha256 } from '@zig-wasm/crypto';
 
-const digest = await sha256("hello world"); // Uint8Array
-const digestHex = await hashHex("blake3", "data"); // hex string
-const mac = await hmacSha256("secret", "payload"); // Uint8Array
+const digest = await sha256('hello world'); // Uint8Array
+const digestHex = await hashHex('blake3', 'data'); // hex string
+const mac = await hmacSha256('secret', 'payload'); // Uint8Array
 ```
 
 Sync helpers require `await init()` first, then use `sha256Sync`, `hashHexSync`,

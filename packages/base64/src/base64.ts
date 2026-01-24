@@ -85,15 +85,15 @@
 import type {
 	AllocationScope as AllocationScopeType,
 	InitOptions,
-} from "@zig-wasm/core";
+} from '@zig-wasm/core';
 import {
 	AllocationScope,
 	getEnvironment,
 	loadWasm,
 	NotInitializedError,
 	WasmMemory,
-} from "@zig-wasm/core";
-import type { Base64WasmExports } from "./types.ts";
+} from '@zig-wasm/core';
+import type { Base64WasmExports } from './types.ts';
 
 // ============================================================================
 // Module initialization
@@ -167,13 +167,13 @@ export async function init(options?: InitOptions): Promise<void> {
 				fetchFn: options.fetchFn,
 			});
 		} else if (env.isNode || env.isBun) {
-			const { fileURLToPath } = await import("node:url");
-			const { dirname, join } = await import("node:path");
+			const { fileURLToPath } = await import('node:url');
+			const { dirname, join } = await import('node:path');
 			const currentDir = dirname(fileURLToPath(import.meta.url));
-			const wasmPath = join(currentDir, "../wasm/base64.wasm");
+			const wasmPath = join(currentDir, '../wasm/base64.wasm');
 			result = await loadWasm<Base64WasmExports>({ wasmPath });
 		} else {
-			const wasmUrl = new URL("../wasm/base64.wasm", import.meta.url);
+			const wasmUrl = new URL('../wasm/base64.wasm', import.meta.url);
 			result = await loadWasm<Base64WasmExports>({ wasmUrl: wasmUrl.href });
 		}
 
@@ -222,7 +222,7 @@ async function ensureInit(): Promise<{
 
 function getSyncState(): { exports: Base64WasmExports; memory: WasmMemory } {
 	if (!wasmExports || !wasmMemory) {
-		throw new NotInitializedError("base64");
+		throw new NotInitializedError('base64');
 	}
 	return { exports: wasmExports, memory: wasmMemory };
 }
@@ -232,7 +232,7 @@ function getSyncState(): { exports: Base64WasmExports; memory: WasmMemory } {
 // ============================================================================
 
 function toBytes(data: string | Uint8Array): Uint8Array {
-	if (typeof data === "string") {
+	if (typeof data === 'string') {
 		return new TextEncoder().encode(data);
 	}
 	return data;
@@ -249,7 +249,7 @@ function encodeImpl(
 	mem: WasmMemory,
 	data: Uint8Array,
 ): string {
-	if (data.length === 0) return "";
+	if (data.length === 0) return '';
 	const encodedLen = exports.base64_encode_len(data.length);
 	return AllocationScope.use(mem, (scope: AllocationScopeType) => {
 		const input = scope.allocAndCopy(data);
@@ -284,7 +284,7 @@ function encodeNoPaddingImpl(
 	mem: WasmMemory,
 	data: Uint8Array,
 ): string {
-	if (data.length === 0) return "";
+	if (data.length === 0) return '';
 	const encodedLen = exports.base64_no_pad_encode_len(data.length);
 	return AllocationScope.use(mem, (scope: AllocationScopeType) => {
 		const input = scope.allocAndCopy(data);
@@ -323,7 +323,7 @@ function encodeUrlImpl(
 	mem: WasmMemory,
 	data: Uint8Array,
 ): string {
-	if (data.length === 0) return "";
+	if (data.length === 0) return '';
 	const encodedLen = exports.base64_url_encode_len(data.length);
 	return AllocationScope.use(mem, (scope: AllocationScopeType) => {
 		const input = scope.allocAndCopy(data);
@@ -362,7 +362,7 @@ function encodeUrlNoPaddingImpl(
 	mem: WasmMemory,
 	data: Uint8Array,
 ): string {
-	if (data.length === 0) return "";
+	if (data.length === 0) return '';
 	const encodedLen = exports.base64_url_no_pad_encode_len(data.length);
 	return AllocationScope.use(mem, (scope: AllocationScopeType) => {
 		const input = scope.allocAndCopy(data);
@@ -401,7 +401,7 @@ function hexEncodeImpl(
 	mem: WasmMemory,
 	data: Uint8Array,
 ): string {
-	if (data.length === 0) return "";
+	if (data.length === 0) return '';
 	const encodedLen = exports.hex_encode_len(data.length);
 	return AllocationScope.use(mem, (scope: AllocationScopeType) => {
 		const input = scope.allocAndCopy(data);

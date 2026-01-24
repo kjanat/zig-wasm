@@ -1,5 +1,15 @@
 {
 	"$schema": "https://opencode.ai/config.json",
+	// BLOCKED: Destructive git commands that destroy uncommitted work
+	"permission": {
+		"bash": {
+			"*checkout*": "ask",
+			"*restore*": "ask",
+			"*reset*": "ask",
+			"git clean *": "ask",
+			"git stash drop *": "ask"
+		}
+	},
 	"lsp": {
 		// https://opencode.ai/docs/lsp/
 		"biome": {
@@ -114,6 +124,7 @@
 	},
 	"agent": {
 		"code-reviewer": {
+			"disable": true,
 			"description": "Reviews code for best practices and potential issues",
 			"model": "anthropic/claude-sonnet-4-5",
 			"prompt": "You are a code reviewer. Focus on security, performance, and maintainability.",

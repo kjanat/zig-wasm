@@ -45,4 +45,4 @@
  *
  * @module hash
  */
-export * from "@zig-wasm/hash";
+export * from '@zig-wasm/hash';

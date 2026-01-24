@@ -52,7 +52,7 @@
  * @module env
  */
 
-import type { RuntimeEnvironment } from "./types.ts";
+import type { RuntimeEnvironment } from './types.ts';
 
 /**
  * Detect the current runtime environment.
@@ -84,28 +84,28 @@ import type { RuntimeEnvironment } from "./types.ts";
  */
 export function detectEnvironment(): RuntimeEnvironment {
 	const isNode =
-		typeof process !== "undefined" &&
+		typeof process !== 'undefined' &&
 		process.versions != null &&
 		process.versions.node != null;
 
 	const isBun =
-		typeof process !== "undefined" &&
+		typeof process !== 'undefined' &&
 		process.versions != null &&
 		process.versions.bun != null;
 
 	const isDeno =
 		// @ts-expect-error - Deno global
-		typeof Deno !== "undefined" && typeof Deno.version !== "undefined";
+		typeof Deno !== 'undefined' && typeof Deno.version !== 'undefined';
 
 	const isBrowser =
-		typeof window !== "undefined" &&
-		typeof document !== "undefined" &&
+		typeof window !== 'undefined' &&
+		typeof document !== 'undefined' &&
 		!isNode &&
 		!isDeno &&
 		!isBun;
 
 	const supportsStreaming =
-		typeof WebAssembly.instantiateStreaming === "function" &&
+		typeof WebAssembly.instantiateStreaming === 'function' &&
 		(isBrowser || isDeno);
 
 	return {

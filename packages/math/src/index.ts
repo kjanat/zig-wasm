@@ -78,7 +78,7 @@
  */
 
 // Lifecycle
-export { getExports, getExportsSync, init, isInitialized } from "./math.ts";
+export { getExports, getExportsSync, init, isInitialized } from './math.ts';
 
 // Async API
 // dprint-ignore
@@ -202,7 +202,7 @@ export {
 	tanhF32,
 	trunc,
 	truncF32,
-} from "./math.ts";
+} from './math.ts';
 
 // Sync API
 // dprint-ignore
@@ -326,11 +326,11 @@ export {
 	tanSync,
 	truncF32Sync,
 	truncSync,
-} from "./math.ts";
+} from './math.ts';
 
 // Types
-export type { MathWasmExports } from "./types.ts";
+export type { MathWasmExports } from './types.ts';
 
 // Re-export error for convenience
-export { NotInitializedError } from "@zig-wasm/core";
-export type { InitOptions } from "@zig-wasm/core";
+export { NotInitializedError } from '@zig-wasm/core';
+export type { InitOptions } from '@zig-wasm/core';

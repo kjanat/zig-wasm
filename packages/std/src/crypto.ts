@@ -45,4 +45,4 @@
  *
  * @module crypto
  */
-export * from "@zig-wasm/crypto";
+export * from '@zig-wasm/crypto';

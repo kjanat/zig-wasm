@@ -1,6 +1,6 @@
 /// <reference types="bun-types" />
 /// <reference types="@opencode-ai/plugin" />
-import { tool } from "@opencode-ai/plugin";
+import { tool } from '@opencode-ai/plugin';
 
 // --- helpers for parsing WASM binary sections ---
 
@@ -22,19 +22,19 @@ const _SECTION_IDS = {
 } as const;
 
 const SECTION_NAMES: Record<number, string> = {
-	0: "custom",
-	1: "type",
-	2: "import",
-	3: "function",
-	4: "table",
-	5: "memory",
-	6: "global",
-	7: "export",
-	8: "start",
-	9: "element",
-	10: "code",
-	11: "data",
-	12: "dataCount",
+	0: 'custom',
+	1: 'type',
+	2: 'import',
+	3: 'function',
+	4: 'table',
+	5: 'memory',
+	6: 'global',
+	7: 'export',
+	8: 'start',
+	9: 'element',
+	10: 'code',
+	11: 'data',
+	12: 'dataCount',
 };
 
 function readVarUint32(
@@ -118,19 +118,19 @@ function parseMemoryLimits(bytes: Uint8Array): MemoryLimits[] {
 
 export const inspect = tool({
 	description:
-		"Inspect a WebAssembly .wasm file: size, exports, imports, and memory limits (parsed from the binary).",
+		'Inspect a WebAssembly .wasm file: size, exports, imports, and memory limits (parsed from the binary).',
 	args: {
-		path: tool.schema.string().describe("Path to the .wasm file to inspect"),
+		path: tool.schema.string().describe('Path to the .wasm file to inspect'),
 	},
 	async execute(args) {
 		const file = Bun.file(args.path);
 		const exists = await file.exists();
 		if (!exists) {
 			return JSON.stringify({
-				tool: "wasm_inspect",
+				tool: 'wasm_inspect',
 				path: args.path,
 				exists: false,
-				error: "File not found",
+				error: 'File not found',
 			});
 		}
 
@@ -158,7 +158,7 @@ export const inspect = tool({
 		} catch (err: unknown) {
 			const message = err instanceof Error ? err.message : String(err);
 			return JSON.stringify({
-				tool: "wasm_inspect",
+				tool: 'wasm_inspect',
 				path: args.path,
 				exists: true,
 				sizeBytes,
@@ -170,7 +170,7 @@ export const inspect = tool({
 		const memories = parseMemoryLimits(bytes);
 
 		return JSON.stringify({
-			tool: "wasm_inspect",
+			tool: 'wasm_inspect',
 			path: args.path,
 			exists: true,
 			sizeBytes,
@@ -178,7 +178,7 @@ export const inspect = tool({
 			exports: exportsInfo,
 			imports: importsInfo,
 			memories,
-			note: "Memory min/max parsed from WASM binary section 5.",
+			note: 'Memory min/max parsed from WASM binary section 5.',
 		});
 	},
 });
@@ -187,26 +187,26 @@ export const inspect = tool({
 
 export const benchmark = tool({
 	description:
-		"Quick micro-benchmark for exported WASM functions. Loads modules, calls exports in a tight loop, measures wall time.",
+		'Quick micro-benchmark for exported WASM functions. Loads modules, calls exports in a tight loop, measures wall time.',
 	args: {
 		cases: tool.schema
 			.array(
 				tool.schema.object({
-					label: tool.schema.string().describe("Label for this benchmark case"),
-					path: tool.schema.string().describe("Path to .wasm file"),
+					label: tool.schema.string().describe('Label for this benchmark case'),
+					path: tool.schema.string().describe('Path to .wasm file'),
 					exportName: tool.schema
 						.string()
-						.describe("Name of the exported function to call repeatedly"),
+						.describe('Name of the exported function to call repeatedly'),
 					iterations: tool.schema
 						.number()
 						.int()
 						.positive()
 						.default(100_000)
-						.describe("How many times to call the function"),
+						.describe('How many times to call the function'),
 				}),
 			)
 			.min(1)
-			.describe("List of benchmark cases"),
+			.describe('List of benchmark cases'),
 	},
 	async execute(args) {
 		const results: Array<{
@@ -226,7 +226,7 @@ export const benchmark = tool({
 				results.push({
 					label: c.label,
 					path: c.path,
-					error: "File not found",
+					error: 'File not found',
 				});
 				continue;
 			}
@@ -247,7 +247,7 @@ export const benchmark = tool({
 			}
 
 			const fn = (instance.exports as Record<string, unknown>)[c.exportName];
-			if (typeof fn !== "function") {
+			if (typeof fn !== 'function') {
 				results.push({
 					label: c.label,
 					path: c.path,
@@ -276,9 +276,9 @@ export const benchmark = tool({
 		}
 
 		return JSON.stringify({
-			tool: "wasm_benchmark",
+			tool: 'wasm_benchmark',
 			cases: results,
-			note: "Simple wall-clock benchmark assuming zero-arg exports. Extend for args/warmup as needed.",
+			note: 'Simple wall-clock benchmark assuming zero-arg exports. Extend for args/warmup as needed.',
 		});
 	},
 });
@@ -331,19 +331,19 @@ function parseWasmSections(bytes: Uint8Array): SectionInfo[] {
 
 export const size = tool({
 	description:
-		"Detailed size breakdown of .wasm sections (type, import, function, code, data, etc). Shows bytes and percentage for each section.",
+		'Detailed size breakdown of .wasm sections (type, import, function, code, data, etc). Shows bytes and percentage for each section.',
 	args: {
-		path: tool.schema.string().describe("Path to the .wasm file to analyze"),
+		path: tool.schema.string().describe('Path to the .wasm file to analyze'),
 	},
 	async execute(args) {
 		const file = Bun.file(args.path);
 		const exists = await file.exists();
 		if (!exists) {
 			return JSON.stringify({
-				tool: "wasm_size",
+				tool: 'wasm_size',
 				path: args.path,
 				exists: false,
-				error: "File not found",
+				error: 'File not found',
 			});
 		}
 
@@ -356,10 +356,10 @@ export const size = tool({
 
 		if (!isMagicValid) {
 			return JSON.stringify({
-				tool: "wasm_size",
+				tool: 'wasm_size',
 				path: args.path,
 				exists: true,
-				error: "Not a valid WASM file (invalid magic number)",
+				error: 'Not a valid WASM file (invalid magic number)',
 			});
 		}
 
@@ -383,7 +383,7 @@ export const size = tool({
 				: null;
 
 		return JSON.stringify({
-			tool: "wasm_size",
+			tool: 'wasm_size',
 			path: args.path,
 			totalBytes: bytes.length,
 			totalKB: (bytes.length / 1024).toFixed(2),

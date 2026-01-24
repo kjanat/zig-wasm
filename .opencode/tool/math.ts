@@ -1,6 +1,6 @@
 /// <reference types="bun-types" />
 /// <reference types="@opencode-ai/plugin" />
-import { tool } from "@opencode-ai/plugin";
+import { tool } from '@opencode-ai/plugin';
 
 // dprint-ignore
 import {
@@ -56,53 +56,53 @@ import {
 	tan,
 	tanh,
 	trunc,
-} from "@zig-wasm/math";
+} from '@zig-wasm/math';
 
 const FNS = /* dprint-ignore */ [
-	"sin",
-	"cos",
-	"tan",
-	"asin",
-	"acos",
-	"atan",
-	"atan2",
-	"sinh",
-	"cosh",
-	"tanh",
-	"asinh",
-	"acosh",
-	"atanh",
-	"exp",
-	"exp2",
-	"expm1",
-	"log",
-	"log2",
-	"log10",
-	"log1p",
-	"sqrt",
-	"cbrt",
-	"pow",
-	"hypot",
-	"floor",
-	"ceil",
-	"round",
-	"trunc",
-	"abs",
-	"min",
-	"max",
-	"clamp",
-	"sign",
-	"copysign",
-	"clz",
-	"ctz",
-	"popcount",
-	"bswap16",
-	"rotl",
-	"rotr",
-	"pi",
-	"e",
-	"ln2",
-	"ln10",
+	'sin',
+	'cos',
+	'tan',
+	'asin',
+	'acos',
+	'atan',
+	'atan2',
+	'sinh',
+	'cosh',
+	'tanh',
+	'asinh',
+	'acosh',
+	'atanh',
+	'exp',
+	'exp2',
+	'expm1',
+	'log',
+	'log2',
+	'log10',
+	'log1p',
+	'sqrt',
+	'cbrt',
+	'pow',
+	'hypot',
+	'floor',
+	'ceil',
+	'round',
+	'trunc',
+	'abs',
+	'min',
+	'max',
+	'clamp',
+	'sign',
+	'copysign',
+	'clz',
+	'ctz',
+	'popcount',
+	'bswap16',
+	'rotl',
+	'rotr',
+	'pi',
+	'e',
+	'ln2',
+	'ln10',
 ] as const;
 
 type MathFn = (typeof FNS)[number];
@@ -157,15 +157,15 @@ const IMPL: Record<MathFn, (...args: number[]) => Promise<number> | number> =
 
 export const call = tool({
 	description:
-		"Call a @zig-wasm/math function by name (sin, cos, exp, sqrt, clamp, bit ops, constants, etc).",
+		'Call a @zig-wasm/math function by name (sin, cos, exp, sqrt, clamp, bit ops, constants, etc).',
 	args: {
 		fn: tool.schema
 			.enum(FNS as unknown as [MathFn, ...MathFn[]])
-			.describe("Name of the math function to call"),
+			.describe('Name of the math function to call'),
 		args: tool.schema
 			.array(tool.schema.number())
 			.default([])
-			.describe("Arguments to pass to the function"),
+			.describe('Arguments to pass to the function'),
 	},
 	async execute({ fn, args }) {
 		const impl = IMPL[fn];

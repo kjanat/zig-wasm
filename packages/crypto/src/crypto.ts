@@ -60,7 +60,7 @@
 import type {
 	AllocationScope as AllocationScopeType,
 	InitOptions,
-} from "@zig-wasm/core";
+} from '@zig-wasm/core';
 import {
 	AllocationScope,
 	getEnvironment,
@@ -68,12 +68,12 @@ import {
 	NotInitializedError,
 	toHex,
 	WasmMemory,
-} from "@zig-wasm/core";
+} from '@zig-wasm/core';
 import type {
 	CryptoWasmExports,
 	HashAlgorithm,
 	HmacAlgorithm,
-} from "./types.ts";
+} from './types.ts';
 
 // ============================================================================
 // Module initialization
@@ -155,13 +155,13 @@ export async function init(options?: InitOptions): Promise<void> {
 				fetchFn: options.fetchFn,
 			});
 		} else if (env.isNode || env.isBun) {
-			const { fileURLToPath } = await import("node:url");
-			const { dirname, join } = await import("node:path");
+			const { fileURLToPath } = await import('node:url');
+			const { dirname, join } = await import('node:path');
 			const currentDir = dirname(fileURLToPath(import.meta.url));
-			const wasmPath = join(currentDir, "../wasm/crypto.wasm");
+			const wasmPath = join(currentDir, '../wasm/crypto.wasm');
 			result = await loadWasm<CryptoWasmExports>({ wasmPath });
 		} else {
-			const wasmUrl = new URL("../wasm/crypto.wasm", import.meta.url);
+			const wasmUrl = new URL('../wasm/crypto.wasm', import.meta.url);
 			result = await loadWasm<CryptoWasmExports>({ wasmUrl: wasmUrl.href });
 		}
 
@@ -206,7 +206,7 @@ async function ensureInit(): Promise<{
 /** Get exports for sync operations, throws if not initialized */
 function getSyncState(): { exports: CryptoWasmExports; memory: WasmMemory } {
 	if (!wasmExports || !wasmMemory) {
-		throw new NotInitializedError("crypto");
+		throw new NotInitializedError('crypto');
 	}
 	return { exports: wasmExports, memory: wasmMemory };
 }
@@ -217,7 +217,7 @@ function getSyncState(): { exports: CryptoWasmExports; memory: WasmMemory } {
 
 /** Convert input to Uint8Array */
 function toBytes(data: string | Uint8Array): Uint8Array {
-	if (typeof data === "string") {
+	if (typeof data === 'string') {
 		return new TextEncoder().encode(data);
 	}
 	return data;
@@ -228,25 +228,25 @@ function getHashFunction(
 	algorithm: HashAlgorithm,
 ): (dataPtr: number, dataLen: number, outPtr: number) => void {
 	switch (algorithm) {
-		case "md5":
+		case 'md5':
 			return exports.md5_hash;
-		case "sha1":
+		case 'sha1':
 			return exports.sha1_hash;
-		case "sha256":
+		case 'sha256':
 			return exports.sha256_hash;
-		case "sha384":
+		case 'sha384':
 			return exports.sha384_hash;
-		case "sha512":
+		case 'sha512':
 			return exports.sha512_hash;
-		case "sha3-256":
+		case 'sha3-256':
 			return exports.sha3_256_hash;
-		case "sha3-512":
+		case 'sha3-512':
 			return exports.sha3_512_hash;
-		case "blake2b256":
+		case 'blake2b256':
 			return exports.blake2b256_hash;
-		case "blake2s256":
+		case 'blake2s256':
 			return exports.blake2s256_hash;
-		case "blake3":
+		case 'blake3':
 			return exports.blake3_hash;
 	}
 }
@@ -256,25 +256,25 @@ function getDigestLength(
 	algorithm: HashAlgorithm,
 ): number {
 	switch (algorithm) {
-		case "md5":
+		case 'md5':
 			return exports.md5_digest_length();
-		case "sha1":
+		case 'sha1':
 			return exports.sha1_digest_length();
-		case "sha256":
+		case 'sha256':
 			return exports.sha256_digest_length();
-		case "sha384":
+		case 'sha384':
 			return exports.sha384_digest_length();
-		case "sha512":
+		case 'sha512':
 			return exports.sha512_digest_length();
-		case "sha3-256":
+		case 'sha3-256':
 			return exports.sha3_256_digest_length();
-		case "sha3-512":
+		case 'sha3-512':
 			return exports.sha3_512_digest_length();
-		case "blake2b256":
+		case 'blake2b256':
 			return exports.blake2b256_digest_length();
-		case "blake2s256":
+		case 'blake2s256':
 			return exports.blake2s256_digest_length();
-		case "blake3":
+		case 'blake3':
 			return exports.blake3_digest_length();
 	}
 }
@@ -308,9 +308,9 @@ function hmacImpl(
 	data: Uint8Array,
 ): Uint8Array {
 	const hmacFn =
-		algorithm === "sha256" ? exports.hmac_sha256 : exports.hmac_sha512;
+		algorithm === 'sha256' ? exports.hmac_sha256 : exports.hmac_sha512;
 	const outputLen =
-		algorithm === "sha256"
+		algorithm === 'sha256'
 			? exports.hmac_sha256_length()
 			: exports.hmac_sha512_length();
 
@@ -398,7 +398,7 @@ export async function hashHex(
  * ```
  */
 export async function md5(data: string | Uint8Array): Promise<Uint8Array> {
-	return hash("md5", data);
+	return hash('md5', data);
 }
 
 /**
@@ -418,7 +418,7 @@ export async function md5(data: string | Uint8Array): Promise<Uint8Array> {
  * ```
  */
 export async function sha1(data: string | Uint8Array): Promise<Uint8Array> {
-	return hash("sha1", data);
+	return hash('sha1', data);
 }
 
 /**
@@ -439,7 +439,7 @@ export async function sha1(data: string | Uint8Array): Promise<Uint8Array> {
  * ```
  */
 export async function sha256(data: string | Uint8Array): Promise<Uint8Array> {
-	return hash("sha256", data);
+	return hash('sha256', data);
 }
 
 /**
@@ -459,7 +459,7 @@ export async function sha256(data: string | Uint8Array): Promise<Uint8Array> {
  * ```
  */
 export async function sha384(data: string | Uint8Array): Promise<Uint8Array> {
-	return hash("sha384", data);
+	return hash('sha384', data);
 }
 
 /**
@@ -480,7 +480,7 @@ export async function sha384(data: string | Uint8Array): Promise<Uint8Array> {
  * ```
  */
 export async function sha512(data: string | Uint8Array): Promise<Uint8Array> {
-	return hash("sha512", data);
+	return hash('sha512', data);
 }
 
 /**
@@ -501,7 +501,7 @@ export async function sha512(data: string | Uint8Array): Promise<Uint8Array> {
  * ```
  */
 export async function sha3_256(data: string | Uint8Array): Promise<Uint8Array> {
-	return hash("sha3-256", data);
+	return hash('sha3-256', data);
 }
 
 /**
@@ -521,7 +521,7 @@ export async function sha3_256(data: string | Uint8Array): Promise<Uint8Array> {
  * ```
  */
 export async function sha3_512(data: string | Uint8Array): Promise<Uint8Array> {
-	return hash("sha3-512", data);
+	return hash('sha3-512', data);
 }
 
 /**
@@ -545,7 +545,7 @@ export async function sha3_512(data: string | Uint8Array): Promise<Uint8Array> {
 export async function blake2b256(
 	data: string | Uint8Array,
 ): Promise<Uint8Array> {
-	return hash("blake2b256", data);
+	return hash('blake2b256', data);
 }
 
 /**
@@ -569,7 +569,7 @@ export async function blake2b256(
 export async function blake2s256(
 	data: string | Uint8Array,
 ): Promise<Uint8Array> {
-	return hash("blake2s256", data);
+	return hash('blake2s256', data);
 }
 
 /**
@@ -596,7 +596,7 @@ export async function blake2s256(
  * ```
  */
 export async function blake3(data: string | Uint8Array): Promise<Uint8Array> {
-	return hash("blake3", data);
+	return hash('blake3', data);
 }
 
 /**
@@ -676,7 +676,7 @@ export async function hmacSha256(
 	key: string | Uint8Array,
 	data: string | Uint8Array,
 ): Promise<Uint8Array> {
-	return hmac("sha256", key, data);
+	return hmac('sha256', key, data);
 }
 
 /**
@@ -701,7 +701,7 @@ export async function hmacSha512(
 	key: string | Uint8Array,
 	data: string | Uint8Array,
 ): Promise<Uint8Array> {
-	return hmac("sha512", key, data);
+	return hmac('sha512', key, data);
 }
 
 /**
@@ -791,7 +791,7 @@ export function hashHexSync(
  * @throws {@link NotInitializedError} if {@link init} was not called
  */
 export function md5Sync(data: string | Uint8Array): Uint8Array {
-	return hashSync("md5", data);
+	return hashSync('md5', data);
 }
 
 /**
@@ -804,7 +804,7 @@ export function md5Sync(data: string | Uint8Array): Uint8Array {
  * @throws {@link NotInitializedError} if {@link init} was not called
  */
 export function sha1Sync(data: string | Uint8Array): Uint8Array {
-	return hashSync("sha1", data);
+	return hashSync('sha1', data);
 }
 
 /**
@@ -825,7 +825,7 @@ export function sha1Sync(data: string | Uint8Array): Uint8Array {
  * ```
  */
 export function sha256Sync(data: string | Uint8Array): Uint8Array {
-	return hashSync("sha256", data);
+	return hashSync('sha256', data);
 }
 
 /**
@@ -838,7 +838,7 @@ export function sha256Sync(data: string | Uint8Array): Uint8Array {
  * @throws {@link NotInitializedError} if {@link init} was not called
  */
 export function sha384Sync(data: string | Uint8Array): Uint8Array {
-	return hashSync("sha384", data);
+	return hashSync('sha384', data);
 }
 
 /**
@@ -851,7 +851,7 @@ export function sha384Sync(data: string | Uint8Array): Uint8Array {
  * @throws {@link NotInitializedError} if {@link init} was not called
  */
 export function sha512Sync(data: string | Uint8Array): Uint8Array {
-	return hashSync("sha512", data);
+	return hashSync('sha512', data);
 }
 
 /**
@@ -864,7 +864,7 @@ export function sha512Sync(data: string | Uint8Array): Uint8Array {
  * @throws {@link NotInitializedError} if {@link init} was not called
  */
 export function sha3_256Sync(data: string | Uint8Array): Uint8Array {
-	return hashSync("sha3-256", data);
+	return hashSync('sha3-256', data);
 }
 
 /**
@@ -877,7 +877,7 @@ export function sha3_256Sync(data: string | Uint8Array): Uint8Array {
  * @throws {@link NotInitializedError} if {@link init} was not called
  */
 export function sha3_512Sync(data: string | Uint8Array): Uint8Array {
-	return hashSync("sha3-512", data);
+	return hashSync('sha3-512', data);
 }
 
 /**
@@ -890,7 +890,7 @@ export function sha3_512Sync(data: string | Uint8Array): Uint8Array {
  * @throws {@link NotInitializedError} if {@link init} was not called
  */
 export function blake2b256Sync(data: string | Uint8Array): Uint8Array {
-	return hashSync("blake2b256", data);
+	return hashSync('blake2b256', data);
 }
 
 /**
@@ -903,7 +903,7 @@ export function blake2b256Sync(data: string | Uint8Array): Uint8Array {
  * @throws {@link NotInitializedError} if {@link init} was not called
  */
 export function blake2s256Sync(data: string | Uint8Array): Uint8Array {
-	return hashSync("blake2s256", data);
+	return hashSync('blake2s256', data);
 }
 
 /**
@@ -924,7 +924,7 @@ export function blake2s256Sync(data: string | Uint8Array): Uint8Array {
  * ```
  */
 export function blake3Sync(data: string | Uint8Array): Uint8Array {
-	return hashSync("blake3", data);
+	return hashSync('blake3', data);
 }
 
 /**
@@ -996,7 +996,7 @@ export function hmacSha256Sync(
 	key: string | Uint8Array,
 	data: string | Uint8Array,
 ): Uint8Array {
-	return hmacSync("sha256", key, data);
+	return hmacSync('sha256', key, data);
 }
 
 /**
@@ -1013,7 +1013,7 @@ export function hmacSha512Sync(
 	key: string | Uint8Array,
 	data: string | Uint8Array,
 ): Uint8Array {
-	return hmacSync("sha512", key, data);
+	return hmacSync('sha512', key, data);
 }
 
 /**

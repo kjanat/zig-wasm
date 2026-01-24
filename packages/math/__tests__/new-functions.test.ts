@@ -3,15 +3,15 @@
  * Uses deterministic test vectors generated from Zig's stdlib.
  */
 
-import * as math from "@zig-wasm/math";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { beforeAll, describe, expect, it } from "vitest";
-import testVectors from "./fixtures/test-vectors.json";
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import * as math from '@zig-wasm/math';
+import { beforeAll, describe, expect, it } from 'vitest';
+import testVectors from './fixtures/test-vectors.json';
 
 const wasmPath = join(
 	dirname(fileURLToPath(import.meta.url)),
-	"../wasm/math.wasm",
+	'../wasm/math.wasm',
 );
 
 // Type definitions for test vectors
@@ -73,31 +73,31 @@ const RADIAN_INPUTS: Record<string, number> = {
 // Integer pairs for GCD/LCM testing
 // Note: Some LCM results overflow u32, so we split into u32-safe and u64-only
 const INTEGER_PAIRS_U32: Record<string, [number, number]> = {
-	"12_8": [12, 8],
-	"21_14": [21, 14],
-	"48_18": [48, 18],
-	"100_25": [100, 25],
-	"0_5": [0, 5],
-	"5_0": [5, 0],
-	"1_1": [1, 1],
+	'12_8': [12, 8],
+	'21_14': [21, 14],
+	'48_18': [48, 18],
+	'100_25': [100, 25],
+	'0_5': [0, 5],
+	'5_0': [5, 0],
+	'1_1': [1, 1],
 	prime_17_13: [17, 13],
-	"4_6": [4, 6],
-	"21_6": [21, 6],
+	'4_6': [4, 6],
+	'21_6': [21, 6],
 	same_value: [42, 42],
 	one_and_large: [1, 123456],
 };
 
 // These pairs have LCM that overflows u32, use u64 only
 const INTEGER_PAIRS_U64_ONLY: Record<string, [bigint, bigint]> = {
-	"123456_789012": [123456n, 789012n],
+	'123456_789012': [123456n, 789012n],
 	large_coprime: [999983n, 999979n],
 };
 
 // FMA test cases
 const FMA_CASES: Record<string, [number, number, number]> = {
-	"2_3_4": [2, 3, 4],
-	"1_1_1": [1, 1, 1],
-	"0_5_10": [0, 5, 10],
+	'2_3_4': [2, 3, 4],
+	'1_1_1': [1, 1, 1],
+	'0_5_10': [0, 5, 10],
 	neg_2_3_10: [-2, 3, 10],
 	half_half_quarter: [0.5, 0.5, 0.25],
 	pi_2_0: [Math.PI, 2, 0],
@@ -111,26 +111,26 @@ const FMA_CASES: Record<string, [number, number, number]> = {
  * Parse a float value from test vectors, handling special string values.
  */
 function parseFloat64(value: number | string): number {
-	if (typeof value === "string") {
-		if (value === "NaN") return NaN;
-		if (value === "Infinity") return Infinity;
-		if (value === "-Infinity") return -Infinity;
+	if (typeof value === 'string') {
+		if (value === 'NaN') return NaN;
+		if (value === 'Infinity') return Infinity;
+		if (value === '-Infinity') return -Infinity;
 		return Number.parseFloat(value);
 	}
 	return value;
 }
 
-describe("New Math Functions - Test Vectors", () => {
+describe('New Math Functions - Test Vectors', () => {
 	beforeAll(async () => {
 		await math.init({ wasmPath });
 	});
 
-	describe("deg2rad", () => {
+	describe('deg2rad', () => {
 		const vectors = testVectors.deg2rad as FloatVectors;
 
 		it.each(
 			Object.entries(DEGREE_INPUTS),
-		)("deg2rad(%s) = %d degrees", async (name, degrees) => {
+		)('deg2rad(%s) = %d degrees', async (name, degrees) => {
 			const expected = parseFloat64(vectors[name]!);
 			const result = await math.deg2rad(degrees);
 			expect(result).toBeCloseTo(expected, 10);
@@ -138,7 +138,7 @@ describe("New Math Functions - Test Vectors", () => {
 
 		it.each(
 			Object.entries(DEGREE_INPUTS),
-		)("deg2radSync(%s)", (name, degrees) => {
+		)('deg2radSync(%s)', (name, degrees) => {
 			const expected = parseFloat64(vectors[name]!);
 			const result = math.deg2radSync(degrees);
 			expect(result).toBeCloseTo(expected, 10);
@@ -146,7 +146,7 @@ describe("New Math Functions - Test Vectors", () => {
 
 		it.each(
 			Object.entries(DEGREE_INPUTS),
-		)("deg2radF32Sync(%s)", (name, degrees) => {
+		)('deg2radF32Sync(%s)', (name, degrees) => {
 			const expected = parseFloat64(vectors[name]!);
 			const result = math.deg2radF32Sync(degrees);
 			// F32 has less precision
@@ -154,12 +154,12 @@ describe("New Math Functions - Test Vectors", () => {
 		});
 	});
 
-	describe("rad2deg", () => {
+	describe('rad2deg', () => {
 		const vectors = testVectors.rad2deg as FloatVectors;
 
 		it.each(
 			Object.entries(RADIAN_INPUTS),
-		)("rad2deg(%s)", async (name, radians) => {
+		)('rad2deg(%s)', async (name, radians) => {
 			const expected = parseFloat64(vectors[name]!);
 			const result = await math.rad2deg(radians);
 			expect(result).toBeCloseTo(expected, 10);
@@ -167,7 +167,7 @@ describe("New Math Functions - Test Vectors", () => {
 
 		it.each(
 			Object.entries(RADIAN_INPUTS),
-		)("rad2degSync(%s)", (name, radians) => {
+		)('rad2degSync(%s)', (name, radians) => {
 			const expected = parseFloat64(vectors[name]!);
 			const result = math.rad2degSync(radians);
 			expect(result).toBeCloseTo(expected, 10);
@@ -175,7 +175,7 @@ describe("New Math Functions - Test Vectors", () => {
 
 		it.each(
 			Object.entries(RADIAN_INPUTS),
-		)("rad2degF32Sync(%s)", (name, radians) => {
+		)('rad2degF32Sync(%s)', (name, radians) => {
 			const expected = parseFloat64(vectors[name]!);
 			const result = math.rad2degF32Sync(radians);
 			// F32 has less precision - use relative tolerance for large values
@@ -184,11 +184,11 @@ describe("New Math Functions - Test Vectors", () => {
 		});
 	});
 
-	describe("gcd", () => {
+	describe('gcd', () => {
 		const vectors = testVectors.gcd as IntegerVectors;
 
 		// Test u32 pairs
-		it.each(Object.entries(INTEGER_PAIRS_U32))("gcd(%s)", async (name, [
+		it.each(Object.entries(INTEGER_PAIRS_U32))('gcd(%s)', async (name, [
 			a,
 			b,
 		]) => {
@@ -197,7 +197,7 @@ describe("New Math Functions - Test Vectors", () => {
 			expect(result).toBe(expected);
 		});
 
-		it.each(Object.entries(INTEGER_PAIRS_U32))("gcdSync(%s)", (name, [
+		it.each(Object.entries(INTEGER_PAIRS_U32))('gcdSync(%s)', (name, [
 			a,
 			b,
 		]) => {
@@ -207,7 +207,7 @@ describe("New Math Functions - Test Vectors", () => {
 		});
 
 		// Test u64 pairs (including those that overflow u32 for LCM)
-		it.each(Object.entries(INTEGER_PAIRS_U64_ONLY))("gcdU64Sync(%s)", (name, [
+		it.each(Object.entries(INTEGER_PAIRS_U64_ONLY))('gcdU64Sync(%s)', (name, [
 			a,
 			b,
 		]) => {
@@ -217,16 +217,16 @@ describe("New Math Functions - Test Vectors", () => {
 		});
 
 		// Test the documented limitation: gcd(0, 0) traps
-		it("traps on gcd(0, 0)", () => {
+		it('traps on gcd(0, 0)', () => {
 			expect(() => math.gcdSync(0, 0)).toThrow();
 		});
 	});
 
-	describe("lcm", () => {
+	describe('lcm', () => {
 		const vectors = testVectors.lcm as IntegerVectors;
 
 		// Test u32 pairs (results fit in u32)
-		it.each(Object.entries(INTEGER_PAIRS_U32))("lcm(%s)", async (name, [
+		it.each(Object.entries(INTEGER_PAIRS_U32))('lcm(%s)', async (name, [
 			a,
 			b,
 		]) => {
@@ -235,7 +235,7 @@ describe("New Math Functions - Test Vectors", () => {
 			expect(result).toBe(expected);
 		});
 
-		it.each(Object.entries(INTEGER_PAIRS_U32))("lcmSync(%s)", (name, [
+		it.each(Object.entries(INTEGER_PAIRS_U32))('lcmSync(%s)', (name, [
 			a,
 			b,
 		]) => {
@@ -245,7 +245,7 @@ describe("New Math Functions - Test Vectors", () => {
 		});
 
 		// Test u64 pairs (results overflow u32)
-		it.each(Object.entries(INTEGER_PAIRS_U64_ONLY))("lcmU64Sync(%s)", (name, [
+		it.each(Object.entries(INTEGER_PAIRS_U64_ONLY))('lcmU64Sync(%s)', (name, [
 			a,
 			b,
 		]) => {
@@ -255,22 +255,22 @@ describe("New Math Functions - Test Vectors", () => {
 		});
 	});
 
-	describe("fma", () => {
+	describe('fma', () => {
 		const vectors = testVectors.fma as FloatVectors;
 
-		it.each(Object.entries(FMA_CASES))("fma(%s)", async (name, [x, y, z]) => {
+		it.each(Object.entries(FMA_CASES))('fma(%s)', async (name, [x, y, z]) => {
 			const expected = parseFloat64(vectors[name]!);
 			const result = await math.fma(x, y, z);
 			expect(result).toBeCloseTo(expected, 10);
 		});
 
-		it.each(Object.entries(FMA_CASES))("fmaSync(%s)", (name, [x, y, z]) => {
+		it.each(Object.entries(FMA_CASES))('fmaSync(%s)', (name, [x, y, z]) => {
 			const expected = parseFloat64(vectors[name]!);
 			const result = math.fmaSync(x, y, z);
 			expect(result).toBeCloseTo(expected, 10);
 		});
 
-		it.each(Object.entries(FMA_CASES))("fmaF32Sync(%s)", (name, [x, y, z]) => {
+		it.each(Object.entries(FMA_CASES))('fmaF32Sync(%s)', (name, [x, y, z]) => {
 			const expected = parseFloat64(vectors[name]!);
 			const result = math.fmaF32Sync(x, y, z);
 			// F32 has less precision
@@ -279,12 +279,12 @@ describe("New Math Functions - Test Vectors", () => {
 	});
 });
 
-describe("Angle Conversion Round-trips", () => {
+describe('Angle Conversion Round-trips', () => {
 	beforeAll(async () => {
 		await math.init({ wasmPath });
 	});
 
-	it("deg2rad -> rad2deg round-trip", async () => {
+	it('deg2rad -> rad2deg round-trip', async () => {
 		const degrees = [0, 30, 45, 60, 90, 180, 270, 360, -45, -90];
 		for (const deg of degrees) {
 			const rad = await math.deg2rad(deg);
@@ -293,7 +293,7 @@ describe("Angle Conversion Round-trips", () => {
 		}
 	});
 
-	it("rad2deg -> deg2rad round-trip", async () => {
+	it('rad2deg -> deg2rad round-trip', async () => {
 		const radians = [
 			0,
 			Math.PI / 6,
@@ -310,12 +310,12 @@ describe("Angle Conversion Round-trips", () => {
 	});
 });
 
-describe("GCD/LCM Mathematical Properties", () => {
+describe('GCD/LCM Mathematical Properties', () => {
 	beforeAll(async () => {
 		await math.init({ wasmPath });
 	});
 
-	it("gcd(a, b) * lcm(a, b) = a * b (for non-zero)", () => {
+	it('gcd(a, b) * lcm(a, b) = a * b (for non-zero)', () => {
 		const pairs: [number, number][] = [
 			[12, 8],
 			[21, 14],
@@ -330,44 +330,44 @@ describe("GCD/LCM Mathematical Properties", () => {
 		}
 	});
 
-	it("gcd is commutative", () => {
+	it('gcd is commutative', () => {
 		expect(math.gcdSync(12, 8)).toBe(math.gcdSync(8, 12));
 		expect(math.gcdSync(48, 18)).toBe(math.gcdSync(18, 48));
 	});
 
-	it("lcm is commutative", () => {
+	it('lcm is commutative', () => {
 		expect(math.lcmSync(12, 8)).toBe(math.lcmSync(8, 12));
 		expect(math.lcmSync(48, 18)).toBe(math.lcmSync(18, 48));
 	});
 
-	it("gcd(a, 0) = a", () => {
+	it('gcd(a, 0) = a', () => {
 		expect(math.gcdSync(5, 0)).toBe(5);
 		expect(math.gcdSync(0, 5)).toBe(5);
 		expect(math.gcdSync(123, 0)).toBe(123);
 	});
 
-	it("lcm(a, 0) = 0", () => {
+	it('lcm(a, 0) = 0', () => {
 		expect(math.lcmSync(5, 0)).toBe(0);
 		expect(math.lcmSync(0, 5)).toBe(0);
 	});
 });
 
-describe("FMA Properties", () => {
+describe('FMA Properties', () => {
 	beforeAll(async () => {
 		await math.init({ wasmPath });
 	});
 
-	it("fma(a, b, 0) = a * b", () => {
+	it('fma(a, b, 0) = a * b', () => {
 		expect(math.fmaSync(3, 4, 0)).toBeCloseTo(12, 10);
 		expect(math.fmaSync(2.5, 4, 0)).toBeCloseTo(10, 10);
 	});
 
-	it("fma(a, 1, b) = a + b", () => {
+	it('fma(a, 1, b) = a + b', () => {
 		expect(math.fmaSync(3, 1, 4)).toBeCloseTo(7, 10);
 		expect(math.fmaSync(2.5, 1, 1.5)).toBeCloseTo(4, 10);
 	});
 
-	it("fma(a, 0, b) = b", () => {
+	it('fma(a, 0, b) = b', () => {
 		expect(math.fmaSync(999, 0, 42)).toBeCloseTo(42, 10);
 	});
 });

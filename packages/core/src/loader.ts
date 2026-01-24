@@ -75,14 +75,14 @@
  * @module loader
  */
 
-import { getEnvironment } from "./env.ts";
-import { WasmLoadError } from "./errors.ts";
+import { getEnvironment } from './env.ts';
+import { WasmLoadError } from './errors.ts';
 import type {
 	FetchWasmFn,
 	WasmLoadOptions,
 	WasmLoadResult,
 	ZigWasmExports,
-} from "./types.ts";
+} from './types.ts';
 
 /**
  * Default fetch function for loading WASM from URLs.
@@ -134,7 +134,7 @@ function mergeImports(
 
 	const result: WebAssembly.Imports = { ...defaults };
 	for (const [key, value] of Object.entries(custom)) {
-		if (typeof value === "object" && value !== null) {
+		if (typeof value === 'object' && value !== null) {
 			result[key] = { ...(result[key] as object), ...value };
 		} else {
 			result[key] = value;
@@ -160,7 +160,7 @@ async function loadFromPath(path: string): Promise<ArrayBuffer> {
 	const env = getEnvironment();
 
 	if (env.isNode || env.isBun) {
-		const fs = await import("node:fs/promises");
+		const fs = await import('node:fs/promises');
 		const buffer = await fs.readFile(path);
 		return buffer.buffer.slice(
 			buffer.byteOffset,
@@ -169,8 +169,8 @@ async function loadFromPath(path: string): Promise<ArrayBuffer> {
 	}
 
 	throw new WasmLoadError(
-		"unknown",
-		new Error("File path loading only supported in Node.js/Bun"),
+		'unknown',
+		new Error('File path loading only supported in Node.js/Bun'),
 	);
 }
 
@@ -290,8 +290,8 @@ export async function loadWasm<T extends ZigWasmExports = ZigWasmExports>(
 			wasmSource = await loadFromPath(options.wasmPath);
 		} else {
 			throw new WasmLoadError(
-				"unknown",
-				new Error("Must provide one of: wasmBytes, wasmUrl, or wasmPath"),
+				'unknown',
+				new Error('Must provide one of: wasmBytes, wasmUrl, or wasmPath'),
 			);
 		}
 
@@ -300,7 +300,7 @@ export async function loadWasm<T extends ZigWasmExports = ZigWasmExports>(
 
 		if (!exports.memory) {
 			throw new WasmLoadError(
-				"unknown",
+				'unknown',
 				new Error("WASM module must export 'memory'"),
 			);
 		}
@@ -314,7 +314,7 @@ export async function loadWasm<T extends ZigWasmExports = ZigWasmExports>(
 		if (error instanceof WasmLoadError) {
 			throw error;
 		}
-		throw new WasmLoadError("unknown", error);
+		throw new WasmLoadError('unknown', error);
 	}
 }
 
@@ -397,7 +397,7 @@ export function resolveWasmPath(
 
 	if (env.isNode || env.isBun) {
 		// Convert file:// URL to path for Node.js
-		if (url.protocol === "file:") {
+		if (url.protocol === 'file:') {
 			return url.pathname;
 		}
 	}

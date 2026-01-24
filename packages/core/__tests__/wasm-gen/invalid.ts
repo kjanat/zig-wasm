@@ -7,7 +7,7 @@
  * @module
  */
 
-import { WASM_HEADER, WASM_MAGIC, WASM_VERSION } from "@zig-wasm/core";
+import { WASM_HEADER, WASM_MAGIC, WASM_VERSION } from '@zig-wasm/core';
 
 /**
  * Describes an invalid WASM binary with its expected failure reason.
@@ -28,7 +28,7 @@ export interface InvalidWasm {
 export function createInvalidMagic(): InvalidWasm {
 	return {
 		wasm: new Uint8Array([0x00, 0x00, 0x00, 0x00, ...WASM_VERSION]),
-		reason: "invalid magic number",
+		reason: 'invalid magic number',
 	};
 }
 
@@ -41,7 +41,7 @@ export function createInvalidMagic(): InvalidWasm {
 export function createInvalidVersion(): InvalidWasm {
 	return {
 		wasm: new Uint8Array([...WASM_MAGIC, 0x63, 0x00, 0x00, 0x00]),
-		reason: "unsupported version (99)",
+		reason: 'unsupported version (99)',
 	};
 }
 
@@ -53,7 +53,7 @@ export function createInvalidVersion(): InvalidWasm {
 export function createTruncatedHeader(): InvalidWasm {
 	return {
 		wasm: new Uint8Array(WASM_MAGIC),
-		reason: "truncated header (missing version)",
+		reason: 'truncated header (missing version)',
 	};
 }
 
@@ -72,7 +72,7 @@ export function createTruncatedSection(): InvalidWasm {
 			0x60, // func type
 			0x00, // 0 params - section ends here, missing promised bytes
 		]),
-		reason: "truncated section (declared 100 bytes, only has 3)",
+		reason: 'truncated section (declared 100 bytes, only has 3)',
 	};
 }
 
@@ -84,7 +84,7 @@ export function createTruncatedSection(): InvalidWasm {
 export function createGarbageBytes(): InvalidWasm {
 	return {
 		wasm: new Uint8Array([0x00, 0x01, 0x02, 0x03]),
-		reason: "garbage bytes (not WASM)",
+		reason: 'garbage bytes (not WASM)',
 	};
 }
 
@@ -101,7 +101,7 @@ export function createBadSectionId(): InvalidWasm {
 			0x01, // size: 1 byte
 			0x00, // content
 		]),
-		reason: "unknown section ID (99)",
+		reason: 'unknown section ID (99)',
 	};
 }
 
@@ -121,7 +121,7 @@ export function createBadLeb128(): InvalidWasm {
 			0x80,
 			0x80, // unterminated LEB128
 		]),
-		reason: "malformed LEB128 (unterminated)",
+		reason: 'malformed LEB128 (unterminated)',
 	};
 }
 
@@ -141,7 +141,7 @@ export function createZeroSizeSection(): InvalidWasm {
 			// But let's put garbage that looks like incomplete data
 			0x60, // this byte is orphaned
 		]),
-		reason: "orphaned bytes after zero-size section",
+		reason: 'orphaned bytes after zero-size section',
 	};
 }
 
@@ -169,7 +169,7 @@ export function createDuplicateSection(): InvalidWasm {
 			0x00,
 			0x00, // 1 type: () -> ()
 		]),
-		reason: "duplicate type section",
+		reason: 'duplicate type section',
 	};
 }
 
@@ -196,7 +196,7 @@ export function createWrongSectionOrder(): InvalidWasm {
 			0x00,
 			0x00, // 1 type: () -> ()
 		]),
-		reason: "sections in wrong order (function before type)",
+		reason: 'sections in wrong order (function before type)',
 	};
 }
 
@@ -222,7 +222,7 @@ export function createInvalidTypeReference(): InvalidWasm {
 			0x01,
 			0x05, // 1 function, type index 5 (invalid)
 		]),
-		reason: "function references non-existent type index",
+		reason: 'function references non-existent type index',
 	};
 }
 
@@ -256,7 +256,7 @@ export function createMismatchedFunctionCount(): InvalidWasm {
 			0x00,
 			0x0b, // body: size 2, 0 locals, end
 		]),
-		reason: "function count mismatch (declared 2, code has 1)",
+		reason: 'function count mismatch (declared 2, code has 1)',
 	};
 }
 
@@ -266,7 +266,7 @@ export function createMismatchedFunctionCount(): InvalidWasm {
 export function createEmptyBytes(): InvalidWasm {
 	return {
 		wasm: new Uint8Array([]),
-		reason: "empty bytes (no data)",
+		reason: 'empty bytes (no data)',
 	};
 }
 
@@ -276,7 +276,7 @@ export function createEmptyBytes(): InvalidWasm {
 export function createSingleByte(): InvalidWasm {
 	return {
 		wasm: new Uint8Array([0x00]),
-		reason: "single byte (incomplete header)",
+		reason: 'single byte (incomplete header)',
 	};
 }
 

@@ -74,17 +74,17 @@
  * @module memory
  */
 
-import { WasmMemoryError } from "./errors.ts";
+import { WasmMemoryError } from './errors.ts';
 import type {
 	WasmMemoryExports,
 	WasmPtr,
 	WasmSize,
 	WasmSlice,
-} from "./types.ts";
+} from './types.ts';
 
 /** Text encoder/decoder for string operations */
 const textEncoder = new TextEncoder();
-const textDecoder = new TextDecoder("utf-8");
+const textDecoder = new TextDecoder('utf-8');
 
 /**
  * Memory manager for a WASM module instance.
@@ -171,7 +171,7 @@ export class WasmMemory {
 	 */
 	allocate(size: WasmSize): WasmPtr {
 		if (size <= 0) {
-			throw new WasmMemoryError("Allocation size must be positive");
+			throw new WasmMemoryError('Allocation size must be positive');
 		}
 		const ptr = this.alloc(size);
 		if (ptr === 0) {

@@ -27,7 +27,7 @@
  * @module
  */
 
-import { decodeUleb128, encodeUleb128 } from "./leb128.ts";
+import { decodeUleb128, encodeUleb128 } from './leb128.ts';
 
 // =============================================================================
 // Constants
@@ -362,7 +362,7 @@ export function parseWasmSections(
 	data: ArrayLike<number>,
 ): Map<Section, ParsedSection> {
 	if (!isValidWasmHeader(data)) {
-		throw new Error("Invalid WASM header");
+		throw new Error('Invalid WASM header');
 	}
 
 	const sections = new Map<Section, ParsedSection>();
@@ -410,17 +410,17 @@ export function parseWasmSections(
  * Names for section IDs (for debugging/display).
  */
 export const SECTION_NAMES: Readonly<Record<Section, string>> = {
-	[Section.Custom]: "custom",
-	[Section.Type]: "type",
-	[Section.Import]: "import",
-	[Section.Function]: "function",
-	[Section.Table]: "table",
-	[Section.Memory]: "memory",
-	[Section.Global]: "global",
-	[Section.Export]: "export",
-	[Section.Start]: "start",
-	[Section.Element]: "element",
-	[Section.Code]: "code",
-	[Section.Data]: "data",
-	[Section.DataCount]: "datacount",
+	[Section.Custom]: 'custom',
+	[Section.Type]: 'type',
+	[Section.Import]: 'import',
+	[Section.Function]: 'function',
+	[Section.Table]: 'table',
+	[Section.Memory]: 'memory',
+	[Section.Global]: 'global',
+	[Section.Export]: 'export',
+	[Section.Start]: 'start',
+	[Section.Element]: 'element',
+	[Section.Code]: 'code',
+	[Section.Data]: 'data',
+	[Section.DataCount]: 'datacount',
 } as const;

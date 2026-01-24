@@ -4,7 +4,8 @@
 		"dprint": false,
 		"ruff": true,
 		"tsgo": true,
-		"ty": true
+		"ty": true,
+		"zig": true
 	},
 	"formatter": {
 		"external": {
@@ -19,35 +20,32 @@
 		}
 	},
 	"languages": {
-		"Python": {
-			"language_servers": ["ruff", "ty", "!pylsp", "..."],
-			"code_actions_on_format": {
-				// Organize imports
-				"source.organizeImports.ruff": true,
-				// Fix all auto-fixable lint violations
-				"source.fixAll.ruff": true
-			}
-		},
 		"TypeScript": {
-			"language_servers": ["biome", "vtsls", "!deno", "!oxc"], // "tsgo",
+			"language_servers": ["biome", "vtsls", "!deno", "!oxc"],
 			"code_actions_on_format": {
-				"source.fixAll.biome": false,
+				"source.fixAll.biome": true,
 				"source.organizeImports.biome": false
 			}
 		},
 		"TSX": {
-			"language_servers": ["biome", "vtsls", "!deno", "!oxc"], // "tsgo",
+			"language_servers": ["biome", "vtsls", "!deno", "!oxc"],
 			"code_actions_on_format": {
-				"source.fixAll.biome": false,
+				"source.fixAll.biome": true,
 				"source.organizeImports.biome": false
 			}
 		},
 		"JavaScript": {
-			"language_servers": ["biome", "vtsls", "!deno", "!oxc"], // "tsgo",
+			"language_servers": ["biome", "vtsls", "!deno", "!oxc"],
 			"code_actions_on_format": {
-				"source.fixAll.biome": false,
+				"source.fixAll.biome": true,
 				"source.organizeImports.biome": false
 			}
+		},
+		"Zig": {
+			"formatter": "external",
+			"format_on_save": "on",
+			"tab_size": 4,
+			"hard_tabs": false
 		}
 	},
 	"lsp": {
@@ -56,7 +54,9 @@
 				"path": "./node_modules/.bin/biome",
 				"arguments": ["lsp-proxy"]
 			},
-			"settings": { "require_config_file": false },
+			"settings": {
+				"require_config_file": true
+			},
 			"enable_lsp_tasks": true,
 			"initialization_options": {
 				"assist": {
@@ -64,6 +64,16 @@
 						"enable": false
 					}
 				}
+			}
+		},
+		"zls": {
+			"binary": {
+				"path": "zls",
+				"arguments": ["--enable-build-on-save"]
+			},
+			"initialization_options": {
+				"enable_build_on_save": true,
+				"build_on_save_step": "check"
 			}
 		},
 		"json-language-server": {
@@ -83,32 +93,64 @@
 							"url": "http://json.schemastore.org/package"
 						},
 						{
-							"fileMatch": [".prettierrc", ".prettierrc.json", ".prettierrc.json5"],
+							"fileMatch": ["tsconfig.json", "tsconfig.*.json"],
+							"url": "https://json.schemastore.org/tsconfig.json"
+						},
+						{
+							"fileMatch": [
+								".prettierrc",
+								".prettierrc.json",
+								".prettierrc.json5"
+							],
 							"url": "https://json.schemastore.org/prettierrc.json"
 						},
 						{
 							"fileMatch": ["biome.json", "biome.jsonc", "biome.base.json"],
-							"url": "https://biomejs.dev/schemas/2.3.8/schema.json"
+							"url": "https://biomejs.dev/schemas/latest/schema.json"
 						},
 						{
-							"fileMatch": ["opencode.json", ".opencode.json", "opencode.jsonc", ".opencode.jsonc"],
+							"fileMatch": [
+								"opencode.json",
+								".opencode.json",
+								"opencode.jsonc",
+								".opencode.jsonc"
+							],
 							"url": "https://opencode.ai/config.json"
 						},
 						{
-							"fileMatch": ["**/.claude/settings.json", "**/.claude/settings.local.json"],
+							"fileMatch": [
+								"**/.claude/settings.json",
+								"**/.claude/settings.local.json"
+							],
 							"url": "https://json.schemastore.org/claude-code-settings.json"
 						},
 						{
-							"fileMatch": ["dprint.json", "dprint.jsonc", ".dprint.json", ".dprint.jsonc"],
+							"fileMatch": [
+								"dprint.json",
+								"dprint.jsonc",
+								".dprint.json",
+								".dprint.jsonc"
+							],
 							"url": "https://dprint.dev/schemas/v0.json"
 						},
 						{
-							"fileMatch": ["lefthook.json", ".lefthook.json", ".config/lefthook.json"],
+							"fileMatch": [
+								"lefthook.json",
+								".lefthook.json",
+								".config/lefthook.json"
+							],
 							"url": "https://raw.githubusercontent.com/evilmartians/lefthook/master/schema.json"
+						},
+						{
+							"fileMatch": ["pnpm-workspace.yaml"],
+							"url": "https://json.schemastore.org/pnpm-workspace.json"
 						}
 					]
 				}
 			}
 		}
+	},
+	"file_types": {
+		"Zig": ["zig", "zon"]
 	}
 }

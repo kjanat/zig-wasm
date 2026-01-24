@@ -19,7 +19,7 @@
  * @module types
  */
 
-import type { WasmMemoryExports } from "@zig-wasm/core";
+import type { WasmMemoryExports } from '@zig-wasm/core';
 
 /**
  * WebAssembly exports interface for the Base64 module.

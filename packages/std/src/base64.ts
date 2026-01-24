@@ -39,4 +39,4 @@
  *
  * @module base64
  */
-export * from "@zig-wasm/base64";
+export * from '@zig-wasm/base64';

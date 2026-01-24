@@ -80,8 +80,8 @@
  */
 
 // Re-export all modules as namespaces
-export * as base64 from "@zig-wasm/base64";
-export * as compress from "@zig-wasm/compress";
+export * as base64 from '@zig-wasm/base64';
+export * as compress from '@zig-wasm/compress';
 
 // Re-export core utilities
 // dprint-ignore
@@ -94,7 +94,7 @@ export {
 	toHex,
 	getEnvironment,
 	loadWasm,
-} from "@zig-wasm/core";
-export * as crypto from "@zig-wasm/crypto";
-export * as hash from "@zig-wasm/hash";
-export * as math from "@zig-wasm/math";
+} from '@zig-wasm/core';
+export * as crypto from '@zig-wasm/crypto';
+export * as hash from '@zig-wasm/hash';
+export * as math from '@zig-wasm/math';

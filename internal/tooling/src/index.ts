@@ -62,17 +62,37 @@
  * @module tooling
  */
 
-import pkg from "../package.json" with { type: "json" };
+import pkg from '../package.json' with { type: 'json' };
 
 export const VERSION: string = pkg.version;
 
-export { checkPublished, checkPublishedCli } from "./check-published.ts";
-export type { CheckPublishedResult } from "./check-published.ts";
+// CLI utilities
+export { runCli } from './cli.ts';
 
-export { syncVersions } from "./sync-versions.ts";
+// Monorepo utilities
+export { findMonorepoRoot } from './monorepo.ts';
+
+// Path utilities
+export {
+	getDirName,
+	readPackageJson,
+	resolvePackageJsonPath,
+} from './paths.ts';
+
+// Check published CLI
+export { checkPublished, checkPublishedCli } from './check-published.ts';
+export type { CheckPublishedResult } from './check-published.ts';
+
+// Sync versions CLI
+export { syncVersions } from './sync-versions.ts';
 export type {
 	SyncVersionsOptions,
 	SyncVersionsResult,
-} from "./sync-versions.ts";
+} from './sync-versions.ts';
 
-export { findMonorepoRoot } from "./monorepo.ts";
+// Messages utilities
+export {
+	CHECK_PUBLISHED_USAGE,
+	printHelp,
+	SYNC_VERSIONS_USAGE,
+} from './messages.ts';

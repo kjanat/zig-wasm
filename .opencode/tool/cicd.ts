@@ -1,9 +1,9 @@
 /// <reference types="bun-types" />
 /// <reference types="@opencode-ai/plugin" />
 
-import { tool } from "@opencode-ai/plugin";
+import { tool } from '@opencode-ai/plugin';
 
-const REPOSITORY = "kjanat/zig-wasm";
+const REPOSITORY = 'kjanat/zig-wasm';
 
 // ---------- types ----------
 
@@ -48,9 +48,9 @@ type RunDetails = {
 // ---------- helpers ----------
 
 async function runGh(args: string[]): Promise<string> {
-	const proc = Bun.spawn(["gh", ...args], {
-		stdout: "pipe",
-		stderr: "pipe",
+	const proc = Bun.spawn(['gh', ...args], {
+		stdout: 'pipe',
+		stderr: 'pipe',
 	});
 	const [stdout, stderr] = await Promise.all([
 		new Response(proc.stdout).text(),
@@ -58,7 +58,7 @@ async function runGh(args: string[]): Promise<string> {
 	]);
 	const exitCode = await proc.exited;
 	if (exitCode !== 0) {
-		throw new Error(`gh ${args.join(" ")} failed: ${stderr}`);
+		throw new Error(`gh ${args.join(' ')} failed: ${stderr}`);
 	}
 	return stdout;
 }
@@ -76,16 +76,16 @@ function formatTime(iso: string): string {
 }
 
 function statusIcon(conclusion: string | null, status: string): string {
-	if (status === "in_progress" || status === "queued") return "[RUNNING]";
+	if (status === 'in_progress' || status === 'queued') return '[RUNNING]';
 	switch (conclusion) {
-		case "success":
-			return "[OK]";
-		case "failure":
-			return "[FAIL]";
-		case "cancelled":
-			return "[CANCELLED]";
-		case "skipped":
-			return "[SKIP]";
+		case 'success':
+			return '[OK]';
+		case 'failure':
+			return '[FAIL]';
+		case 'cancelled':
+			return '[CANCELLED]';
+		case 'skipped':
+			return '[SKIP]';
 		default:
 			return `[${conclusion ?? status}]`;
 	}
@@ -95,27 +95,27 @@ function statusIcon(conclusion: string | null, status: string): string {
 
 export const status = tool({
 	description:
-		"Get CI/CD pipeline status for last push. Returns workflow runs, job status, and failed step details in AI-friendly format.",
+		'Get CI/CD pipeline status for last push. Returns workflow runs, job status, and failed step details in AI-friendly format.',
 	args: {
 		limit: tool.schema
 			.number()
 			.optional()
 			.default(5)
-			.describe("Number of recent runs to show per workflow (default: 5)"),
+			.describe('Number of recent runs to show per workflow (default: 5)'),
 		workflow: tool.schema
 			.string()
 			.optional()
-			.describe("Filter to specific workflow name (CI, CD, etc)"),
+			.describe('Filter to specific workflow name (CI, CD, etc)'),
 		branch: tool.schema
 			.string()
 			.optional()
-			.describe("Filter to specific branch (default: all branches)"),
+			.describe('Filter to specific branch (default: all branches)'),
 		verbose: tool.schema
 			.boolean()
 			.optional()
 			.default(false)
 			.describe(
-				"Include step-level details for all jobs, not just failed ones",
+				'Include step-level details for all jobs, not just failed ones',
 			),
 	},
 	async execute(args) {
@@ -125,18 +125,18 @@ export const status = tool({
 		// Build list command
 		// dprint-ignore
 		const listArgs = [
-			"run",
-			"list",
-			"--repo",
+			'run',
+			'list',
+			'--repo',
 			repo,
-			"--limit",
+			'--limit',
 			String(limit * 3), // Get more to filter
-			"--json",
-			"databaseId,conclusion,status,workflowName,headBranch,event,createdAt",
+			'--json',
+			'databaseId,conclusion,status,workflowName,headBranch,event,createdAt',
 		];
 
 		if (args.workflow) {
-			listArgs.push("--workflow", args.workflow);
+			listArgs.push('--workflow', args.workflow);
 		}
 
 		const runsJson = await runGh(listArgs);
@@ -159,7 +159,7 @@ export const status = tool({
 
 		// Build output
 		const sections: string[] = [];
-		sections.push("# CI/CD Status Report\n");
+		sections.push('# CI/CD Status Report\n');
 
 		// Summary
 		const latestByWorkflow = new Map<string, WorkflowRun>();
@@ -167,14 +167,14 @@ export const status = tool({
 			if (wfRuns[0]) latestByWorkflow.set(name, wfRuns[0]);
 		}
 
-		sections.push("## Summary\n");
+		sections.push('## Summary\n');
 		for (const [name, run] of latestByWorkflow) {
 			const icon = statusIcon(run.conclusion, run.status);
 			sections.push(
 				`- **${name}**: ${icon} (${run.headBranch}, ${formatTime(run.createdAt)})`,
 			);
 		}
-		sections.push("");
+		sections.push('');
 
 		// Detailed runs
 		for (const [workflowName, wfRuns] of byWorkflow) {
@@ -189,27 +189,27 @@ export const status = tool({
 				// Get job details for failed or in-progress runs (or all if verbose)
 				const needsDetails =
 					args.verbose ||
-					run.conclusion === "failure" ||
-					run.status === "in_progress" ||
-					run.status === "queued";
+					run.conclusion === 'failure' ||
+					run.status === 'in_progress' ||
+					run.status === 'queued';
 
 				if (needsDetails) {
 					try {
 						// dprint-ignore
 						const detailsJson = await runGh([
-							"run",
-							"view",
+							'run',
+							'view',
 							String(run.databaseId),
-							"--repo",
+							'--repo',
 							repo,
-							"--json",
-							"jobs,url",
+							'--json',
+							'jobs,url',
 						]);
-						const details: Pick<RunDetails, "jobs" | "url"> =
+						const details: Pick<RunDetails, 'jobs' | 'url'> =
 							JSON.parse(detailsJson);
 
 						sections.push(`URL: ${details.url}\n`);
-						sections.push("**Jobs:**\n");
+						sections.push('**Jobs:**\n');
 
 						for (const job of details.jobs) {
 							const jobIcon = statusIcon(job.conclusion, job.status);
@@ -218,7 +218,7 @@ export const status = tool({
 							// Show failed steps or all steps if verbose
 							const failedSteps = job.steps.filter(
 								(s) =>
-									s.conclusion === "failure" || s.conclusion === "cancelled",
+									s.conclusion === 'failure' || s.conclusion === 'cancelled',
 							);
 							const stepsToShow = args.verbose ? job.steps : failedSteps;
 
@@ -231,43 +231,43 @@ export const status = tool({
 								}
 							}
 						}
-						sections.push("");
+						sections.push('');
 					} catch {
-						sections.push("(Could not fetch job details)\n");
+						sections.push('(Could not fetch job details)\n');
 					}
 				}
 			}
 		}
 
 		// Action items
-		const failures = runs.filter((r) => r.conclusion === "failure");
+		const failures = runs.filter((r) => r.conclusion === 'failure');
 		const inProgress = runs.filter(
-			(r) => r.status === "in_progress" || r.status === "queued",
+			(r) => r.status === 'in_progress' || r.status === 'queued',
 		);
 
 		if (failures.length > 0 || inProgress.length > 0) {
-			sections.push("## Action Items\n");
+			sections.push('## Action Items\n');
 
 			if (failures.length > 0) {
-				sections.push("**Failures requiring attention:**");
+				sections.push('**Failures requiring attention:**');
 				for (const f of failures.slice(0, 3)) {
 					sections.push(
 						`- ${f.workflowName} on ${f.headBranch} (run ${f.databaseId})`,
 					);
 				}
-				sections.push("");
+				sections.push('');
 			}
 
 			if (inProgress.length > 0) {
-				sections.push("**Currently running:**");
+				sections.push('**Currently running:**');
 				for (const r of inProgress) {
 					sections.push(`- ${r.workflowName} on ${r.headBranch}`);
 				}
-				sections.push("");
+				sections.push('');
 			}
 		}
 
-		return sections.join("\n");
+		return sections.join('\n');
 	},
 });
 
@@ -275,27 +275,27 @@ export const status = tool({
 
 export const logs = tool({
 	description:
-		"Get logs for a specific workflow run or job. Use after `status` to investigate failures.",
+		'Get logs for a specific workflow run or job. Use after `status` to investigate failures.',
 	args: {
 		runId: tool.schema
 			.number()
-			.describe("Workflow run ID (from status output)"),
+			.describe('Workflow run ID (from status output)'),
 		job: tool.schema
 			.string()
 			.optional()
 			.describe(
-				"Job name to get logs for (optional, gets all if not specified)",
+				'Job name to get logs for (optional, gets all if not specified)',
 			),
 		failed: tool.schema
 			.boolean()
 			.optional()
 			.default(true)
-			.describe("Only show failed job logs (default: true)"),
+			.describe('Only show failed job logs (default: true)'),
 		tail: tool.schema
 			.number()
 			.optional()
 			.default(100)
-			.describe("Number of log lines to show (default: 100)"),
+			.describe('Number of log lines to show (default: 100)'),
 	},
 	async execute(args) {
 		const repo = REPOSITORY;
@@ -304,13 +304,13 @@ export const logs = tool({
 		// Get run details first
 		// dprint-ignore
 		const detailsJson = await runGh([
-			"run",
-			"view",
+			'run',
+			'view',
 			String(args.runId),
-			"--repo",
+			'--repo',
 			repo,
-			"--json",
-			"jobs,workflowName,conclusion,headBranch,url",
+			'--json',
+			'jobs,workflowName,conclusion,headBranch,url',
 		]);
 		const details: RunDetails = JSON.parse(detailsJson);
 
@@ -329,15 +329,15 @@ export const logs = tool({
 			);
 		}
 		if (args.failed) {
-			jobs = jobs.filter((j) => j.conclusion === "failure");
+			jobs = jobs.filter((j) => j.conclusion === 'failure');
 		}
 
 		if (jobs.length === 0) {
-			sections.push("No matching jobs found.");
+			sections.push('No matching jobs found.');
 			if (args.failed) {
-				sections.push("(Try with `failed: false` to see all jobs)");
+				sections.push('(Try with `failed: false` to see all jobs)');
 			}
-			return sections.join("\n");
+			return sections.join('\n');
 		}
 
 		for (const job of jobs) {
@@ -349,19 +349,19 @@ export const logs = tool({
 			try {
 				const logProc = Bun.spawn(
 					[
-						"gh",
-						"run",
-						"view",
+						'gh',
+						'run',
+						'view',
 						String(args.runId),
-						"--repo",
+						'--repo',
 						repo,
-						"--log",
-						"--job",
+						'--log',
+						'--job',
 						String(job.databaseId),
 					],
 					{
-						stdout: "pipe",
-						stderr: "pipe",
+						stdout: 'pipe',
+						stderr: 'pipe',
 					},
 				);
 				const [stdout] = await Promise.all([
@@ -371,18 +371,18 @@ export const logs = tool({
 				await logProc.exited;
 
 				// Trim to tail lines
-				const lines = stdout.trim().split("\n");
+				const lines = stdout.trim().split('\n');
 				const trimmed = lines.slice(-tail);
 
-				sections.push("```");
-				sections.push(trimmed.join("\n"));
-				sections.push("```\n");
+				sections.push('```');
+				sections.push(trimmed.join('\n'));
+				sections.push('```\n');
 			} catch (e) {
 				sections.push(`(Could not fetch logs: ${e})\n`);
 			}
 		}
 
-		return sections.join("\n");
+		return sections.join('\n');
 	},
 });
 
@@ -390,27 +390,27 @@ export const logs = tool({
 
 export const rerun = tool({
 	description:
-		"Rerun a failed workflow run. Use after investigating with `status` and `logs`.",
+		'Rerun a failed workflow run. Use after investigating with `status` and `logs`.',
 	args: {
-		runId: tool.schema.number().describe("Workflow run ID to rerun"),
+		runId: tool.schema.number().describe('Workflow run ID to rerun'),
 		failed: tool.schema
 			.boolean()
 			.optional()
 			.default(true)
-			.describe("Only rerun failed jobs (default: true)"),
+			.describe('Only rerun failed jobs (default: true)'),
 	},
 	async execute(args) {
 		const repo = REPOSITORY;
-		const rerunArgs = ["run", "rerun", String(args.runId), "--repo", repo];
+		const rerunArgs = ['run', 'rerun', String(args.runId), '--repo', repo];
 
 		if (args.failed) {
-			rerunArgs.push("--failed");
+			rerunArgs.push('--failed');
 		}
 
 		try {
 			await runGh(rerunArgs);
 			return `Triggered rerun for run ${args.runId}${
-				args.failed ? " (failed jobs only)" : " (all jobs)"
+				args.failed ? ' (failed jobs only)' : ' (all jobs)'
 			}.\nUse \`status\` to monitor progress.`;
 		} catch (e) {
 			return `Failed to trigger rerun: ${e}`;
@@ -422,15 +422,15 @@ export const rerun = tool({
 
 export const cancel = tool({
 	description:
-		"Cancel a running workflow. Use when a run is stuck or no longer needed.",
+		'Cancel a running workflow. Use when a run is stuck or no longer needed.',
 	args: {
-		runId: tool.schema.number().describe("Workflow run ID to cancel"),
+		runId: tool.schema.number().describe('Workflow run ID to cancel'),
 	},
 	async execute(args) {
 		const repo = REPOSITORY;
 
 		try {
-			await runGh(["run", "cancel", String(args.runId), "--repo", repo]);
+			await runGh(['run', 'cancel', String(args.runId), '--repo', repo]);
 			return `Cancelled run ${args.runId}.\nUse \`status\` to verify.`;
 		} catch (e) {
 			return `Failed to cancel run: ${e}`;

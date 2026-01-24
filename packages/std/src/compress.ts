@@ -36,4 +36,4 @@
  *
  * @module compress
  */
-export * from "@zig-wasm/compress";
+export * from '@zig-wasm/compress';

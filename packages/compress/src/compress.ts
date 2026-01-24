@@ -41,14 +41,14 @@
  * @module compress
  */
 
-import type { InitOptions } from "@zig-wasm/core";
+import type { InitOptions } from '@zig-wasm/core';
 import {
 	getEnvironment,
 	loadWasm,
 	NotInitializedError,
 	WasmMemory,
-} from "@zig-wasm/core";
-import type { CompressWasmExports } from "./types.ts";
+} from '@zig-wasm/core';
+import type { CompressWasmExports } from './types.ts';
 
 // ============================================================================
 // Module initialization
@@ -131,13 +131,13 @@ export async function init(options?: InitOptions): Promise<void> {
 				fetchFn: options.fetchFn,
 			});
 		} else if (env.isNode || env.isBun) {
-			const { fileURLToPath } = await import("node:url");
-			const { dirname, join } = await import("node:path");
+			const { fileURLToPath } = await import('node:url');
+			const { dirname, join } = await import('node:path');
 			const currentDir = dirname(fileURLToPath(import.meta.url));
-			const wasmPath = join(currentDir, "../wasm/compress.wasm");
+			const wasmPath = join(currentDir, '../wasm/compress.wasm');
 			result = await loadWasm<CompressWasmExports>({ wasmPath });
 		} else {
-			const wasmUrl = new URL("../wasm/compress.wasm", import.meta.url);
+			const wasmUrl = new URL('../wasm/compress.wasm', import.meta.url);
 			result = await loadWasm<CompressWasmExports>({ wasmUrl: wasmUrl.href });
 		}
 
@@ -183,7 +183,7 @@ async function ensureInit(): Promise<{
 
 function getSyncState(): { exports: CompressWasmExports; memory: WasmMemory } {
 	if (!wasmExports || !wasmMemory) {
-		throw new NotInitializedError("compress");
+		throw new NotInitializedError('compress');
 	}
 	return { exports: wasmExports, memory: wasmMemory };
 }
@@ -208,7 +208,7 @@ function decompressXzImpl(
 		);
 
 		if (outputPtr === 0) {
-			throw new Error("XZ decompression failed");
+			throw new Error('XZ decompression failed');
 		}
 
 		const outputLen = mem.readU32(outputLenPtr);
@@ -238,7 +238,7 @@ function decompressLzmaImpl(
 		);
 
 		if (outputPtr === 0) {
-			throw new Error("LZMA decompression failed");
+			throw new Error('LZMA decompression failed');
 		}
 
 		const outputLen = mem.readU32(outputLenPtr);

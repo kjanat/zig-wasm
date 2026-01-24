@@ -70,19 +70,19 @@
  * @module wasm-module
  */
 
-import { getEnvironment } from "./env.ts";
-import { NotInitializedError } from "./errors.ts";
-import { loadWasm } from "./loader.ts";
-import { WasmMemory } from "./memory.ts";
+import { getEnvironment } from './env.ts';
+import { NotInitializedError } from './errors.ts';
+import { loadWasm } from './loader.ts';
+import { WasmMemory } from './memory.ts';
 import type {
 	FetchWasmFn,
 	WasmLoadOptions,
 	WasmLoadResult,
 	ZigWasmExports,
-} from "./types.ts";
+} from './types.ts';
 
 // Re-export for backwards compatibility
-export { NotInitializedError } from "./errors.ts";
+export { NotInitializedError } from './errors.ts';
 
 /**
  * Options for initializing a WASM module via {@link WasmModule.init}.
@@ -394,8 +394,8 @@ export async function resolveWasmPathForNode(
 	importMetaUrl: string,
 	wasmFileName: string,
 ): Promise<string> {
-	const { fileURLToPath } = await import("node:url");
-	const { dirname, join } = await import("node:path");
+	const { fileURLToPath } = await import('node:url');
+	const { dirname, join } = await import('node:path');
 	const currentDir = dirname(fileURLToPath(importMetaUrl));
 	return join(currentDir, wasmFileName);
 }

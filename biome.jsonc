@@ -1,6 +1,5 @@
 {
-	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-	"extends": ["@zig-wasm/tooling/biome"],
+	"extends": ["./internal/tooling/configs/biome.base.json"],
 	"root": true,
 	"vcs": {
 		"enabled": true,
@@ -8,22 +7,22 @@
 		"useIgnoreFile": true,
 		"defaultBranch": "master"
 	},
-	"formatter": { "enabled": true },
 	"files": {
 		"ignoreUnknown": false,
 		"includes": [
 			"**",
-			".opencode/tool/**",
+			".opencode/**",
 			"internal/**",
 			"packages/**",
-			"!!**/*.wasm",
-			"!!**/.ruff_cache",
-			"!!**/.zig-cache",
-			"!!**/coverage",
-			"!!**/dist",
-			"!!**/html",
-			"!!**/test-results",
-			"!!**/zig"
+			"!**/*.wasm",
+			"!**/.ruff_cache",
+			"!**/.zig-cache",
+			"!**/coverage",
+			"!**/dist",
+			"!**/html",
+			"!**/test-results",
+			"!**/zig-out",
+			"!**/node_modules"
 		]
 	}
 }

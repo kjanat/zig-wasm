@@ -1,16 +1,16 @@
 /// <reference types="bun-types" />
 /// <reference types="@opencode-ai/plugin" />
 
-import { tool } from "@opencode-ai/plugin";
+import { tool } from '@opencode-ai/plugin';
 
 /**
  * Semver comparison: returns -1, 0, or 1
  * Handles: v1.2.3, 1.2.3, v1.2.3-beta.1, etc.
  */
 function compareSemver(a: string, b: string): number {
-	const normalize = (v: string) => v.replace(/^v/, "");
-	const partsA = (normalize(a).split(/[-+]/)[0] ?? "").split(".").map(Number);
-	const partsB = (normalize(b).split(/[-+]/)[0] ?? "").split(".").map(Number);
+	const normalize = (v: string) => v.replace(/^v/, '');
+	const partsA = (normalize(a).split(/[-+]/)[0] ?? '').split('.').map(Number);
+	const partsB = (normalize(b).split(/[-+]/)[0] ?? '').split('.').map(Number);
 
 	for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
 		const numA = partsA[i] ?? 0;
@@ -50,7 +50,7 @@ function parseRepoInput(input: string): { owner: string; repo: string } | null {
 	if (urlMatch?.[1] && urlMatch[2]) {
 		return {
 			owner: urlMatch[1],
-			repo: urlMatch[2].replace(/\.git$/, ""),
+			repo: urlMatch[2].replace(/\.git$/, ''),
 		};
 	}
 
@@ -59,19 +59,19 @@ function parseRepoInput(input: string): { owner: string; repo: string } | null {
 	if (sshMatch?.[1] && sshMatch[2]) {
 		return {
 			owner: sshMatch[1],
-			repo: sshMatch[2].replace(/\.git$/, ""),
+			repo: sshMatch[2].replace(/\.git$/, ''),
 		};
 	}
 
 	// Handle owner/repo format
-	if (cleaned.includes("/") && !cleaned.includes(" ")) {
-		const parts = cleaned.split("/").filter(Boolean);
+	if (cleaned.includes('/') && !cleaned.includes(' ')) {
+		const parts = cleaned.split('/').filter(Boolean);
 		const owner = parts[0];
 		const repo = parts[1];
 		if (parts.length === 2 && owner && repo) {
 			return {
 				owner,
-				repo: repo.replace(/\.git$/, ""),
+				repo: repo.replace(/\.git$/, ''),
 			};
 		}
 	}
@@ -101,21 +101,21 @@ type GitHubRelease = {
 
 export const latestTag = tool({
 	description:
-		"Get the latest semver tag from a GitHub repository. Accepts full URLs, owner/repo, or just owner/repo format. Returns tag name, commit SHA, and comparison info.",
+		'Get the latest semver tag from a GitHub repository. Accepts full URLs, owner/repo, or just owner/repo format. Returns tag name, commit SHA, and comparison info.',
 	args: {
 		repo: tool.schema
 			.string()
 			.describe(
-				"GitHub repo: URL (https://github.com/owner/repo), SSH (git@github.com:owner/repo), or owner/repo format",
+				'GitHub repo: URL (https://github.com/owner/repo), SSH (git@github.com:owner/repo), or owner/repo format',
 			),
 		includePrerelease: tool.schema
 			.boolean()
 			.default(false)
-			.describe("Include prerelease versions (-alpha, -beta, -rc) in results"),
+			.describe('Include prerelease versions (-alpha, -beta, -rc) in results'),
 		showAll: tool.schema
 			.boolean()
 			.default(false)
-			.describe("Show all semver tags sorted by version (max 20)"),
+			.describe('Show all semver tags sorted by version (max 20)'),
 	},
 	async execute(args) {
 		const parsed = parseRepoInput(args.repo);
@@ -129,8 +129,8 @@ export const latestTag = tool({
 		const apiUrl = `https://api.github.com/repos/${owner}/${repo}/tags?per_page=100`;
 
 		const headers: Record<string, string> = {
-			Accept: "application/vnd.github.v3+json",
-			"User-Agent": "opencode-github-tool",
+			Accept: 'application/vnd.github.v3+json',
+			'User-Agent': 'opencode-github-tool',
 		};
 
 		// Use GITHUB_TOKEN if available for higher rate limits
@@ -146,10 +146,10 @@ export const latestTag = tool({
 				throw new Error(`Repository not found: ${owner}/${repo}`);
 			}
 			if (response.status === 403) {
-				const remaining = response.headers.get("X-RateLimit-Remaining");
-				if (remaining === "0") {
+				const remaining = response.headers.get('X-RateLimit-Remaining');
+				if (remaining === '0') {
 					throw new Error(
-						"GitHub API rate limit exceeded. Set GITHUB_TOKEN env var for higher limits.",
+						'GitHub API rate limit exceeded. Set GITHUB_TOKEN env var for higher limits.',
 					);
 				}
 			}
@@ -170,10 +170,10 @@ export const latestTag = tool({
 
 		if (semverTags.length === 0) {
 			return JSON.stringify({
-				tool: "github_latest_tag",
+				tool: 'github_latest_tag',
 				repo: `${owner}/${repo}`,
 				found: false,
-				message: "No semver tags found in repository",
+				message: 'No semver tags found in repository',
 				totalTags: tags.length,
 				nonSemverTags: tags.slice(0, 5).map((t) => t.name),
 			});
@@ -184,10 +184,10 @@ export const latestTag = tool({
 
 		const latest = semverTags[0];
 		if (!latest) {
-			throw new Error("Unexpected: no tags after length check");
+			throw new Error('Unexpected: no tags after length check');
 		}
 		const result: Record<string, unknown> = {
-			tool: "github_latest_tag",
+			tool: 'github_latest_tag',
 			repo: `${owner}/${repo}`,
 			found: true,
 			latest: {
@@ -219,16 +219,16 @@ export const latestRelease = tool({
 		repo: tool.schema
 			.string()
 			.describe(
-				"GitHub repo: URL (https://github.com/owner/repo), SSH (git@github.com:owner/repo), or owner/repo format",
+				'GitHub repo: URL (https://github.com/owner/repo), SSH (git@github.com:owner/repo), or owner/repo format',
 			),
 		includePrerelease: tool.schema
 			.boolean()
 			.default(false)
-			.describe("Include prerelease versions in results"),
+			.describe('Include prerelease versions in results'),
 		showAll: tool.schema
 			.boolean()
 			.default(false)
-			.describe("Show recent releases (max 10)"),
+			.describe('Show recent releases (max 10)'),
 	},
 	async execute(args) {
 		const parsed = parseRepoInput(args.repo);
@@ -241,8 +241,8 @@ export const latestRelease = tool({
 		const { owner, repo } = parsed;
 
 		const headers: Record<string, string> = {
-			Accept: "application/vnd.github.v3+json",
-			"User-Agent": "opencode-github-tool",
+			Accept: 'application/vnd.github.v3+json',
+			'User-Agent': 'opencode-github-tool',
 		};
 
 		const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
@@ -258,7 +258,7 @@ export const latestRelease = tool({
 			if (latestResponse.ok) {
 				const release = (await latestResponse.json()) as GitHubRelease;
 				return JSON.stringify({
-					tool: "github_latest_release",
+					tool: 'github_latest_release',
 					repo: `${owner}/${repo}`,
 					found: true,
 					release: {
@@ -297,21 +297,21 @@ export const latestRelease = tool({
 
 		if (releases.length === 0) {
 			return JSON.stringify({
-				tool: "github_latest_release",
+				tool: 'github_latest_release',
 				repo: `${owner}/${repo}`,
 				found: false,
 				message: args.includePrerelease
-					? "No releases found in repository"
-					: "No stable releases found. Try includePrerelease: true",
+					? 'No releases found in repository'
+					: 'No stable releases found. Try includePrerelease: true',
 			});
 		}
 
 		const latest = releases[0];
 		if (!latest) {
-			throw new Error("Unexpected: no releases after length check");
+			throw new Error('Unexpected: no releases after length check');
 		}
 		const result: Record<string, unknown> = {
-			tool: "github_latest_release",
+			tool: 'github_latest_release',
 			repo: `${owner}/${repo}`,
 			found: true,
 			release: {
@@ -340,20 +340,20 @@ export const latestRelease = tool({
 
 export const compareVersions = tool({
 	description:
-		"Compare two semver versions or check if a repo has updates. Can compare two version strings or check current vs latest.",
+		'Compare two semver versions or check if a repo has updates. Can compare two version strings or check current vs latest.',
 	args: {
 		repo: tool.schema
 			.string()
 			.optional()
-			.describe("GitHub repo to check for latest version (optional)"),
+			.describe('GitHub repo to check for latest version (optional)'),
 		current: tool.schema
 			.string()
-			.describe("Current version to compare (e.g., v1.2.3 or 1.2.3)"),
+			.describe('Current version to compare (e.g., v1.2.3 or 1.2.3)'),
 		target: tool.schema
 			.string()
 			.optional()
 			.describe(
-				"Target version to compare against. If omitted and repo provided, compares against latest",
+				'Target version to compare against. If omitted and repo provided, compares against latest',
 			),
 	},
 	async execute(args) {
@@ -370,8 +370,8 @@ export const compareVersions = tool({
 			const apiUrl = `https://api.github.com/repos/${owner}/${repo}/tags?per_page=100`;
 
 			const headers: Record<string, string> = {
-				Accept: "application/vnd.github.v3+json",
-				"User-Agent": "opencode-github-tool",
+				Accept: 'application/vnd.github.v3+json',
+				'User-Agent': 'opencode-github-tool',
 			};
 
 			const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
@@ -393,7 +393,7 @@ export const compareVersions = tool({
 
 			const latestTag = semverTags[0];
 			if (!latestTag) {
-				throw new Error("No semver tags found in repository");
+				throw new Error('No semver tags found in repository');
 			}
 
 			targetVersion = latestTag.name;
@@ -401,34 +401,34 @@ export const compareVersions = tool({
 
 		if (!targetVersion) {
 			throw new Error(
-				"Either target version or repo must be provided to compare against",
+				'Either target version or repo must be provided to compare against',
 			);
 		}
 
 		const comparison = compareSemver(args.current, targetVersion);
 
-		let status: "current" | "behind" | "ahead";
+		let status: 'current' | 'behind' | 'ahead';
 		let message: string;
 
 		if (comparison === 0) {
-			status = "current";
+			status = 'current';
 			message = `${args.current} is the same as ${targetVersion}`;
 		} else if (comparison < 0) {
-			status = "behind";
+			status = 'behind';
 			message = `${args.current} is behind ${targetVersion}`;
 		} else {
-			status = "ahead";
+			status = 'ahead';
 			message = `${args.current} is ahead of ${targetVersion}`;
 		}
 
 		return JSON.stringify({
-			tool: "github_compare_versions",
+			tool: 'github_compare_versions',
 			current: args.current,
 			target: targetVersion,
 			repo: args.repo || null,
 			status,
 			message,
-			updateAvailable: status === "behind",
+			updateAvailable: status === 'behind',
 		});
 	},
 });
@@ -479,19 +479,19 @@ function parseActionRef(input: string): {
 	let cleaned = input.trim();
 
 	// Strip GitHub URL prefix if present
-	cleaned = cleaned.replace(/^https?:\/\/github\.com\//, "");
-	cleaned = cleaned.replace(/^git@github\.com:/, "");
-	cleaned = cleaned.replace(/\.git$/, "");
+	cleaned = cleaned.replace(/^https?:\/\/github\.com\//, '');
+	cleaned = cleaned.replace(/^git@github\.com:/, '');
+	cleaned = cleaned.replace(/\.git$/, '');
 
 	// Split off @ref if present
-	let ref = "HEAD";
-	const atIndex = cleaned.indexOf("@");
+	let ref = 'HEAD';
+	const atIndex = cleaned.indexOf('@');
 	if (atIndex !== -1) {
 		ref = cleaned.slice(atIndex + 1);
 		cleaned = cleaned.slice(0, atIndex);
 	}
 
-	const parts = cleaned.split("/").filter(Boolean);
+	const parts = cleaned.split('/').filter(Boolean);
 	const owner = parts[0];
 	const repo = parts[1];
 	if (parts.length < 2 || !owner || !repo) return null;
@@ -499,7 +499,7 @@ function parseActionRef(input: string): {
 	return {
 		owner,
 		repo,
-		path: parts.slice(2).join("/"),
+		path: parts.slice(2).join('/'),
 		ref,
 	};
 }
@@ -511,12 +511,12 @@ export const actionMeta = tool({
 		action: tool.schema
 			.string()
 			.describe(
-				"Action reference: owner/repo, owner/repo@v1, owner/repo/path, or owner/repo/path@v1 (e.g., actions/checkout@v4, actions/cache/restore@v4)",
+				'Action reference: owner/repo, owner/repo@v1, owner/repo/path, or owner/repo/path@v1 (e.g., actions/checkout@v4, actions/cache/restore@v4)',
 			),
 		showRaw: tool.schema
 			.boolean()
 			.default(false)
-			.describe("Include raw YAML content in response"),
+			.describe('Include raw YAML content in response'),
 	},
 	async execute(args) {
 		const parsed = parseActionRef(args.action);
@@ -527,11 +527,11 @@ export const actionMeta = tool({
 		}
 
 		const { owner, repo, path, ref } = parsed;
-		const basePath = path ? `${path}/` : "";
+		const basePath = path ? `${path}/` : '';
 
 		const headers: Record<string, string> = {
-			Accept: "application/vnd.github.v3.raw",
-			"User-Agent": "opencode-github-tool",
+			Accept: 'application/vnd.github.v3.raw',
+			'User-Agent': 'opencode-github-tool',
 		};
 
 		const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
@@ -543,7 +543,7 @@ export const actionMeta = tool({
 		let yamlContent: string | null = null;
 		let filename: string | null = null;
 
-		for (const fname of ["action.yml", "action.yaml"]) {
+		for (const fname of ['action.yml', 'action.yaml']) {
 			const url = `https://api.github.com/repos/${owner}/${repo}/contents/${basePath}${fname}?ref=${ref}`;
 			const response = await fetch(url, { headers });
 
@@ -556,7 +556,7 @@ export const actionMeta = tool({
 
 		if (!yamlContent || !filename) {
 			throw new Error(
-				`No action.yml or action.yaml found in ${owner}/${repo}${path ? `/${path}` : ""} at ref ${ref}`,
+				`No action.yml or action.yaml found in ${owner}/${repo}${path ? `/${path}` : ''} at ref ${ref}`,
 			);
 		}
 
@@ -571,7 +571,7 @@ export const actionMeta = tool({
 		if (action.inputs) {
 			for (const [name, input] of Object.entries(action.inputs)) {
 				inputs[name] = {
-					description: input.description ?? "",
+					description: input.description ?? '',
 					required: input.required ?? false,
 					default: input.default ?? null,
 				};
@@ -583,25 +583,25 @@ export const actionMeta = tool({
 		if (action.outputs) {
 			for (const [name, output] of Object.entries(action.outputs)) {
 				outputs[name] = {
-					description: output.description ?? "",
+					description: output.description ?? '',
 				};
 			}
 		}
 
 		// Determine action type
-		let actionType: "javascript" | "composite" | "docker" | "unknown" =
-			"unknown";
-		if (action.runs?.using?.startsWith("node")) {
-			actionType = "javascript";
-		} else if (action.runs?.using === "composite") {
-			actionType = "composite";
-		} else if (action.runs?.using === "docker") {
-			actionType = "docker";
+		let actionType: 'javascript' | 'composite' | 'docker' | 'unknown' =
+			'unknown';
+		if (action.runs?.using?.startsWith('node')) {
+			actionType = 'javascript';
+		} else if (action.runs?.using === 'composite') {
+			actionType = 'composite';
+		} else if (action.runs?.using === 'docker') {
+			actionType = 'docker';
 		}
 
 		const result: Record<string, unknown> = {
-			tool: "github_action_meta",
-			action: `${owner}/${repo}${path ? `/${path}` : ""}`,
+			tool: 'github_action_meta',
+			action: `${owner}/${repo}${path ? `/${path}` : ''}`,
 			ref,
 			file: filename,
 			name: action.name ?? null,
@@ -614,7 +614,7 @@ export const actionMeta = tool({
 			outputCount: Object.keys(outputs).length,
 		};
 
-		if (actionType === "composite" && action.runs?.steps) {
+		if (actionType === 'composite' && action.runs?.steps) {
 			result.stepCount = action.runs.steps.length;
 		}
 

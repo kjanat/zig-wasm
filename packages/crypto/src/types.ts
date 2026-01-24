@@ -30,7 +30,7 @@
  * @module
  */
 
-import type { WasmMemoryExports } from "@zig-wasm/core";
+import type { WasmMemoryExports } from '@zig-wasm/core';
 
 /**
  * Low-level WASM module exports for cryptographic operations.
@@ -271,16 +271,16 @@ export interface CryptoWasmExports extends WasmMemoryExports {
  * ```
  */
 export type HashAlgorithm =
-	| "md5"
-	| "sha1"
-	| "sha256"
-	| "sha384"
-	| "sha512"
-	| "sha3-256"
-	| "sha3-512"
-	| "blake2b256"
-	| "blake2s256"
-	| "blake3";
+	| 'md5'
+	| 'sha1'
+	| 'sha256'
+	| 'sha384'
+	| 'sha512'
+	| 'sha3-256'
+	| 'sha3-512'
+	| 'blake2b256'
+	| 'blake2s256'
+	| 'blake3';
 
 /**
  * Supported HMAC (Hash-based Message Authentication Code) algorithms.
@@ -300,4 +300,4 @@ export type HashAlgorithm =
  * const mac = await hmac(algo, "secret-key", "message to authenticate");
  * ```
  */
-export type HmacAlgorithm = "sha256" | "sha512";
+export type HmacAlgorithm = 'sha256' | 'sha512';

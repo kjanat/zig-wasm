@@ -97,7 +97,7 @@
  */
 
 // Lifecycle
-export { init, isInitialized } from "./hash.ts";
+export { init, isInitialized } from './hash.ts';
 
 // Async API
 // dprint-ignore
@@ -124,7 +124,7 @@ export {
 	xxhash32Hex,
 	xxhash64,
 	xxhash64Hex,
-} from "./hash.ts";
+} from './hash.ts';
 
 // Sync API
 // dprint-ignore
@@ -151,7 +151,7 @@ export {
 	xxhash32Sync,
 	xxhash64HexSync,
 	xxhash64Sync,
-} from "./hash.ts";
+} from './hash.ts';
 
 // Types
 export type {
@@ -159,8 +159,8 @@ export type {
 	Hash64Algorithm,
 	HashAlgorithm,
 	HashWasmExports,
-} from "./types.ts";
+} from './types.ts';
 
 // Re-export error for convenience
-export { NotInitializedError } from "@zig-wasm/core";
-export type { InitOptions } from "@zig-wasm/core";
+export { NotInitializedError } from '@zig-wasm/core';
+export type { InitOptions } from '@zig-wasm/core';

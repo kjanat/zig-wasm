@@ -63,13 +63,13 @@
  * @module sync-versions
  */
 
-import { existsSync, readdirSync } from "node:fs";
-import { readFile, writeFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
-import { runCli } from "./cli.ts";
-import { printHelp, SYNC_VERSIONS_USAGE } from "./messages.ts";
-import { findMonorepoRoot } from "./monorepo.ts";
-import { readPackageJson } from "./paths.ts";
+import { existsSync, readdirSync } from 'node:fs';
+import { readFile, writeFile } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
+import { runCli } from './cli.ts';
+import { printHelp, SYNC_VERSIONS_USAGE } from './messages.ts';
+import { findMonorepoRoot } from './monorepo.ts';
+import { readPackageJson } from './paths.ts';
 
 /**
  * Internal representation of package.json structure.
@@ -177,8 +177,8 @@ export async function syncVersions(
 	const monorepoRoot = findMonorepoRoot(startPath);
 	const { checkOnly = false } = options;
 	const cwd = monorepoRoot;
-	const packagesDir = resolve(cwd, "packages");
-	const internalDir = resolve(cwd, "internal");
+	const packagesDir = resolve(cwd, 'packages');
+	const internalDir = resolve(cwd, 'internal');
 
 	let mismatches = 0;
 	const synced: string[] = [];
@@ -196,8 +196,8 @@ export async function syncVersions(
 		}
 
 		for (const dir of dirs) {
-			const packageJsonPath = join(dir, "package.json");
-			const jsrJsonPath = join(dir, "jsr.json");
+			const packageJsonPath = join(dir, 'package.json');
+			const jsrJsonPath = join(dir, 'jsr.json');
 
 			try {
 				if (!existsSync(packageJsonPath) || !existsSync(jsrJsonPath)) {
@@ -208,12 +208,12 @@ export async function syncVersions(
 					packageJsonPath,
 				)) as PackageJson;
 				const jsrJson = JSON.parse(
-					await readFile(jsrJsonPath, "utf-8"),
+					await readFile(jsrJsonPath, 'utf-8'),
 				) as JsrJson;
 
 				const npmVersion = packageJson.version;
 				const jsrVersion = jsrJson.version;
-				const dirName = dir.split("/").slice(-1)[0] || dir;
+				const dirName = dir.split('/').slice(-1)[0] || dir;
 
 				if (npmVersion !== jsrVersion) {
 					mismatches++;
@@ -234,14 +234,14 @@ export async function syncVersions(
 					console.log(`✓ ${packageJson.name}@${npmVersion} is in sync`);
 				}
 			} catch (error) {
-				if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+				if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
 					console.error(`Error processing ${dir}:`, error);
 				}
 			}
 		}
 	}
 
-	console.log("Syncing package versions...\n");
+	console.log('Syncing package versions...\n');
 	await syncDir(packagesDir);
 	console.log();
 	await syncDir(internalDir);
@@ -250,9 +250,9 @@ export async function syncVersions(
 		mismatches === 0 || (!checkOnly && synced.length === mismatches);
 
 	if (mismatches > 0 && checkOnly) {
-		console.log("\nRun without --check to fix these mismatches");
+		console.log('\nRun without --check to fix these mismatches');
 	} else {
-		console.log("\n✓ All versions are in sync!");
+		console.log('\n✓ All versions are in sync!');
 	}
 
 	return { success, mismatches, synced };
@@ -261,12 +261,12 @@ export async function syncVersions(
 // CLI entry point
 if (import.meta.main) {
 	await runCli(async () => {
-		if (process.argv.includes("--help") || process.argv.includes("-h")) {
+		if (process.argv.includes('--help') || process.argv.includes('-h')) {
 			printHelp(SYNC_VERSIONS_USAGE);
 			return 0;
 		}
 
-		const checkOnly = process.argv.includes("--check");
+		const checkOnly = process.argv.includes('--check');
 		const result = await syncVersions({ checkOnly });
 		return result.success ? 0 : 1;
 	});

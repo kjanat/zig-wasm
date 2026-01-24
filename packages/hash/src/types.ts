@@ -21,7 +21,7 @@
  * @module types
  */
 
-import type { WasmMemoryExports } from "@zig-wasm/core";
+import type { WasmMemoryExports } from '@zig-wasm/core';
 
 /**
  * WASM exports for the hash module.
@@ -174,7 +174,7 @@ export interface HashWasmExports extends WasmMemoryExports {
  * const fnv32 = await hash32("fnv1a32", "data");  // number
  * ```
  */
-export type Hash32Algorithm = "crc32" | "adler32" | "xxhash32" | "fnv1a32";
+export type Hash32Algorithm = 'crc32' | 'adler32' | 'xxhash32' | 'fnv1a32';
 
 /**
  * 64-bit hash algorithm identifiers.
@@ -198,11 +198,11 @@ export type Hash32Algorithm = "crc32" | "adler32" | "xxhash32" | "fnv1a32";
  * ```
  */
 export type Hash64Algorithm =
-	| "xxhash64"
-	| "wyhash"
-	| "cityhash64"
-	| "murmur2_64"
-	| "fnv1a64";
+	| 'xxhash64'
+	| 'wyhash'
+	| 'cityhash64'
+	| 'murmur2_64'
+	| 'fnv1a64';
 
 /**
  * Union of all hash algorithm identifiers.

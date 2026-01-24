@@ -96,7 +96,7 @@
  */
 
 // Lifecycle
-export { init, isInitialized } from "./crypto.ts";
+export { init, isInitialized } from './crypto.ts';
 
 // Async API
 // dprint-ignore
@@ -118,7 +118,7 @@ export {
 	sha3_256,
 	sha3_512,
 	sha512,
-} from "./crypto.ts";
+} from './crypto.ts';
 
 // Sync API
 // dprint-ignore
@@ -140,15 +140,15 @@ export {
 	sha3_256Sync,
 	sha3_512Sync,
 	sha512Sync,
-} from "./crypto.ts";
+} from './crypto.ts';
 
 // Types
 export type {
 	CryptoWasmExports,
 	HashAlgorithm,
 	HmacAlgorithm,
-} from "./types.ts";
+} from './types.ts';
 
 // Re-export error for convenience
-export { NotInitializedError } from "@zig-wasm/core";
-export type { InitOptions } from "@zig-wasm/core";
+export { NotInitializedError } from '@zig-wasm/core';
+export type { InitOptions } from '@zig-wasm/core';

@@ -1,11 +1,18 @@
 {
-	"biome": {},
+	"useTabs": true,
+	"lineWidth": 80,
+	"biome": {
+		"indentStyle": "tab",
+		"lineWidth": 80,
+		"javascript.quoteStyle": "single"
+	},
 	"typescript": {},
 	"json": {
 		"trailingCommas": "maintain",
 		"jsonTrailingCommaFiles": [
 			"**/tsconfig.json",
-			"${originConfigDir}/.zed/settings.json"
+			"**/tsconfig.*.json",
+			"**/.zed/settings.json"
 		]
 	},
 	"markdown": {
@@ -37,7 +44,14 @@
 			}
 		]
 	},
-	"excludes": ["**/node_modules", "**/pnpm-lock.yaml"],
+	"excludes": [
+		"**/node_modules",
+		"**/pnpm-lock.yaml",
+		"**/dist",
+		"**/coverage",
+		"**/.zig-cache",
+		"**/zig-out"
+	],
 	"plugins": [
 		"https://plugins.dprint.dev/biome-0.11.11.wasm",
 		"https://plugins.dprint.dev/dockerfile-0.3.3.wasm",

@@ -10,7 +10,7 @@ slice of Zig's `std.math` for both async (lazy-loaded) and sync use.
 ## Quick start
 
 ```ts
-import { clamp, sin, sqrt } from "@zig-wasm/math";
+import { clamp, sin, sqrt } from '@zig-wasm/math';
 
 const angle = await sin(Math.PI / 2); // 1
 const mag = await sqrt(42); // double precision
@@ -20,7 +20,7 @@ const clamped = await clamp(12, 0, 10); // 10
 Sync access requires explicit init:
 
 ```ts
-import { init, sinSync } from "@zig-wasm/math";
+import { init, sinSync } from '@zig-wasm/math';
 
 await init();
 const value = sinSync(0.5);

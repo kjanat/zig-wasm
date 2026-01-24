@@ -80,7 +80,7 @@ export class ZigWasmError extends Error {
 	 */
 	constructor(message: string, options?: ErrorOptions) {
 		super(message, options);
-		this.name = "ZigWasmError";
+		this.name = 'ZigWasmError';
 	}
 }
 
@@ -123,7 +123,7 @@ export class NotInitializedError extends ZigWasmError {
 			`${moduleName} WASM module not initialized. ` +
 				`Call init() first or use the async API.`,
 		);
-		this.name = "NotInitializedError";
+		this.name = 'NotInitializedError';
 	}
 }
 
@@ -168,7 +168,7 @@ export class WasmLoadError extends ZigWasmError {
 				? `Failed to load ${moduleName} WASM module: ${cause.message}`
 				: `Failed to load ${moduleName} WASM module`;
 		super(msg, { cause });
-		this.name = "WasmLoadError";
+		this.name = 'WasmLoadError';
 	}
 }
 
@@ -202,6 +202,6 @@ export class WasmMemoryError extends ZigWasmError {
 	 */
 	constructor(message: string) {
 		super(message);
-		this.name = "WasmMemoryError";
+		this.name = 'WasmMemoryError';
 	}
 }

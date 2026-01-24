@@ -49,4 +49,4 @@
  *
  * @module math
  */
-export * from "@zig-wasm/math";
+export * from '@zig-wasm/math';

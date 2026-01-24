@@ -8,6 +8,7 @@
  */
 
 import {
+	ExportKind,
 	encodeFuncType,
 	encodeLimits,
 	encodeSection,
@@ -15,13 +16,12 @@ import {
 	encodeString,
 	encodeUleb128,
 	encodeVec,
-	ExportKind,
 	ImportKind,
 	Op,
 	Section,
 	ValType,
 	WASM_HEADER,
-} from "@zig-wasm/core";
+} from '@zig-wasm/core';
 
 /**
  * Creates a minimal valid WASM module that exports memory.
@@ -37,7 +37,7 @@ export function createMinimalWasmWithMemory(): Uint8Array {
 
 	const exportSec = encodeSection(
 		Section.Export,
-		encodeVec([[...encodeString("memory"), ExportKind.Memory, 0]]),
+		encodeVec([[...encodeString('memory'), ExportKind.Memory, 0]]),
 	);
 
 	return new Uint8Array([...WASM_HEADER, ...memorySec, ...exportSec]);
@@ -67,7 +67,7 @@ export function createWasmWithoutMemory(): Uint8Array {
 	// Export section: export function 0 as "test"
 	const exportSec = encodeSection(
 		Section.Export,
-		encodeVec([[...encodeString("test"), ExportKind.Func, 0]]),
+		encodeVec([[...encodeString('test'), ExportKind.Func, 0]]),
 	);
 
 	// Code section: function body that returns 42
@@ -113,7 +113,7 @@ export function createWasmWithPanicImport(): Uint8Array {
 	const importSec = encodeSection(
 		Section.Import,
 		encodeVec([
-			[...encodeString("env"), ...encodeString("_panic"), ImportKind.Func, 0],
+			[...encodeString('env'), ...encodeString('_panic'), ImportKind.Func, 0],
 		]),
 	);
 
@@ -123,7 +123,7 @@ export function createWasmWithPanicImport(): Uint8Array {
 	// Export section: export memory
 	const exportSec = encodeSection(
 		Section.Export,
-		encodeVec([[...encodeString("memory"), ExportKind.Memory, 0]]),
+		encodeVec([[...encodeString('memory'), ExportKind.Memory, 0]]),
 	);
 
 	return new Uint8Array([
@@ -164,7 +164,7 @@ export function createWasmThatCallsPanic(): Uint8Array {
 	const importSec = encodeSection(
 		Section.Import,
 		encodeVec([
-			[...encodeString("env"), ...encodeString("_panic"), ImportKind.Func, 0],
+			[...encodeString('env'), ...encodeString('_panic'), ImportKind.Func, 0],
 		]),
 	);
 
@@ -178,8 +178,8 @@ export function createWasmThatCallsPanic(): Uint8Array {
 	const exportSec = encodeSection(
 		Section.Export,
 		encodeVec([
-			[...encodeString("memory"), ExportKind.Memory, 0],
-			[...encodeString("doPanic"), ExportKind.Func, 1], // func index 1 (0 is import)
+			[...encodeString('memory'), ExportKind.Memory, 0],
+			[...encodeString('doPanic'), ExportKind.Func, 1], // func index 1 (0 is import)
 		]),
 	);
 
@@ -247,7 +247,7 @@ export function createAddFunction(): Uint8Array {
 	// Export section: export function 0 as "add"
 	const exportSec = encodeSection(
 		Section.Export,
-		encodeVec([[...encodeString("add"), ExportKind.Func, 0]]),
+		encodeVec([[...encodeString('add'), ExportKind.Func, 0]]),
 	);
 
 	// Code section: add function body

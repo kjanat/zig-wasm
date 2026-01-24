@@ -14,8 +14,21 @@
 			"test": "recommended"
 		}
 	},
-	"javascript": { "formatter": { "quoteStyle": "double" } },
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double"
+		}
+	},
 	"overrides": [
+		{
+			"includes": ["**/*.jsonc", "**/tsconfig.json", "**/tsconfig.*.json"],
+			"json": {
+				"parser": {
+					"allowComments": true,
+					"allowTrailingCommas": true
+				}
+			}
+		},
 		{
 			"includes": ["**/*.spec.ts", "**/*.test.ts", "**/test/**", "**/tests/**"],
 			"linter": {

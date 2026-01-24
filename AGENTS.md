@@ -22,8 +22,8 @@
 
 ## Code Style
 
-- **Formatting:** dprint for all files (requires `zig` compiler zig files);\
-  double quotes for strings
+- **Formatting:** dprint for all files (requires `zig` compiler for zig files);\
+  single quotes for strings
 - **Linting:** Biome recommended rules; formatter disabled (dprint handles it)
 - **Imports:** Use `.ts` extension for relative imports;\
   `import type` for type-only (verbatimModuleSyntax)

@@ -35,9 +35,9 @@
  * @module math
  */
 
-import type { InitOptions } from "@zig-wasm/core";
-import { getEnvironment, loadWasm, NotInitializedError } from "@zig-wasm/core";
-import type { MathWasmExports } from "./types.ts";
+import type { InitOptions } from '@zig-wasm/core';
+import { getEnvironment, loadWasm, NotInitializedError } from '@zig-wasm/core';
+import type { MathWasmExports } from './types.ts';
 
 // ============================================================================
 // Module initialization
@@ -98,13 +98,13 @@ export async function init(options?: InitOptions): Promise<void> {
 				fetchFn: options.fetchFn,
 			});
 		} else if (env.isNode || env.isBun) {
-			const { fileURLToPath } = await import("node:url");
-			const { dirname, join } = await import("node:path");
+			const { fileURLToPath } = await import('node:url');
+			const { dirname, join } = await import('node:path');
 			const currentDir = dirname(fileURLToPath(import.meta.url));
-			const wasmPath = join(currentDir, "../wasm/math.wasm");
+			const wasmPath = join(currentDir, '../wasm/math.wasm');
 			result = await loadWasm<MathWasmExports>({ wasmPath });
 		} else {
-			const wasmUrl = new URL("../wasm/math.wasm", import.meta.url);
+			const wasmUrl = new URL('../wasm/math.wasm', import.meta.url);
 			result = await loadWasm<MathWasmExports>({ wasmUrl: wasmUrl.href });
 		}
 
@@ -141,7 +141,7 @@ async function ensureInit(): Promise<MathWasmExports> {
 
 function getSyncExports(): MathWasmExports {
 	if (!wasmExports) {
-		throw new NotInitializedError("math");
+		throw new NotInitializedError('math');
 	}
 	return wasmExports;
 }

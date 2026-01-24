@@ -55,20 +55,20 @@
 import type {
 	AllocationScope as AllocationScopeType,
 	InitOptions,
-} from "@zig-wasm/core";
+} from '@zig-wasm/core';
 import {
 	AllocationScope,
 	getEnvironment,
 	loadWasm,
 	NotInitializedError,
 	WasmMemory,
-} from "@zig-wasm/core";
+} from '@zig-wasm/core';
 import type {
 	Hash32Algorithm,
 	Hash64Algorithm,
 	HashAlgorithm,
 	HashWasmExports,
-} from "./types.ts";
+} from './types.ts';
 
 // ============================================================================
 // Module initialization
@@ -140,13 +140,13 @@ export async function init(options?: InitOptions): Promise<void> {
 				fetchFn: options.fetchFn,
 			});
 		} else if (env.isNode || env.isBun) {
-			const { fileURLToPath } = await import("node:url");
-			const { dirname, join } = await import("node:path");
+			const { fileURLToPath } = await import('node:url');
+			const { dirname, join } = await import('node:path');
 			const currentDir = dirname(fileURLToPath(import.meta.url));
-			const wasmPath = join(currentDir, "../wasm/hash.wasm");
+			const wasmPath = join(currentDir, '../wasm/hash.wasm');
 			result = await loadWasm<HashWasmExports>({ wasmPath });
 		} else {
-			const wasmUrl = new URL("../wasm/hash.wasm", import.meta.url);
+			const wasmUrl = new URL('../wasm/hash.wasm', import.meta.url);
 			result = await loadWasm<HashWasmExports>({ wasmUrl: wasmUrl.href });
 		}
 
@@ -191,7 +191,7 @@ async function ensureInit(): Promise<{
 
 function getSyncState(): { exports: HashWasmExports; memory: WasmMemory } {
 	if (!wasmExports || !wasmMemory) {
-		throw new NotInitializedError("hash");
+		throw new NotInitializedError('hash');
 	}
 	return { exports: wasmExports, memory: wasmMemory };
 }
@@ -201,7 +201,7 @@ function getSyncState(): { exports: HashWasmExports; memory: WasmMemory } {
 // ============================================================================
 
 function toBytes(data: string | Uint8Array): Uint8Array {
-	if (typeof data === "string") {
+	if (typeof data === 'string') {
 		return new TextEncoder().encode(data);
 	}
 	return data;
@@ -209,22 +209,22 @@ function toBytes(data: string | Uint8Array): Uint8Array {
 
 function toHex32(n: number): string {
 	// Use >>> 0 to treat as unsigned 32-bit integer
-	return (n >>> 0).toString(16).padStart(8, "0");
+	return (n >>> 0).toString(16).padStart(8, '0');
 }
 
 function toHex64(n: bigint): string {
 	// Use BigInt.asUintN to treat as unsigned 64-bit integer
-	return BigInt.asUintN(64, n).toString(16).padStart(16, "0");
+	return BigInt.asUintN(64, n).toString(16).padStart(16, '0');
 }
 
 function is32BitAlgorithm(
 	algorithm: HashAlgorithm,
 ): algorithm is Hash32Algorithm {
 	return (
-		algorithm === "crc32" ||
-		algorithm === "adler32" ||
-		algorithm === "xxhash32" ||
-		algorithm === "fnv1a32"
+		algorithm === 'crc32' ||
+		algorithm === 'adler32' ||
+		algorithm === 'xxhash32' ||
+		algorithm === 'fnv1a32'
 	);
 }
 
@@ -243,15 +243,15 @@ function hash32Impl(
 		const input = scope.allocAndCopy(data);
 
 		switch (algorithm) {
-			case "crc32":
+			case 'crc32':
 				return exports.crc32(input.ptr, input.len);
-			case "adler32":
+			case 'adler32':
 				return exports.adler32(input.ptr, input.len);
-			case "xxhash32":
+			case 'xxhash32':
 				return seed !== undefined
 					? exports.xxhash32_seeded(seed, input.ptr, input.len)
 					: exports.xxhash32(input.ptr, input.len);
-			case "fnv1a32":
+			case 'fnv1a32':
 				return exports.fnv1a_32(input.ptr, input.len);
 		}
 	});
@@ -268,23 +268,23 @@ function hash64Impl(
 		const input = scope.allocAndCopy(data);
 
 		switch (algorithm) {
-			case "xxhash64":
+			case 'xxhash64':
 				return seed !== undefined
 					? exports.xxhash64_seeded(seed, input.ptr, input.len)
 					: exports.xxhash64(input.ptr, input.len);
-			case "wyhash":
+			case 'wyhash':
 				return seed !== undefined
 					? exports.wyhash_seeded(seed, input.ptr, input.len)
 					: exports.wyhash(input.ptr, input.len);
-			case "cityhash64":
+			case 'cityhash64':
 				return seed !== undefined
 					? exports.cityhash64_seeded(seed, input.ptr, input.len)
 					: exports.cityhash64(input.ptr, input.len);
-			case "murmur2_64":
+			case 'murmur2_64':
 				return seed !== undefined
 					? exports.murmur2_64_seeded(seed, input.ptr, input.len)
 					: exports.murmur2_64(input.ptr, input.len);
-			case "fnv1a64":
+			case 'fnv1a64':
 				return exports.fnv1a_64(input.ptr, input.len);
 		}
 	});
@@ -424,7 +424,7 @@ export async function hashHex(
  * ```
  */
 export async function crc32(data: string | Uint8Array): Promise<number> {
-	return hash32("crc32", data);
+	return hash32('crc32', data);
 }
 
 /**
@@ -461,7 +461,7 @@ export async function crc32Hex(data: string | Uint8Array): Promise<string> {
  * ```
  */
 export async function adler32(data: string | Uint8Array): Promise<number> {
-	return hash32("adler32", data);
+	return hash32('adler32', data);
 }
 
 /**
@@ -506,7 +506,7 @@ export async function xxhash64(
 	data: string | Uint8Array,
 	seed?: bigint,
 ): Promise<bigint> {
-	return hash64("xxhash64", data, seed);
+	return hash64('xxhash64', data, seed);
 }
 
 /**
@@ -551,7 +551,7 @@ export async function xxhash32(
 	data: string | Uint8Array,
 	seed?: number,
 ): Promise<number> {
-	return hash32("xxhash32", data, seed);
+	return hash32('xxhash32', data, seed);
 }
 
 /**
@@ -599,7 +599,7 @@ export async function wyhash(
 	data: string | Uint8Array,
 	seed?: bigint,
 ): Promise<bigint> {
-	return hash64("wyhash", data, seed);
+	return hash64('wyhash', data, seed);
 }
 
 /**
@@ -645,7 +645,7 @@ export async function cityhash64(
 	data: string | Uint8Array,
 	seed?: bigint,
 ): Promise<bigint> {
-	return hash64("cityhash64", data, seed);
+	return hash64('cityhash64', data, seed);
 }
 
 /**
@@ -691,7 +691,7 @@ export async function murmur2_64(
 	data: string | Uint8Array,
 	seed?: bigint,
 ): Promise<bigint> {
-	return hash64("murmur2_64", data, seed);
+	return hash64('murmur2_64', data, seed);
 }
 
 /**
@@ -733,7 +733,7 @@ export async function murmur2_64Hex(
  * ```
  */
 export async function fnv1a64(data: string | Uint8Array): Promise<bigint> {
-	return hash64("fnv1a64", data);
+	return hash64('fnv1a64', data);
 }
 
 /**
@@ -771,7 +771,7 @@ export async function fnv1a64Hex(data: string | Uint8Array): Promise<string> {
  * ```
  */
 export async function fnv1a32(data: string | Uint8Array): Promise<number> {
-	return hash32("fnv1a32", data);
+	return hash32('fnv1a32', data);
 }
 
 /**
@@ -905,7 +905,7 @@ export function hashHexSync(
  * ```
  */
 export function crc32Sync(data: string | Uint8Array): number {
-	return hash32Sync("crc32", data);
+	return hash32Sync('crc32', data);
 }
 
 /**
@@ -927,7 +927,7 @@ export function crc32HexSync(data: string | Uint8Array): string {
  * @throws {NotInitializedError} If {@link init} has not been called
  */
 export function adler32Sync(data: string | Uint8Array): number {
-	return hash32Sync("adler32", data);
+	return hash32Sync('adler32', data);
 }
 
 /**
@@ -950,7 +950,7 @@ export function adler32HexSync(data: string | Uint8Array): string {
  * @throws {NotInitializedError} If {@link init} has not been called
  */
 export function xxhash64Sync(data: string | Uint8Array, seed?: bigint): bigint {
-	return hash64Sync("xxhash64", data, seed);
+	return hash64Sync('xxhash64', data, seed);
 }
 
 /**
@@ -977,7 +977,7 @@ export function xxhash64HexSync(
  * @throws {NotInitializedError} If {@link init} has not been called
  */
 export function xxhash32Sync(data: string | Uint8Array, seed?: number): number {
-	return hash32Sync("xxhash32", data, seed);
+	return hash32Sync('xxhash32', data, seed);
 }
 
 /**
@@ -1004,7 +1004,7 @@ export function xxhash32HexSync(
  * @throws {NotInitializedError} If {@link init} has not been called
  */
 export function wyhashSync(data: string | Uint8Array, seed?: bigint): bigint {
-	return hash64Sync("wyhash", data, seed);
+	return hash64Sync('wyhash', data, seed);
 }
 
 /**
@@ -1034,7 +1034,7 @@ export function cityhash64Sync(
 	data: string | Uint8Array,
 	seed?: bigint,
 ): bigint {
-	return hash64Sync("cityhash64", data, seed);
+	return hash64Sync('cityhash64', data, seed);
 }
 
 /**
@@ -1064,7 +1064,7 @@ export function murmur2_64Sync(
 	data: string | Uint8Array,
 	seed?: bigint,
 ): bigint {
-	return hash64Sync("murmur2_64", data, seed);
+	return hash64Sync('murmur2_64', data, seed);
 }
 
 /**
@@ -1090,7 +1090,7 @@ export function murmur2_64HexSync(
  * @throws {NotInitializedError} If {@link init} has not been called
  */
 export function fnv1a64Sync(data: string | Uint8Array): bigint {
-	return hash64Sync("fnv1a64", data);
+	return hash64Sync('fnv1a64', data);
 }
 
 /**
@@ -1112,7 +1112,7 @@ export function fnv1a64HexSync(data: string | Uint8Array): string {
  * @throws {NotInitializedError} If {@link init} has not been called
  */
 export function fnv1a32Sync(data: string | Uint8Array): number {
-	return hash32Sync("fnv1a32", data);
+	return hash32Sync('fnv1a32', data);
 }
 
 /**

@@ -1,17 +1,41 @@
 {
-	"extends": ["@zig-wasm/tooling/tsconfig"],
+	"extends": "./internal/tooling/configs/tsconfig.base.json",
 	"compilerOptions": {
+		"types": ["node"],
 		"paths": {
 			"~/*": ["./*"],
 			"@zig-wasm/*": ["./internal/*/src/index.ts", "./packages/*/src/index.ts"],
+			"@zig-wasm/base64": ["./packages/base64/src/index.ts"],
 			"@zig-wasm/base64/*": ["./packages/base64/src/*"],
+			"@zig-wasm/compress": ["./packages/compress/src/index.ts"],
 			"@zig-wasm/compress/*": ["./packages/compress/src/*"],
+			"@zig-wasm/core": ["./packages/core/src/index.ts"],
 			"@zig-wasm/core/*": ["./packages/core/src/*"],
+			"@zig-wasm/crypto": ["./packages/crypto/src/index.ts"],
 			"@zig-wasm/crypto/*": ["./packages/crypto/src/*"],
+			"@zig-wasm/hash": ["./packages/hash/src/index.ts"],
 			"@zig-wasm/hash/*": ["./packages/hash/src/*"],
+			"@zig-wasm/math": ["./packages/math/src/index.ts"],
 			"@zig-wasm/math/*": ["./packages/math/src/*"],
+			"@zig-wasm/std": ["./packages/std/src/index.ts"],
 			"@zig-wasm/std/*": ["./packages/std/src/*"],
+			"@zig-wasm/tooling": ["./internal/tooling/src/index.ts"],
 			"@zig-wasm/tooling/*": ["./internal/tooling/src/*"]
 		}
-	}
+	},
+	"include": [
+		"packages/*/src/**/*",
+		"packages/*/__tests__/**/*",
+		"internal/*/src/**/*",
+		"internal/*/__tests__/**/*",
+		"*.config.ts",
+		".opencode/**/*"
+	],
+	"exclude": [
+		"**/node_modules",
+		"**/dist",
+		"**/coverage",
+		"**/.zig-cache",
+		"**/zig-out"
+	]
 }

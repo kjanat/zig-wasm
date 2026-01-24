@@ -21,6 +21,7 @@
   },
   "license": "MIT",
   "author": "Kaj Kowalski <dev@kajkowalski.nl> (https://github.com/kjanat)",
+  "sideEffects": false,
   "type": "module",
   "exports": {
     ".": {

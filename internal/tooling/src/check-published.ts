@@ -61,10 +61,10 @@
  * @module check-published
  */
 
-import { runCli } from "./cli.ts";
-import { CHECK_PUBLISHED_USAGE, printHelp } from "./messages.ts";
-import { findMonorepoRoot } from "./monorepo.ts";
-import { readPackageJson, resolvePackageJsonPath } from "./paths.ts";
+import { runCli } from './cli.ts';
+import { CHECK_PUBLISHED_USAGE, printHelp } from './messages.ts';
+import { findMonorepoRoot } from './monorepo.ts';
+import { readPackageJson, resolvePackageJsonPath } from './paths.ts';
 
 /**
  * Result returned by {@link checkPublished}.
@@ -122,7 +122,7 @@ export interface CheckPublishedResult {
  */
 export async function checkPublished(
 	pkgPath: string,
-	registryUrl: string = "https://registry.npmjs.org",
+	registryUrl: string = 'https://registry.npmjs.org',
 ): Promise<CheckPublishedResult> {
 	const packageJsonPath: string = resolvePackageJsonPath(
 		pkgPath,
@@ -140,7 +140,7 @@ export async function checkPublished(
 		});
 		published = response.ok;
 	} catch (error) {
-		if (error instanceof Error && error.name === "AbortError") {
+		if (error instanceof Error && error.name === 'AbortError') {
 			throw new Error(`Request timed out checking ${name}@${version}`);
 		}
 		throw error;
@@ -157,13 +157,13 @@ export async function checkPublished(
  * @internal
  */
 export async function checkPublishedCli(): Promise<number> {
-	if (process.argv.includes("--help") || process.argv.includes("-h")) {
-		printHelp(CHECK_PUBLISHED_USAGE, "info");
+	if (process.argv.includes('--help') || process.argv.includes('-h')) {
+		printHelp(CHECK_PUBLISHED_USAGE, 'info');
 		return 0;
 	}
 
 	if (!process.argv[2]) {
-		printHelp(CHECK_PUBLISHED_USAGE, "error");
+		printHelp(CHECK_PUBLISHED_USAGE, 'error');
 		return 2;
 	}
 
@@ -179,7 +179,7 @@ export async function checkPublishedCli(): Promise<number> {
 		console.log(`✗ ${result.name}@${result.version} is NOT published on npm`);
 		return 1;
 	} catch (error) {
-		console.error("Failed to check npm registry:", error);
+		console.error('Failed to check npm registry:', error);
 		return 2;
 	}
 }

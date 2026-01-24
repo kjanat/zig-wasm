@@ -1,13 +1,17 @@
 {
 	"$schema": "https://cdn.jsdelivr.net/gh/DavidAnson/markdownlint-cli2/schema/markdownlint-cli2-config-schema.json",
+	"gitignore": true,
+	"showFound": true,
 	"config": {
-		"gitignore": true,
 		"line-length": {
 			"tables": false,
 			"code_blocks": false
 		},
 		"no-emphasis-as-heading": false,
-		"showFound": true
+		"no-multiple-top-level-headings": false,
+		"no-inline-html": {
+			"allowed_elements": ["details", "summary", "br"]
+		}
 	},
 	"fix": false,
 	// "noBanner": true,

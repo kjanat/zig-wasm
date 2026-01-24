@@ -7,7 +7,7 @@
  * @module types
  */
 
-import type { WasmMemoryExports } from "@zig-wasm/core";
+import type { WasmMemoryExports } from '@zig-wasm/core';
 
 /**
  * Raw exports from the math WASM module.
