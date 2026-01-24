@@ -45,12 +45,13 @@
 		]
 	},
 	"excludes": [
+		"**/.zig-cache",
+		"**/coverage",
+		"**/dist",
 		"**/node_modules",
 		"**/pnpm-lock.yaml",
-		"**/dist",
-		"**/coverage",
-		"**/.zig-cache",
-		"**/zig-out"
+		"**/zig-out",
+		"**/fixtures"
 	],
 	"plugins": [
 		"https://plugins.dprint.dev/biome-0.11.11.wasm",
