@@ -39,7 +39,7 @@
 	},
 	"excludes": ["**/node_modules", "**/pnpm-lock.yaml"],
 	"plugins": [
-		"https://plugins.dprint.dev/biome-0.11.10.wasm",
+		"https://plugins.dprint.dev/biome-0.11.11.wasm",
 		"https://plugins.dprint.dev/dockerfile-0.3.3.wasm",
 		"https://plugins.dprint.dev/exec-0.6.0.json@a054130d458f124f9b5c91484833828950723a5af3f8ff2bd1523bd47b83b364",
 		"https://plugins.dprint.dev/g-plane/malva-v0.15.2.wasm",
