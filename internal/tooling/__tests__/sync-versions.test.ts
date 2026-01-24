@@ -396,28 +396,32 @@ describe('syncVersions', () => {
 
 			// Real project should have versions in sync (assuming maintained properly)
 			expect([0, 1]).toContain(result.code);
-			expect(result.stdout).toContain('Syncing package versions');
-		}, 10000);
+			// Check stdout or stderr (npx may write to stderr on first download)
+			const output = result.stdout || result.stderr;
+			expect(output).toContain('Syncing package versions');
+		}, 30000);
 
 		it('handles --check flag', async () => {
 			const result = await runCli(['--check']);
 
 			// In check mode, just reports without modifying
 			expect([0, 1]).toContain(result.code);
-			expect(result.stdout).toContain('Syncing package versions');
+			const output = result.stdout || result.stderr;
+			expect(output).toContain('Syncing package versions');
 
 			// If mismatches found, should suggest running without --check
 			if (result.code === 1) {
-				expect(result.stdout).toContain('Run without --check');
+				expect(output).toContain('Run without --check');
 			}
-		}, 10000);
+		}, 30000);
 
 		it('outputs sync status for packages', async () => {
 			const result = await runCli([]);
 
-			// Should mention some packages by name
-			expect(result.stdout).toMatch(/@zig-wasm\//);
-		}, 10000);
+			// Should mention some packages by name (check both stdout and stderr)
+			const output = result.stdout || result.stderr;
+			expect(output).toMatch(/@zig-wasm\//);
+		}, 30000);
 	});
 });
 
