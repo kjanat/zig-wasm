@@ -42,7 +42,7 @@ runs:
           // Path outputs - handle arrays by joining with newlines
           const wasmPath = Array.isArray(paths.wasm) ? paths.wasm.join('\n') : paths.wasm;
           const distPath = Array.isArray(paths.dist) ? paths.dist.join('\n') : paths.dist;
-          
+
           core.setOutput('wasm-path', wasmPath);
           core.setOutput('dist-path', distPath);
           core.setOutput('full-paths', `${wasmPath}\n${distPath}`);
