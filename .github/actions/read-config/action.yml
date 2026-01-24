@@ -39,10 +39,13 @@ runs:
 
           const { paths, nodeVersions, nodeDefault, zigVersion } = ci;
 
-          // Path outputs
-          core.setOutput('wasm-path', paths.wasm);
-          core.setOutput('dist-path', paths.dist);
-          core.setOutput('full-paths', `${paths.wasm}\n${paths.dist}`);
+          // Path outputs - handle arrays by joining with newlines
+          const wasmPath = Array.isArray(paths.wasm) ? paths.wasm.join('\n') : paths.wasm;
+          const distPath = Array.isArray(paths.dist) ? paths.dist.join('\n') : paths.dist;
+          
+          core.setOutput('wasm-path', wasmPath);
+          core.setOutput('dist-path', distPath);
+          core.setOutput('full-paths', `${wasmPath}\n${distPath}`);
 
           // Version outputs
           core.setOutput('node-versions', JSON.stringify(nodeVersions));
@@ -50,8 +53,8 @@ runs:
           core.setOutput('zig-version', zigVersion);
 
           // Log for debugging
-          core.info(`WASM path: ${paths.wasm}`);
-          core.info(`Dist path: ${paths.dist}`);
+          core.info(`WASM path: ${wasmPath}`);
+          core.info(`Dist path: ${distPath}`);
           core.info(`Node versions: ${JSON.stringify(nodeVersions)}`);
           core.info(`Node default: ${nodeDefault}`);
           core.info(`Zig version: ${zigVersion}`);
