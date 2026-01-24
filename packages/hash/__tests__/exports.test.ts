@@ -376,26 +376,6 @@ describe('@zig-wasm/hash', () => {
 
 			expect(duration).toBeLessThan(1000);
 		});
-
-		// Skip: Performance comparisons are flaky in CI due to JIT warmup, CPU scheduling
-		it.skip('sync API is faster than async for small inputs', async () => {
-			const input = 'test';
-			const iterations = 1000;
-
-			const asyncStart = performance.now();
-			for (let i = 0; i < iterations; i++) {
-				await hash.crc32(input);
-			}
-			const asyncDuration = performance.now() - asyncStart;
-
-			const syncStart = performance.now();
-			for (let i = 0; i < iterations; i++) {
-				hash.crc32Sync(input);
-			}
-			const syncDuration = performance.now() - syncStart;
-
-			expect(syncDuration).toBeLessThan(asyncDuration);
-		});
 	});
 
 	describe('algorithm comparison', () => {
