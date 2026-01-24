@@ -166,7 +166,7 @@ describe('Configuration Files', () => {
 			);
 		});
 
-		it('enables declaration generation', () => {
+		it('disables declaration generation', () => {
 			const config = parseJsoncFile(rootTsconfigPath);
 
 			expect(config.compilerOptions.declaration).toBe(false);

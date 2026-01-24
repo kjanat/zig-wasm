@@ -138,7 +138,16 @@ export async function checkPublished(
 		const response = await fetch(`${registryUrl}/${name}/${version}`, {
 			signal: controller.signal,
 		});
-		published = response.ok;
+
+		if (response.status === 404) {
+			published = false;
+		} else if (response.ok) {
+			published = true;
+		} else {
+			throw new Error(
+				`Registry returned HTTP ${response.status} for ${name}@${version}`,
+			);
+		}
 	} catch (error) {
 		if (error instanceof Error && error.name === 'AbortError') {
 			throw new Error(`Request timed out checking ${name}@${version}`);

@@ -10,6 +10,7 @@ describe('@zig-wasm/tooling exports', () => {
 	it('exposes helpers', () => {
 		expect(tooling.checkPublished).toBeTypeOf('function');
 		expect(tooling.syncVersions).toBeTypeOf('function');
+		expect(tooling.findMonorepoRoot).toBeTypeOf('function');
 	});
 
 	it('exports TypeScript types', () => {

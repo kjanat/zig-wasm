@@ -36,12 +36,15 @@ describe('checkPublished', () => {
 		originalArgv = process.argv;
 		consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 		consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		// Use stubGlobal so Vitest can auto-restore fetch between tests
+		vi.stubGlobal('fetch', vi.fn());
 	});
 
 	afterEach(() => {
 		process.argv = originalArgv;
 		consoleLogSpy.mockRestore();
 		consoleErrorSpy.mockRestore();
+		vi.restoreAllMocks();
 		vi.resetModules();
 	});
 
@@ -57,9 +60,10 @@ describe('checkPublished', () => {
 			);
 
 			// Mock fetch to simulate npm registry response
-			global.fetch = vi.fn().mockResolvedValue({
-				ok: false, // Simulate package not published
-			}) as unknown as typeof fetch;
+			vi.mocked(fetch).mockResolvedValue({
+				ok: false,
+				status: 404,
+			} as Response);
 
 			const result = await checkPublished('@zig-wasm/crypto');
 
@@ -81,9 +85,7 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			global.fetch = vi
-				.fn()
-				.mockResolvedValue({ ok: true }) as unknown as typeof fetch;
+			vi.mocked(fetch).mockResolvedValue({ ok: true, status: 200 } as Response);
 
 			const result = await checkPublished('hash');
 
@@ -103,9 +105,7 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			global.fetch = vi
-				.fn()
-				.mockResolvedValue({ ok: true }) as unknown as typeof fetch;
+			vi.mocked(fetch).mockResolvedValue({ ok: true, status: 200 } as Response);
 
 			await checkPublished('./packages/base64');
 
@@ -134,11 +134,9 @@ describe('checkPublished', () => {
 			);
 
 			const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue(nestedCwd);
-			try {
-				global.fetch = vi
-					.fn()
-					.mockResolvedValue({ ok: true }) as unknown as typeof fetch;
+			vi.mocked(fetch).mockResolvedValue({ ok: true, status: 200 } as Response);
 
+			try {
 				const result = await checkPublished('hash');
 
 				expect(result.name).toBe('@zig-wasm/hash');
@@ -187,10 +185,10 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			global.fetch = vi.fn().mockResolvedValue({
+			vi.mocked(fetch).mockResolvedValue({
 				ok: true,
 				status: 200,
-			}) as unknown as typeof fetch;
+			} as Response);
 
 			const result = await checkPublished('std');
 
@@ -210,10 +208,10 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			global.fetch = vi.fn().mockResolvedValue({
+			vi.mocked(fetch).mockResolvedValue({
 				ok: false,
 				status: 404,
-			}) as unknown as typeof fetch;
+			} as Response);
 
 			const result = await checkPublished('math');
 
@@ -231,9 +229,7 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			global.fetch = vi
-				.fn()
-				.mockResolvedValue({ ok: true }) as unknown as typeof fetch;
+			vi.mocked(fetch).mockResolvedValue({ ok: true, status: 200 } as Response);
 
 			const result = await checkPublished('test');
 
@@ -263,11 +259,7 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			global.fetch = vi
-				.fn()
-				.mockRejectedValue(
-					new Error('Network error'),
-				) as unknown as typeof fetch;
+			vi.mocked(fetch).mockRejectedValue(new Error('Network error'));
 
 			await expect(checkPublished('test')).rejects.toThrow('Network error');
 		});
@@ -283,9 +275,7 @@ describe('checkPublished', () => {
 
 			const abortError = new Error('The operation was aborted');
 			abortError.name = 'AbortError';
-			global.fetch = vi
-				.fn()
-				.mockRejectedValue(abortError) as unknown as typeof fetch;
+			vi.mocked(fetch).mockRejectedValue(abortError);
 
 			await expect(checkPublished('test')).rejects.toThrow(
 				'Request timed out checking @test/pkg@1.0.0',
@@ -318,9 +308,10 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			global.fetch = vi
-				.fn()
-				.mockResolvedValue({ ok: false }) as unknown as typeof fetch;
+			vi.mocked(fetch).mockResolvedValue({
+				ok: false,
+				status: 404,
+			} as Response);
 
 			const result = await checkPublished('@org/sub/package');
 			expect(result.name).toBe('@org/sub/package');
@@ -335,9 +326,7 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			global.fetch = vi
-				.fn()
-				.mockResolvedValue({ ok: true }) as unknown as typeof fetch;
+			vi.mocked(fetch).mockResolvedValue({ ok: true, status: 200 } as Response);
 
 			const result = await checkPublished('test');
 			expect(result.version).toBe('1.0.0-beta.1');
@@ -356,9 +345,7 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			global.fetch = vi
-				.fn()
-				.mockResolvedValue({ ok: true }) as unknown as typeof fetch;
+			vi.mocked(fetch).mockResolvedValue({ ok: true, status: 200 } as Response);
 
 			// When passing just "@scope", it falls back to using the full string
 			// This tests the ?? fallback behavior on line 126
@@ -380,9 +367,7 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			global.fetch = vi
-				.fn()
-				.mockResolvedValue({ ok: true }) as unknown as typeof fetch;
+			vi.mocked(fetch).mockResolvedValue({ ok: true, status: 200 } as Response);
 
 			// "@scope/" with trailing slash results in empty string from split
 			// The || fallback should use the full pkgPath "@scope/"
@@ -429,9 +414,7 @@ describe('checkPublished', () => {
 					version: '1.0.0',
 				}),
 			);
-			global.fetch = vi
-				.fn()
-				.mockResolvedValue({ ok: true }) as unknown as typeof fetch;
+			vi.mocked(fetch).mockResolvedValue({ ok: true, status: 200 } as Response);
 
 			process.argv = ['node', 'check-published.ts', 'core'];
 
@@ -454,9 +437,10 @@ describe('checkPublished', () => {
 					version: '99.99.99',
 				}),
 			);
-			global.fetch = vi
-				.fn()
-				.mockResolvedValue({ ok: false }) as unknown as typeof fetch;
+			vi.mocked(fetch).mockResolvedValue({
+				ok: false,
+				status: 404,
+			} as Response);
 
 			process.argv = ['node', 'check-published.ts', 'core'];
 

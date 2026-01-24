@@ -51,12 +51,22 @@ redact_args() {
 	debug "Arguments:" "${redacted}"
 }
 
+ts_source="./src/${SCRIPT}.ts"
+
 if command -v bun &>/dev/null; then
+	if [[ ! -f "${ts_source}" ]]; then
+		echo "ERROR: TypeScript source not found: ${ts_source}" >&2
+		exit 1
+	fi
 	debug "Runtime:" "bun"
-	exec bun --bun "./src/${SCRIPT}.ts" "$@"
+	exec bun --bun "${ts_source}" "$@"
 elif command -v deno &>/dev/null; then
+	if [[ ! -f "${ts_source}" ]]; then
+		echo "ERROR: TypeScript source not found: ${ts_source}" >&2
+		exit 1
+	fi
 	debug "Runtime:" "deno"
-	exec deno run --allow-read --allow-write="**/jsr.json" "./src/${SCRIPT}.ts" "$@"
+	exec deno run --allow-read --allow-write=. "${ts_source}" "$@"
 elif command -v node &>/dev/null; then
 	debug "Runtime:" "node"
 	if [[ -f "./dist/src/${SCRIPT}.mjs" ]]; then

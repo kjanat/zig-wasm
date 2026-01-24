@@ -12,8 +12,7 @@ const printers: Record<SeverityStatus, typeof console.log> = {
 /**
  * Print a usage message to the console.
  * @param usage The message to print
- * @param status The severity
- * @default info
+ * @param status The severity (default: info)
  */
 export const printHelp = (
 	usage: UsageMessage,
