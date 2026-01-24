@@ -34,49 +34,49 @@ npm install @zig-wasm/std
 ### Crypto
 
 ```ts
-import { hashHex, hmacSha256, sha256 } from "@zig-wasm/crypto";
+import { hashHex, hmacSha256, sha256 } from '@zig-wasm/crypto';
 
 // Async API (auto-initializes WASM module)
-const hash = await sha256("hello world"); // Uint8Array
-const hex = await hashHex("sha256", "hello world");
+const hash = await sha256('hello world'); // Uint8Array
+const hex = await hashHex('sha256', 'hello world');
 // "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
 
-const mac = await hmacSha256("secret-key", "message");
+const mac = await hmacSha256('secret-key', 'message');
 ```
 
 ```ts
 // Sync API (requires explicit init)
-import { init, sha256Sync } from "@zig-wasm/crypto";
+import { init, sha256Sync } from '@zig-wasm/crypto';
 
 await init();
-const hash = sha256Sync("hello world");
+const hash = sha256Sync('hello world');
 ```
 
 ### Hash
 
 ```ts
-import { crc32, wyhash, xxhash64 } from "@zig-wasm/hash";
+import { crc32, wyhash, xxhash64 } from '@zig-wasm/hash';
 
-const checksum = await crc32("hello world");
-const hash = await xxhash64("data", 0n); // seed is bigint
+const checksum = await crc32('hello world');
+const hash = await xxhash64('data', 0n); // seed is bigint
 ```
 
 ### Base64
 
 ```ts
-import { decode, encode, encodeUrl, hexEncode } from "@zig-wasm/base64";
+import { decode, encode, encodeUrl, hexEncode } from '@zig-wasm/base64';
 
-const encoded = await encode("hello world"); // aGVsbG8gd29ybGQ=
+const encoded = await encode('hello world'); // aGVsbG8gd29ybGQ=
 const decoded = await decode(encoded); // Uint8Array
 
-const urlSafe = await encodeUrl("hello world");
+const urlSafe = await encodeUrl('hello world');
 const hex = await hexEncode(new Uint8Array([0xde, 0xad])); // dead
 ```
 
 ### Math
 
 ```ts
-import { clamp, cos, exp, log, sin, sqrt } from "@zig-wasm/math";
+import { clamp, cos, exp, log, sin, sqrt } from '@zig-wasm/math';
 
 const result = await sin(Math.PI / 2);
 const clamped = await clamp(150, 0, 100); // 100
@@ -85,7 +85,7 @@ const clamped = await clamp(150, 0, 100); // 100
 ### Compress
 
 ```ts
-import { decompressLzma, decompressXz } from "@zig-wasm/compress";
+import { decompressLzma, decompressXz } from '@zig-wasm/compress';
 
 const decompressed = await decompressXz(compressedData);
 ```
@@ -93,11 +93,11 @@ const decompressed = await decompressXz(compressedData);
 ### Umbrella Package
 
 ```ts
-import { base64, crypto, hash } from "@zig-wasm/std";
+import { base64, crypto, hash } from '@zig-wasm/std';
 
-const sha = await crypto.sha256("hello");
-const crc = await hash.crc32("hello");
-const b64 = await base64.encode("hello");
+const sha = await crypto.sha256('hello');
+const crc = await hash.crc32('hello');
+const b64 = await base64.encode('hello');
 ```
 
 ## Building from Source

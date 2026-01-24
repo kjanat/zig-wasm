@@ -9,11 +9,11 @@ Fast non-cryptographic hash functions powered by Zig via WebAssembly.
 ## Quick start
 
 ```ts
-import { crc32Hex, wyhash, xxhash64 } from "@zig-wasm/hash";
+import { crc32Hex, wyhash, xxhash64 } from '@zig-wasm/hash';
 
-const crc = await crc32Hex("payload");
+const crc = await crc32Hex('payload');
 const xxh = await xxhash64(new Uint8Array([1, 2, 3]));
-const wy = await wyhash("payload"); // Uint8Array digest
+const wy = await wyhash('payload'); // Uint8Array digest
 ```
 
 Call `await init()` before using any `*Sync` helpers (`crc32Sync`, `hashSync`,

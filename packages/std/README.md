@@ -11,18 +11,18 @@ re-exports the other `@zig-wasm/*` modules for convenience.
 
 ```ts
 // Grab everything as a namespace
-import * as std from "@zig-wasm/std";
+import * as std from '@zig-wasm/std';
 
-const digest = await std.crypto.sha256("data");
-const encoded = await std.base64.encode("hello");
-const crc = await std.hash.crc32Hex("payload");
+const digest = await std.crypto.sha256('data');
+const encoded = await std.base64.encode('hello');
+const crc = await std.hash.crc32Hex('payload');
 ```
 
 Tree-shakeable imports:
 
 ```ts
-import { sha256 } from "@zig-wasm/std/crypto";
-import { crc32 } from "@zig-wasm/std/hash";
+import { sha256 } from '@zig-wasm/std/crypto';
+import { crc32 } from '@zig-wasm/std/hash';
 ```
 
 If you prefer slimmer bundles, depend on the individual packages directly (e.g.

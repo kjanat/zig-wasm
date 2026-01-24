@@ -1,0 +1,28 @@
+{
+	"extends": ["./internal/tooling/configs/biome.base.json"],
+	"root": true,
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true,
+		"defaultBranch": "master"
+	},
+	"files": {
+		"ignoreUnknown": false,
+		"includes": [
+			"**",
+			".opencode/**",
+			"internal/**",
+			"packages/**",
+			"!**/*.wasm",
+			"!**/.ruff_cache",
+			"!**/.zig-cache",
+			"!**/coverage",
+			"!**/dist",
+			"!**/html",
+			"!**/test-results",
+			"!**/zig-out",
+			"!**/node_modules"
+		]
+	}
+}

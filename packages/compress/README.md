@@ -9,7 +9,7 @@ XZ and LZMA decompression powered by Zig's `std.compress` via WebAssembly.
 ## Quick start
 
 ```ts
-import { decompressLzma, decompressXz } from "@zig-wasm/compress";
+import { decompressLzma, decompressXz } from '@zig-wasm/compress';
 
 const data = await decompressXz(compressedUint8Array);
 // data is a Uint8Array containing the decompressed bytes
@@ -18,7 +18,7 @@ const data = await decompressXz(compressedUint8Array);
 Sync helpers require manual initialization:
 
 ```ts
-import { decompressXzSync, init } from "@zig-wasm/compress";
+import { decompressXzSync, init } from '@zig-wasm/compress';
 
 await init();
 const data = decompressXzSync(compressedUint8Array);

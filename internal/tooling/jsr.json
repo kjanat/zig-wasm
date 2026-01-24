@@ -5,7 +5,7 @@
   "license": "MIT",
   "exports": {
     ".": "./src/index.ts",
-    "./biome": "./biome.json",
-    "./tsconfig": "./tsconfig.base.json"
+    "./biome": "./configs/biome.base.json",
+    "./tsconfig": "./configs/tsconfig.base.json"
   }
 }
