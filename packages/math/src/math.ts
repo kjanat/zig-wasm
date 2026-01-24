@@ -1202,20 +1202,23 @@ export async function rotrU64(x: bigint, r: number): Promise<bigint> {
 /**
  * Compute the greatest common divisor of two unsigned 32-bit integers.
  *
- * **Note:** `gcd(0, 0)` is undefined in Zig's stdlib and will trap (throw).
- * At least one argument must be non-zero.
+ * **Note:** `gcd(0, 0)` returns 0 in release builds (ReleaseSmall/ReleaseFast).
+ * Zig's stdlib has a debug assertion that would trap in Debug builds, but this
+ * assertion is stripped in release mode. For safety, avoid calling with both
+ * arguments as zero.
  *
  * @see {@link https://github.com/ziglang/zig/blob/0.15.2/lib/std/math/gcd.zig#L18 | Zig stdlib assertion}
  *
- * @param a - First value (at least one of a, b must be non-zero)
- * @param b - Second value (at least one of a, b must be non-zero)
- * @returns GCD of a and b
+ * @param a - First value
+ * @param b - Second value
+ * @returns GCD of a and b (returns 0 if both are 0)
  *
  * @example
  * ```ts
  * const a = await gcd(48, 18);  // 6
  * const b = await gcd(100, 25); // 25
  * const c = await gcd(0, 5);    // 5 (one zero is fine)
+ * const d = await gcd(0, 0);    // 0 (undefined mathematically, returns 0)
  * ```
  */
 export async function gcd(a: number, b: number): Promise<number> {
@@ -1712,7 +1715,7 @@ export function rotrU64Sync(x: bigint, r: number): bigint {
 
 /**
  * Compute GCD synchronously (u32). Requires {@link init} first.
- * @see {@link gcd} for details on the gcd(0, 0) limitation
+ * @see {@link gcd} for details on gcd(0, 0) behavior
  */
 export function gcdSync(a: number, b: number): number {
 	return getSyncExports().gcd_u32(a, b);

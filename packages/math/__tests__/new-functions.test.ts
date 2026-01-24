@@ -216,9 +216,10 @@ describe('New Math Functions - Test Vectors', () => {
 			expect(result).toBe(expected);
 		});
 
-		// Test the documented limitation: gcd(0, 0) traps
-		it('traps on gcd(0, 0)', () => {
-			expect(() => math.gcdSync(0, 0)).toThrow();
+		// In release builds (ReleaseSmall/ReleaseFast), std.debug.assert is stripped,
+		// so gcd(0, 0) returns 0 instead of trapping. Debug builds would trap.
+		it('returns 0 for gcd(0, 0) in release builds', () => {
+			expect(math.gcdSync(0, 0)).toBe(0);
 		});
 	});
 

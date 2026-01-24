@@ -31,7 +31,8 @@ function runCli(
 ): Promise<{ code: number; stdout: string; stderr: string }> {
 	return new Promise((resolve) => {
 		const script = join(import.meta.dirname, '../src/sync-versions.ts');
-		const proc = spawn('node', [script, ...args], {
+		// Use tsx for Node < 23 compatibility (native TS support requires Node 22.6+)
+		const proc = spawn('npx', ['-y', 'tsx', script, ...args], {
 			cwd: join(import.meta.dirname, '../../..'), // project root
 		});
 

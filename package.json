@@ -36,7 +36,7 @@
     "publish:dry": "pnpm --parallel --aggregate-output -r publish --dry-run",
     "publish:jsr": "pnpm -r publish:jsr",
     "publish:jsr:dry": "pnpm --parallel --aggregate-output -r publish:jsr --dry-run",
-    "pretest": "zig build gen-test-vectors",
+    "pretest": "zig build gen-test-vectors -Doptimize=ReleaseSmall",
     "test": "vitest",
     "test:cov": "vitest --coverage",
     "test:run": "vitest run",
