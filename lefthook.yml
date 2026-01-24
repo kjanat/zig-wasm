@@ -23,6 +23,12 @@ pre-commit:
       run: pnpm typecheck
       priority: 3
 
+    jsr-sync:
+      glob: "**/jsr.json"
+      run: pnpm validate:jsr:fix
+      stage_fixed: true
+      priority: 4
+
 pre-push:
   parallel: true
   commands:

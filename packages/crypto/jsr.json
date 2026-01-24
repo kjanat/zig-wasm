@@ -12,7 +12,12 @@
   },
   "publish": {
     "exclude": [
-      "!wasm"
+      "!wasm",
+      "tests",
+      "*.config.ts",
+      "biome.jsonc",
+      ".dprint.jsonc",
+      "AGENTS.md"
     ]
   }
 }

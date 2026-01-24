@@ -3,5 +3,14 @@
   "name": "@zig-wasm/core",
   "version": "0.1.0",
   "license": "MIT",
-  "exports": "./src/index.ts"
+  "exports": "./src/index.ts",
+  "publish": {
+    "exclude": [
+      "tests",
+      "*.config.ts",
+      "biome.jsonc",
+      ".dprint.jsonc",
+      "AGENTS.md"
+    ]
+  }
 }

@@ -7,5 +7,14 @@
     ".": "./src/index.ts",
     "./biome": "./configs/biome.base.json",
     "./tsconfig": "./configs/tsconfig.base.json"
+  },
+  "publish": {
+    "exclude": [
+      "tests",
+      "*.config.ts",
+      "biome.jsonc",
+      ".dprint.jsonc",
+      "AGENTS.md"
+    ]
   }
 }

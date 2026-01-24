@@ -18,5 +18,14 @@
     "./crypto": "./src/crypto.ts",
     "./hash": "./src/hash.ts",
     "./math": "./src/math.ts"
+  },
+  "publish": {
+    "exclude": [
+      "tests",
+      "*.config.ts",
+      "biome.jsonc",
+      ".dprint.jsonc",
+      "AGENTS.md"
+    ]
   }
 }

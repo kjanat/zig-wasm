@@ -36,12 +36,15 @@
     "publish:dry": "pnpm --parallel --aggregate-output -r publish --dry-run",
     "publish:jsr": "pnpm -r publish:jsr",
     "publish:jsr:dry": "pnpm --parallel --aggregate-output -r publish:jsr --dry-run",
+    "sync:versions": "bun scripts/sync-versions.ts",
     "pretest": "zig build gen-test-vectors -Doptimize=ReleaseSmall",
     "test": "vitest",
     "test:cov": "vitest --coverage",
     "test:run": "vitest run",
     "test:ui": "vitest --ui --coverage",
-    "typecheck": "pnpm --parallel --aggregate-output -r typecheck"
+    "typecheck": "pnpm --parallel --aggregate-output -r typecheck",
+    "validate:jsr": "bun scripts/validate-jsr-versions.ts",
+    "validate:jsr:fix": "bun scripts/validate-jsr-versions.ts --fix"
   },
   "config": {
     "ci": {
@@ -79,7 +82,7 @@
     "vite-tsconfig-paths": "catalog:",
     "vitest": "catalog:"
   },
-  "packageManager": "pnpm@10.26.0",
+  "packageManager": "pnpm@10.28.0",
   "engines": {
     "node": ">=20",
     "pnpm": ">=10"

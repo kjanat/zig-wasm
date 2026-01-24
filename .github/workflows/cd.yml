@@ -259,6 +259,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
+      - name: Validate JSR versions
+        run: pnpm validate:jsr
+
       - name: Publish core
         run: pnpm --filter @zig-wasm/core run publish:jsr
 
