@@ -10,7 +10,7 @@ const createProjectConfig = (
 ): TestProjectConfiguration => ({
 	test: {
 		name,
-		include: [`${path}/{tests,__tests__}/**/*.test.ts`],
+		include: [`${path}/__tests__/**/*.test.ts`],
 		testTimeout: 10_000,
 	},
 	plugins: [tsconfigPaths()],

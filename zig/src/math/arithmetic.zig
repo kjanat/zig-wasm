@@ -8,13 +8,19 @@ const std = @import("std");
 // Absolute value
 
 /// Returns the absolute value of `x` as i32.
-/// For the minimum value of i32 (-2147483648), behavior is undefined.
+///
+/// WARNING: For MIN_INT (-2147483648), behavior is undefined because
+/// the absolute value (2147483648) cannot be represented as i32.
+/// Callers must ensure x > std.math.minInt(i32).
 pub fn abs_i32(x: i32) i32 {
     return @intCast(@abs(x));
 }
 
 /// Returns the absolute value of `x` as i64.
-/// For the minimum value of i64, behavior is undefined.
+///
+/// WARNING: For MIN_INT (-9223372036854775808), behavior is undefined
+/// because the absolute value cannot be represented as i64.
+/// Callers must ensure x > std.math.minInt(i64).
 pub fn abs_i64(x: i64) i64 {
     return @intCast(@abs(x));
 }

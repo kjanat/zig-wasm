@@ -141,8 +141,6 @@ jobs:
         run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build TypeScript
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: pnpm build:ts
 
       - name: Upload dist artifacts

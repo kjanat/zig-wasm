@@ -73,6 +73,16 @@ runs:
       with:
         version: ${{ steps.resolve-version.outputs.zig-version }}
 
+    - name: Cache Zig
+      uses: actions/cache@v5
+      with:
+        path: |
+          ~/.cache/zig
+          .zig-cache
+        key: zig-${{ runner.os }}-${{ steps.resolve-version.outputs.zig-version }}-${{ hashFiles('zig/src/**', 'build.zig', 'build.zig.zon') }}
+        restore-keys: |
+          zig-${{ runner.os }}-${{ steps.resolve-version.outputs.zig-version }}-
+
     - name: Build WASM
       shell: bash
       run: zig build -Doptimize=${{ inputs.optimize }}

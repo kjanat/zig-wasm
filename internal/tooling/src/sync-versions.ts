@@ -65,7 +65,7 @@
 
 import { existsSync, readdirSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 import { runCli } from './cli.ts';
 import { printHelp, SYNC_VERSIONS_USAGE } from './messages.ts';
 import { findMonorepoRoot } from './monorepo.ts';
@@ -213,7 +213,7 @@ export async function syncVersions(
 
 				const npmVersion = packageJson.version;
 				const jsrVersion = jsrJson.version;
-				const dirName = dir.split('/').slice(-1)[0] || dir;
+				const dirName = basename(dir);
 
 				if (npmVersion !== jsrVersion) {
 					mismatches++;

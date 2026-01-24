@@ -66,7 +66,7 @@ elif command -v deno &>/dev/null; then
 		exit 1
 	fi
 	debug "Runtime:" "deno"
-	exec deno run --allow-read --allow-write=. "${ts_source}" "$@"
+	exec deno run --allow-read --allow-write=. --allow-env "${ts_source}" "$@"
 elif command -v node &>/dev/null; then
 	debug "Runtime:" "node"
 	if [[ -f "./dist/src/${SCRIPT}.mjs" ]]; then

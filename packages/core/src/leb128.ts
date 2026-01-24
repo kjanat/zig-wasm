@@ -137,6 +137,10 @@ export function decodeUleb128(
 	data: ArrayLike<number>,
 	pos: number,
 ): [number, number] {
+	if (pos < 0) {
+		throw new RangeError(`Invalid position: ${pos} (must be non-negative)`);
+	}
+
 	let result = 0;
 	let shift = 0;
 	let consumed = 0;
@@ -187,6 +191,10 @@ export function decodeSleb128(
 	data: ArrayLike<number>,
 	pos: number,
 ): [number, number] {
+	if (pos < 0) {
+		throw new RangeError(`Invalid position: ${pos} (must be non-negative)`);
+	}
+
 	let result = 0;
 	let shift = 0;
 	let consumed = 0;

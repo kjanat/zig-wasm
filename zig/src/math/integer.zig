@@ -24,6 +24,9 @@ pub fn gcd_u64(a: u64, b: u64) u64 {
 /// Computes the least common multiple of `a` and `b` (u32).
 /// Returns 0 if either `a` or `b` is 0.
 /// Formula: lcm(a, b) = (a / gcd(a, b)) * b
+///
+/// WARNING: May overflow for large coprime inputs. The final multiplication
+/// can exceed u32 range even though intermediate division is safe.
 pub fn lcm_u32(a: u32, b: u32) u32 {
     if (a == 0 or b == 0) return 0;
     return (a / std.math.gcd(a, b)) * b;
@@ -32,6 +35,9 @@ pub fn lcm_u32(a: u32, b: u32) u32 {
 /// Computes the least common multiple of `a` and `b` (u64).
 /// Returns 0 if either `a` or `b` is 0.
 /// Formula: lcm(a, b) = (a / gcd(a, b)) * b
+///
+/// WARNING: May overflow for large coprime inputs. The final multiplication
+/// can exceed u64 range even though intermediate division is safe.
 pub fn lcm_u64(a: u64, b: u64) u64 {
     if (a == 0 or b == 0) return 0;
     return (a / std.math.gcd(a, b)) * b;

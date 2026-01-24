@@ -193,12 +193,22 @@ export async function absF32(x: number): Promise<number> {
 	return (await ensureInit()).abs_f32(x);
 }
 
-/** Compute absolute value (i32 signed integer). See {@link abs}. */
+/**
+ * Compute absolute value (i32 signed integer). See {@link abs}.
+ *
+ * WARNING: For MIN_INT (-2147483648), behavior is undefined because
+ * the absolute value cannot be represented as i32.
+ */
 export async function absI32(x: number): Promise<number> {
 	return (await ensureInit()).abs_i32(x);
 }
 
-/** Compute absolute value (i64 signed bigint). See {@link abs}. */
+/**
+ * Compute absolute value (i64 signed bigint). See {@link abs}.
+ *
+ * WARNING: For MIN_INT (-9223372036854775808n), behavior is undefined
+ * because the absolute value cannot be represented as i64.
+ */
 export async function absI64(x: bigint): Promise<bigint> {
 	return (await ensureInit()).abs_i64(x);
 }
@@ -1233,6 +1243,9 @@ export async function gcdU64(a: bigint, b: bigint): Promise<bigint> {
 /**
  * Compute the least common multiple of two unsigned 32-bit integers.
  *
+ * WARNING: May overflow for large coprime inputs. The final multiplication
+ * can exceed u32 range even though intermediate division is safe.
+ *
  * @param a - First value
  * @param b - Second value
  * @returns LCM of a and b
@@ -1247,7 +1260,11 @@ export async function lcm(a: number, b: number): Promise<number> {
 	return (await ensureInit()).lcm_u32(a, b);
 }
 
-/** Compute LCM (u64). See {@link lcm}. */
+/**
+ * Compute LCM (u64). See {@link lcm}.
+ *
+ * WARNING: May overflow for large coprime inputs.
+ */
 export async function lcmU64(a: bigint, b: bigint): Promise<bigint> {
 	return (await ensureInit()).lcm_u64(a, b);
 }
@@ -1259,6 +1276,9 @@ export async function lcmU64(a: bigint, b: bigint): Promise<bigint> {
 /**
  * Compute the floating-point remainder of x/y (f64).
  *
+ * Uses truncated division (matches C's fmod semantics).
+ * The result has the same sign as the dividend (x).
+ *
  * @param x - Dividend
  * @param y - Divisor
  * @returns Remainder with same sign as x
@@ -1266,7 +1286,7 @@ export async function lcmU64(a: bigint, b: bigint): Promise<bigint> {
  * @example
  * ```ts
  * const a = await fmod(5.3, 2);   // 1.3
- * const b = await fmod(-5.3, 2);  // -1.3
+ * const b = await fmod(-5.3, 2);  // -1.3  (same sign as dividend)
  * ```
  */
 export async function fmod(x: number, y: number): Promise<number> {

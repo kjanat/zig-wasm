@@ -47,7 +47,10 @@
     "ci": {
       "paths": {
         "wasm": "packages/*/wasm",
-        "dist": "packages/*/dist\ninternal/*/dist"
+        "dist": [
+          "packages/*/dist",
+          "internal/*/dist"
+        ]
       },
       "nodeVersions": [
         20,

@@ -13,6 +13,12 @@
  * - **Sync** (e.g., {@link crc32Sync}): Requires calling {@link init} first
  * - **Hex** (e.g., {@link crc32Hex}): Returns hash as lowercase hex string
  *
+ * **Security notes:**
+ * - These are NON-CRYPTOGRAPHIC hashes. Do NOT use for passwords, signatures, or security.
+ * - For hash tables with untrusted input, use seeded variants with random seeds to prevent
+ *   hash-flooding (DoS) attacks. Generate seeds with `crypto.getRandomValues()`.
+ * - 32-bit seeds are truncated to 32 bits; use 64-bit variants for larger seeds.
+ *
  * @example Basic async usage
  * ```ts
  * import { crc32, xxhash64, wyhash } from "@zig-wasm/hash";

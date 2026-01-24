@@ -29,6 +29,9 @@
 
 import { decodeUleb128, encodeUleb128 } from './leb128.ts';
 
+// Module-level TextEncoder for performance (avoid creating per call)
+const textEncoder = new TextEncoder();
+
 // =============================================================================
 // Constants
 // =============================================================================
@@ -198,8 +201,7 @@ export enum ImportKind {
  * ```
  */
 export function encodeString(s: string): number[] {
-	const encoder = new TextEncoder();
-	const bytes = encoder.encode(s);
+	const bytes = textEncoder.encode(s);
 	return [...encodeUleb128(bytes.length), ...bytes];
 }
 
@@ -346,8 +348,12 @@ export function isValidWasmHeader(data: ArrayLike<number>): boolean {
  *
  * @param data - Complete WASM binary
  * @returns Map of section ID to parsed section info
- * @throws {Error} If header is invalid
+ * @throws {Error} If header is invalid or duplicate non-Custom section found
  * @throws {RangeError} If section header is incomplete or section extends beyond data bounds
+ *
+ * Note: Per WASM spec, Custom sections (id=0) may appear multiple times,
+ * but all other sections can only appear once. This function throws on
+ * duplicate non-Custom sections.
  *
  * @example
  * ```ts
@@ -369,12 +375,6 @@ export function parseWasmSections(
 	let pos = 8; // After header
 
 	while (pos < data.length) {
-		// Validate section ID byte is accessible (always true here due to loop condition,
-		// but explicit for clarity)
-		if (pos >= data.length) {
-			throw new RangeError(`Unexpected end of data at position ${pos}`);
-		}
-
 		const sectionId = data[pos] as Section;
 
 		// Validate at least one byte exists for ULEB128 size
@@ -391,6 +391,13 @@ export function parseWasmSections(
 			throw new RangeError(
 				`Section ${sectionId} extends beyond data bounds: ` +
 					`expected ${totalSize} bytes at position ${pos}, but only ${data.length - pos} bytes remain`,
+			);
+		}
+
+		// Per WASM spec, non-Custom sections can only appear once
+		if (sectionId !== Section.Custom && sections.has(sectionId)) {
+			throw new Error(
+				`Duplicate section ${SECTION_NAMES[sectionId] ?? sectionId} at position ${pos}`,
 			);
 		}
 

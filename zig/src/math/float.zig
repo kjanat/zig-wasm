@@ -30,15 +30,17 @@ pub fn modf_f64(x: f64, int_part: *f64) f64 {
 // Fmod (floating point remainder)
 
 /// Computes the floating-point remainder of x/y (f32).
-/// The result has the same sign as `x`.
+/// The result has the same sign as `x` (matches C's fmod semantics).
+/// Uses truncated division: fmod(-5.3, 2) = -1.3
 pub fn fmod_f32(x: f32, y: f32) f32 {
-    return @mod(x, y);
+    return @rem(x, y);
 }
 
 /// Computes the floating-point remainder of x/y (f64).
-/// The result has the same sign as `x`.
+/// The result has the same sign as `x` (matches C's fmod semantics).
+/// Uses truncated division: fmod(-5.3, 2) = -1.3
 pub fn fmod_f64(x: f64, y: f64) f64 {
-    return @mod(x, y);
+    return @rem(x, y);
 }
 
 // Copysign
