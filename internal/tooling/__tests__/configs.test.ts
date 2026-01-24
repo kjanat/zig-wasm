@@ -33,17 +33,17 @@ describe('Configuration Files', () => {
 			expect(() => JSON.parse(content)).not.toThrow();
 		});
 
-		it.skip('has required biome configuration structure', () => {
+		it('has required biome configuration structure', () => {
 			const configPath = resolve(
 				import.meta.dirname,
 				'../configs/biome.base.json',
 			);
 			const config = JSON.parse(readFileSync(configPath, 'utf-8'));
 
-			expect(config).toHaveProperty('vcs');
-			expect(config).toHaveProperty('files');
+			expect(config).toHaveProperty('formatter');
 			expect(config).toHaveProperty('linter');
 			expect(config).toHaveProperty('javascript');
+			expect(config).toHaveProperty('overrides');
 		});
 
 		it('enables linter with recommended rules', () => {
@@ -57,36 +57,42 @@ describe('Configuration Files', () => {
 			expect(config.linter.rules.recommended).toBe(true);
 		});
 
-		it.skip('enforces import extensions', () => {
+		it('disables formatter (dprint handles formatting)', () => {
 			const configPath = resolve(
 				import.meta.dirname,
 				'../configs/biome.base.json',
 			);
 			const config = JSON.parse(readFileSync(configPath, 'utf-8'));
 
-			expect(config.linter.rules.correctness.useImportExtensions).toBe('error');
+			expect(config.formatter.enabled).toBe(false);
 		});
 
-		it.skip('configures VCS integration', () => {
+		it('configures linter domains', () => {
 			const configPath = resolve(
 				import.meta.dirname,
 				'../configs/biome.base.json',
 			);
 			const config = JSON.parse(readFileSync(configPath, 'utf-8'));
 
-			expect(config.vcs.enabled).toBe(true);
-			expect(config.vcs.clientKind).toBe('git');
-			expect(config.vcs.defaultBranch).toBe('master');
+			expect(config.linter.domains.project).toBe('recommended');
+			expect(config.linter.domains.test).toBe('recommended');
 		});
 
-		it.skip('ignores dist directories', () => {
+		it('allows JSONC comments and trailing commas', () => {
 			const configPath = resolve(
 				import.meta.dirname,
 				'../configs/biome.base.json',
 			);
 			const config = JSON.parse(readFileSync(configPath, 'utf-8'));
 
-			expect(config.files.includes).toContain('!!**/dist');
+			const jsoncOverride = config.overrides?.find(
+				(override: { includes?: string[] }) =>
+					override.includes?.includes('**/*.jsonc'),
+			);
+
+			expect(jsoncOverride).toBeDefined();
+			expect(jsoncOverride.json.parser.allowComments).toBe(true);
+			expect(jsoncOverride.json.parser.allowTrailingCommas).toBe(true);
 		});
 
 		it('disables organize imports for index files', () => {
@@ -284,28 +290,23 @@ describe('Configuration Files', () => {
 			expect(biomeConfig.javascript.formatter.quoteStyle).toBe('double');
 		});
 
-		it.skip('both configs target modern JavaScript', () => {
-			const biomePath = resolve(
-				import.meta.dirname,
-				'../configs/biome.base.json',
-			);
-			const biomeConfig = JSON.parse(readFileSync(biomePath, 'utf-8'));
-			const tsconfig = JSON.parse(readFileSync(rootTsconfigPath, 'utf-8'));
+		it('both configs target modern JavaScript', () => {
+			const tsconfig = parseJsoncFile(rootTsconfigPath);
 
-			// Both should work with ES2022+
+			// TypeScript targets ES2022+
 			expect(tsconfig.compilerOptions.target).toBe('ES2022');
-			expect(biomeConfig.vcs).toBeDefined(); // Modern Biome feature
+			expect(tsconfig.compilerOptions.module).toBe('ESNext');
 		});
 
-		it.skip('biome ignores dist directories', () => {
+		it('biome disables formatter to avoid conflicts with dprint', () => {
 			const biomePath = resolve(
 				import.meta.dirname,
 				'../configs/biome.base.json',
 			);
 			const biomeConfig = JSON.parse(readFileSync(biomePath, 'utf-8'));
 
-			// Biome should exclude dist
-			expect(biomeConfig.files.includes).toContain('!!**/dist');
+			// Biome formatter disabled, dprint handles formatting
+			expect(biomeConfig.formatter.enabled).toBe(false);
 		});
 	});
 

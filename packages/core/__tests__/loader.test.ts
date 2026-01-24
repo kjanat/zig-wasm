@@ -480,7 +480,7 @@ describe('defaultFetchFn', () => {
 			statusText: 'Not Found',
 		});
 		const originalFetch = globalThis.fetch;
-		globalThis.fetch = mockFetch;
+		globalThis.fetch = mockFetch as unknown as typeof fetch;
 
 		try {
 			await expect(
@@ -504,7 +504,7 @@ describe('defaultFetchFn', () => {
 				),
 		});
 		const originalFetch = globalThis.fetch;
-		globalThis.fetch = mockFetch;
+		globalThis.fetch = mockFetch as unknown as typeof fetch;
 
 		try {
 			const result = await defaultFetchFn('https://example.com/module.wasm');
@@ -541,7 +541,7 @@ describe('loadWasm with URL and no fetchFn', () => {
 		});
 
 		const originalFetch = globalThis.fetch;
-		globalThis.fetch = mockFetch;
+		globalThis.fetch = mockFetch as unknown as typeof fetch;
 
 		try {
 			const result = await loadWasm({
@@ -598,7 +598,7 @@ describe('loadWasm with URL and no fetchFn', () => {
 		).instantiateStreaming = mockInstantiateStreaming;
 
 		const originalFetch = globalThis.fetch;
-		globalThis.fetch = mockFetch;
+		globalThis.fetch = mockFetch as unknown as typeof fetch;
 
 		try {
 			const result = await loadWasm({

@@ -617,7 +617,7 @@ describe('init without explicit options', () => {
 				),
 		});
 		const originalFetch = globalThis.fetch;
-		globalThis.fetch = mockFetch;
+		globalThis.fetch = mockFetch as unknown as typeof fetch;
 
 		try {
 			const module = createWasmModule<TestExports>({

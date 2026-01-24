@@ -2,7 +2,7 @@ import * as tooling from '@zig-wasm/tooling';
 import { describe, expect, it } from 'vitest';
 
 describe('@zig-wasm/tooling exports', () => {
-	it.skip('exposes version', () => {
+	it('exposes version', () => {
 		expect(tooling.VERSION).toBeTypeOf('string');
 		expect(tooling.VERSION).toMatch(/^\d+\.\d+\.\d+$/);
 	});
