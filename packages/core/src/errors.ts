@@ -72,16 +72,16 @@
  * ```
  */
 export class ZigWasmError extends Error {
-  /**
-   * Creates a new ZigWasmError.
-   *
-   * @param message - Human-readable error description
-   * @param options - Standard Error options (e.g., `cause` for error chaining)
-   */
-  constructor(message: string, options?: ErrorOptions) {
-    super(message, options);
-    this.name = "ZigWasmError";
-  }
+	/**
+	 * Creates a new ZigWasmError.
+	 *
+	 * @param message - Human-readable error description
+	 * @param options - Standard Error options (e.g., `cause` for error chaining)
+	 */
+	constructor(message: string, options?: ErrorOptions) {
+		super(message, options);
+		this.name = "ZigWasmError";
+	}
 }
 
 /**
@@ -113,18 +113,18 @@ export class ZigWasmError extends Error {
  * ```
  */
 export class NotInitializedError extends ZigWasmError {
-  /**
-   * Creates a new NotInitializedError.
-   *
-   * @param moduleName - Name of the uninitialized module (for error message)
-   */
-  constructor(moduleName: string) {
-    super(
-      `${moduleName} WASM module not initialized. `
-        + `Call init() first or use the async API.`,
-    );
-    this.name = "NotInitializedError";
-  }
+	/**
+	 * Creates a new NotInitializedError.
+	 *
+	 * @param moduleName - Name of the uninitialized module (for error message)
+	 */
+	constructor(moduleName: string) {
+		super(
+			`${moduleName} WASM module not initialized. ` +
+				`Call init() first or use the async API.`,
+		);
+		this.name = "NotInitializedError";
+	}
 }
 
 /**
@@ -156,19 +156,20 @@ export class NotInitializedError extends ZigWasmError {
  * ```
  */
 export class WasmLoadError extends ZigWasmError {
-  /**
-   * Creates a new WasmLoadError.
-   *
-   * @param moduleName - Name of the module that failed to load
-   * @param cause - The underlying error that caused the load failure
-   */
-  constructor(moduleName: string, cause?: unknown) {
-    const msg = cause instanceof Error
-      ? `Failed to load ${moduleName} WASM module: ${cause.message}`
-      : `Failed to load ${moduleName} WASM module`;
-    super(msg, { cause });
-    this.name = "WasmLoadError";
-  }
+	/**
+	 * Creates a new WasmLoadError.
+	 *
+	 * @param moduleName - Name of the module that failed to load
+	 * @param cause - The underlying error that caused the load failure
+	 */
+	constructor(moduleName: string, cause?: unknown) {
+		const msg =
+			cause instanceof Error
+				? `Failed to load ${moduleName} WASM module: ${cause.message}`
+				: `Failed to load ${moduleName} WASM module`;
+		super(msg, { cause });
+		this.name = "WasmLoadError";
+	}
 }
 
 /**
@@ -194,13 +195,13 @@ export class WasmLoadError extends ZigWasmError {
  * ```
  */
 export class WasmMemoryError extends ZigWasmError {
-  /**
-   * Creates a new WasmMemoryError.
-   *
-   * @param message - Description of the memory error
-   */
-  constructor(message: string) {
-    super(message);
-    this.name = "WasmMemoryError";
-  }
+	/**
+	 * Creates a new WasmMemoryError.
+	 *
+	 * @param message - Description of the memory error
+	 */
+	constructor(message: string) {
+		super(message);
+		this.name = "WasmMemoryError";
+	}
 }

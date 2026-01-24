@@ -81,12 +81,12 @@ import { readPackageJson, resolvePackageJsonPath } from "./paths.ts";
  * ```
  */
 export interface CheckPublishedResult {
-  /** The full package name from package.json (e.g., "@zig-wasm/crypto") */
-  name: string;
-  /** The version string from package.json (e.g., "1.0.0") */
-  version: string;
-  /** Whether this exact version exists on the npm registry */
-  published: boolean;
+	/** The full package name from package.json (e.g., "@zig-wasm/crypto") */
+	name: string;
+	/** The version string from package.json (e.g., "1.0.0") */
+	version: string;
+	/** Whether this exact version exists on the npm registry */
+	published: boolean;
 }
 
 /**
@@ -121,31 +121,34 @@ export interface CheckPublishedResult {
  * ```
  */
 export async function checkPublished(
-  pkgPath: string,
-  registryUrl: string = "https://registry.npmjs.org",
+	pkgPath: string,
+	registryUrl: string = "https://registry.npmjs.org",
 ): Promise<CheckPublishedResult> {
-  const packageJsonPath: string = resolvePackageJsonPath(pkgPath, findMonorepoRoot());
-  const { name, version } = await readPackageJson(packageJsonPath);
+	const packageJsonPath: string = resolvePackageJsonPath(
+		pkgPath,
+		findMonorepoRoot(),
+	);
+	const { name, version } = await readPackageJson(packageJsonPath);
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
+	const controller = new AbortController();
+	const timeout = setTimeout(() => controller.abort(), 5000);
 
-  let published: boolean;
-  try {
-    const response = await fetch(`${registryUrl}/${name}/${version}`, {
-      signal: controller.signal,
-    });
-    published = response.ok;
-  } catch (error) {
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new Error(`Request timed out checking ${name}@${version}`);
-    }
-    throw error;
-  } finally {
-    clearTimeout(timeout);
-  }
+	let published: boolean;
+	try {
+		const response = await fetch(`${registryUrl}/${name}/${version}`, {
+			signal: controller.signal,
+		});
+		published = response.ok;
+	} catch (error) {
+		if (error instanceof Error && error.name === "AbortError") {
+			throw new Error(`Request timed out checking ${name}@${version}`);
+		}
+		throw error;
+	} finally {
+		clearTimeout(timeout);
+	}
 
-  return { name, version, published };
+	return { name, version, published };
 }
 
 /**
@@ -154,34 +157,34 @@ export async function checkPublished(
  * @internal
  */
 export async function checkPublishedCli(): Promise<number> {
-  if (process.argv.includes("--help") || process.argv.includes("-h")) {
-    printHelp(CHECK_PUBLISHED_USAGE, "info");
-    return 0;
-  }
+	if (process.argv.includes("--help") || process.argv.includes("-h")) {
+		printHelp(CHECK_PUBLISHED_USAGE, "info");
+		return 0;
+	}
 
-  if (!process.argv[2]) {
-    printHelp(CHECK_PUBLISHED_USAGE, "error");
-    return 2;
-  }
+	if (!process.argv[2]) {
+		printHelp(CHECK_PUBLISHED_USAGE, "error");
+		return 2;
+	}
 
-  console.log(`Checking if package is published...`);
+	console.log(`Checking if package is published...`);
 
-  try {
-    const result = await checkPublished(process.argv[2]);
-    if (result.published) {
-      console.log(`✓ ${result.name}@${result.version} is published on npm`);
-      return 0;
-    }
+	try {
+		const result = await checkPublished(process.argv[2]);
+		if (result.published) {
+			console.log(`✓ ${result.name}@${result.version} is published on npm`);
+			return 0;
+		}
 
-    console.log(`✗ ${result.name}@${result.version} is NOT published on npm`);
-    return 1;
-  } catch (error) {
-    console.error("Failed to check npm registry:", error);
-    return 2;
-  }
+		console.log(`✗ ${result.name}@${result.version} is NOT published on npm`);
+		return 1;
+	} catch (error) {
+		console.error("Failed to check npm registry:", error);
+		return 2;
+	}
 }
 
 // CLI entry point
 if (import.meta.main) {
-  await runCli(checkPublishedCli);
+	await runCli(checkPublishedCli);
 }

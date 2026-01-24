@@ -15,8 +15,8 @@ import { AllocationScope, loadWasm } from "@zig-wasm/core";
 const { exports, memory } = await loadWasm({ wasmUrl: "/my-module.wasm" });
 
 const result = AllocationScope.use(memory, (scope) => {
-  const input = scope.allocAndCopy(new Uint8Array([1, 2, 3]));
-  return exports.my_fn(input.ptr, input.len);
+	const input = scope.allocAndCopy(new Uint8Array([1, 2, 3]));
+	return exports.my_fn(input.ptr, input.len);
 });
 ```
 

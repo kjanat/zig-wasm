@@ -86,11 +86,14 @@ export * as compress from "@zig-wasm/compress";
 // Re-export core utilities
 // dprint-ignore
 export {
-  AllocationScope, WasmMemory,
-  compareBytes, concatBytes,
-  fromHex, toHex,
-  getEnvironment,
-  loadWasm,
+	AllocationScope,
+	WasmMemory,
+	compareBytes,
+	concatBytes,
+	fromHex,
+	toHex,
+	getEnvironment,
+	loadWasm,
 } from "@zig-wasm/core";
 export * as crypto from "@zig-wasm/crypto";
 export * as hash from "@zig-wasm/hash";

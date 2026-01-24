@@ -1,11 +1,11 @@
 {
-  "extends": "@zig-wasm/tooling/tsconfig",
-  "compilerOptions": {
-    "paths": {
-      "$/*": ["./src/*"],
-      "@zig-wasm/hash": ["./src/index.ts"],
-      "@zig-wasm/hash/*": ["./src/*"],
-      "~/*": ["../../*"]
-    }
-  }
+	"extends": "@zig-wasm/tooling/tsconfig",
+	"compilerOptions": {
+		"paths": {
+			"$/*": ["./src/*"],
+			"@zig-wasm/hash": ["./src/index.ts"],
+			"@zig-wasm/hash/*": ["./src/*"],
+			"~/*": ["../../*"]
+		}
+	}
 }

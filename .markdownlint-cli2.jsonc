@@ -1,20 +1,17 @@
 {
-  "$schema": "https://cdn.jsdelivr.net/gh/DavidAnson/markdownlint-cli2/schema/markdownlint-cli2-config-schema.json",
-  "config": {
-    "gitignore": true,
-    "line-length": {
-      "tables": false,
-      "code_blocks": false
-    },
-    "no-emphasis-as-heading": false,
-    "showFound": true
-  },
-  "fix": false,
-  // "noBanner": true,
-  "globs": [
-    "**/*.md",
-    "!**/node_modules/**"
-  ],
-  "ignores": ["CLAUDE.md"],
-  "markdownItPlugins": []
+	"$schema": "https://cdn.jsdelivr.net/gh/DavidAnson/markdownlint-cli2/schema/markdownlint-cli2-config-schema.json",
+	"config": {
+		"gitignore": true,
+		"line-length": {
+			"tables": false,
+			"code_blocks": false
+		},
+		"no-emphasis-as-heading": false,
+		"showFound": true
+	},
+	"fix": false,
+	// "noBanner": true,
+	"globs": ["**/*.md", "!**/node_modules/**"],
+	"ignores": ["CLAUDE.md"],
+	"markdownItPlugins": []
 }

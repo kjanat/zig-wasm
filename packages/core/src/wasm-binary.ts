@@ -41,12 +41,17 @@ export const WASM_MAGIC: readonly number[] = [0x00, 0x61, 0x73, 0x6d] as const;
 /**
  * WebAssembly version 1: (0x01 0x00 0x00 0x00)
  */
-export const WASM_VERSION: readonly number[] = [0x01, 0x00, 0x00, 0x00] as const;
+export const WASM_VERSION: readonly number[] = [
+	0x01, 0x00, 0x00, 0x00,
+] as const;
 
 /**
  * Combined WASM header (magic + version)
  */
-export const WASM_HEADER: readonly number[] = [...WASM_MAGIC, ...WASM_VERSION] as const;
+export const WASM_HEADER: readonly number[] = [
+	...WASM_MAGIC,
+	...WASM_VERSION,
+] as const;
 
 // =============================================================================
 // Enums
@@ -58,32 +63,32 @@ export const WASM_HEADER: readonly number[] = [...WASM_MAGIC, ...WASM_VERSION] a
  * @see https://webassembly.github.io/spec/core/binary/modules.html#sections
  */
 export enum Section {
-  /** Custom section (id=0) - name + arbitrary bytes */
-  Custom = 0,
-  /** Type section (id=1) - function signatures */
-  Type = 1,
-  /** Import section (id=2) - external imports */
-  Import = 2,
-  /** Function section (id=3) - function type indices */
-  Function = 3,
-  /** Table section (id=4) - table definitions */
-  Table = 4,
-  /** Memory section (id=5) - memory definitions */
-  Memory = 5,
-  /** Global section (id=6) - global variables */
-  Global = 6,
-  /** Export section (id=7) - exported items */
-  Export = 7,
-  /** Start section (id=8) - start function index */
-  Start = 8,
-  /** Element section (id=9) - table element segments */
-  Element = 9,
-  /** Code section (id=10) - function bodies */
-  Code = 10,
-  /** Data section (id=11) - data segments */
-  Data = 11,
-  /** Data count section (id=12) - number of data segments */
-  DataCount = 12,
+	/** Custom section (id=0) - name + arbitrary bytes */
+	Custom = 0,
+	/** Type section (id=1) - function signatures */
+	Type = 1,
+	/** Import section (id=2) - external imports */
+	Import = 2,
+	/** Function section (id=3) - function type indices */
+	Function = 3,
+	/** Table section (id=4) - table definitions */
+	Table = 4,
+	/** Memory section (id=5) - memory definitions */
+	Memory = 5,
+	/** Global section (id=6) - global variables */
+	Global = 6,
+	/** Export section (id=7) - exported items */
+	Export = 7,
+	/** Start section (id=8) - start function index */
+	Start = 8,
+	/** Element section (id=9) - table element segments */
+	Element = 9,
+	/** Code section (id=10) - function bodies */
+	Code = 10,
+	/** Data section (id=11) - data segments */
+	Data = 11,
+	/** Data count section (id=12) - number of data segments */
+	DataCount = 12,
 }
 
 /**
@@ -92,28 +97,28 @@ export enum Section {
  * @see https://webassembly.github.io/spec/core/binary/types.html#value-types
  */
 export enum ValType {
-  /** 32-bit integer */
-  I32 = 0x7f,
-  /** 64-bit integer */
-  I64 = 0x7e,
-  /** 32-bit float */
-  F32 = 0x7d,
-  /** 64-bit float */
-  F64 = 0x7c,
-  /** 128-bit vector (SIMD) */
-  V128 = 0x7b,
-  /** Function reference */
-  FuncRef = 0x70,
-  /** External reference */
-  ExternRef = 0x6f,
+	/** 32-bit integer */
+	I32 = 0x7f,
+	/** 64-bit integer */
+	I64 = 0x7e,
+	/** 32-bit float */
+	F32 = 0x7d,
+	/** 64-bit float */
+	F64 = 0x7c,
+	/** 128-bit vector (SIMD) */
+	V128 = 0x7b,
+	/** Function reference */
+	FuncRef = 0x70,
+	/** External reference */
+	ExternRef = 0x6f,
 }
 
 /**
  * Type constructor for function types.
  */
 export enum TypeConstructor {
-  /** Function type (0x60) */
-  Func = 0x60,
+	/** Function type (0x60) */
+	Func = 0x60,
 }
 
 /**
@@ -122,26 +127,26 @@ export enum TypeConstructor {
  * @see https://webassembly.github.io/spec/core/binary/instructions.html
  */
 export enum Op {
-  /** Unreachable trap */
-  Unreachable = 0x00,
-  /** No operation */
-  Nop = 0x01,
-  /** End of block/function */
-  End = 0x0b,
-  /** Return from function */
-  Return = 0x0f,
-  /** Call function by index */
-  Call = 0x10,
-  /** Drop top of stack */
-  Drop = 0x1a,
-  /** i32 constant */
-  I32Const = 0x41,
-  /** i64 constant */
-  I64Const = 0x42,
-  /** f32 constant */
-  F32Const = 0x43,
-  /** f64 constant */
-  F64Const = 0x44,
+	/** Unreachable trap */
+	Unreachable = 0x00,
+	/** No operation */
+	Nop = 0x01,
+	/** End of block/function */
+	End = 0x0b,
+	/** Return from function */
+	Return = 0x0f,
+	/** Call function by index */
+	Call = 0x10,
+	/** Drop top of stack */
+	Drop = 0x1a,
+	/** i32 constant */
+	I32Const = 0x41,
+	/** i64 constant */
+	I64Const = 0x42,
+	/** f32 constant */
+	F32Const = 0x43,
+	/** f64 constant */
+	F64Const = 0x44,
 }
 
 /**
@@ -150,14 +155,14 @@ export enum Op {
  * @see https://webassembly.github.io/spec/core/binary/modules.html#export-section
  */
 export enum ExportKind {
-  /** Function export */
-  Func = 0x00,
-  /** Table export */
-  Table = 0x01,
-  /** Memory export */
-  Memory = 0x02,
-  /** Global export */
-  Global = 0x03,
+	/** Function export */
+	Func = 0x00,
+	/** Table export */
+	Table = 0x01,
+	/** Memory export */
+	Memory = 0x02,
+	/** Global export */
+	Global = 0x03,
 }
 
 /**
@@ -166,14 +171,14 @@ export enum ExportKind {
  * @see https://webassembly.github.io/spec/core/binary/modules.html#import-section
  */
 export enum ImportKind {
-  /** Function import */
-  Func = 0x00,
-  /** Table import */
-  Table = 0x01,
-  /** Memory import */
-  Memory = 0x02,
-  /** Global import */
-  Global = 0x03,
+	/** Function import */
+	Func = 0x00,
+	/** Table import */
+	Table = 0x01,
+	/** Memory import */
+	Memory = 0x02,
+	/** Global import */
+	Global = 0x03,
 }
 
 // =============================================================================
@@ -193,9 +198,9 @@ export enum ImportKind {
  * ```
  */
 export function encodeString(s: string): number[] {
-  const encoder = new TextEncoder();
-  const bytes = encoder.encode(s);
-  return [...encodeUleb128(bytes.length), ...bytes];
+	const encoder = new TextEncoder();
+	const bytes = encoder.encode(s);
+	return [...encodeUleb128(bytes.length), ...bytes];
 }
 
 /**
@@ -214,7 +219,7 @@ export function encodeString(s: string): number[] {
  * ```
  */
 export function encodeSection(sectionId: Section, content: number[]): number[] {
-  return [sectionId, ...encodeUleb128(content.length), ...content];
+	return [sectionId, ...encodeUleb128(content.length), ...content];
 }
 
 /**
@@ -234,11 +239,11 @@ export function encodeSection(sectionId: Section, content: number[]): number[] {
  * ```
  */
 export function encodeVec(items: number[][]): number[] {
-  const flat: number[] = [];
-  for (const item of items) {
-    flat.push(...item);
-  }
-  return [...encodeUleb128(items.length), ...flat];
+	const flat: number[] = [];
+	for (const item of items) {
+		flat.push(...item);
+	}
+	return [...encodeUleb128(items.length), ...flat];
 }
 
 /**
@@ -259,14 +264,17 @@ export function encodeVec(items: number[][]): number[] {
  * // [0x60, 0, 0]
  * ```
  */
-export function encodeFuncType(params: ValType[], results: ValType[]): number[] {
-  return [
-    TypeConstructor.Func,
-    ...encodeUleb128(params.length),
-    ...params,
-    ...encodeUleb128(results.length),
-    ...results,
-  ];
+export function encodeFuncType(
+	params: ValType[],
+	results: ValType[],
+): number[] {
+	return [
+		TypeConstructor.Func,
+		...encodeUleb128(params.length),
+		...params,
+		...encodeUleb128(results.length),
+		...results,
+	];
 }
 
 /**
@@ -283,10 +291,10 @@ export function encodeFuncType(params: ValType[], results: ValType[]): number[] 
  * ```
  */
 export function encodeLimits(min: number, max?: number): number[] {
-  if (max !== undefined) {
-    return [0x01, ...encodeUleb128(min), ...encodeUleb128(max)];
-  }
-  return [0x00, ...encodeUleb128(min)];
+	if (max !== undefined) {
+		return [0x01, ...encodeUleb128(min), ...encodeUleb128(max)];
+	}
+	return [0x00, ...encodeUleb128(min)];
 }
 
 // =============================================================================
@@ -297,12 +305,12 @@ export function encodeLimits(min: number, max?: number): number[] {
  * Information about a parsed WASM section.
  */
 export interface ParsedSection {
-  /** Byte offset where section starts (at section ID) */
-  offset: number;
-  /** Content size (excluding section ID and size bytes) */
-  contentSize: number;
-  /** Total size including section ID and size bytes */
-  totalSize: number;
+	/** Byte offset where section starts (at section ID) */
+	offset: number;
+	/** Content size (excluding section ID and size bytes) */
+	contentSize: number;
+	/** Total size including section ID and size bytes */
+	totalSize: number;
 }
 
 /**
@@ -318,19 +326,19 @@ export interface ParsedSection {
  * ```
  */
 export function isValidWasmHeader(data: ArrayLike<number>): boolean {
-  if (data.length < 8) return false;
+	if (data.length < 8) return false;
 
-  // Check magic
-  for (let i = 0; i < 4; i++) {
-    if (data[i] !== WASM_MAGIC[i]) return false;
-  }
+	// Check magic
+	for (let i = 0; i < 4; i++) {
+		if (data[i] !== WASM_MAGIC[i]) return false;
+	}
 
-  // Check version
-  for (let i = 0; i < 4; i++) {
-    if (data[i + 4] !== WASM_VERSION[i]) return false;
-  }
+	// Check version
+	for (let i = 0; i < 4; i++) {
+		if (data[i + 4] !== WASM_VERSION[i]) return false;
+	}
 
-  return true;
+	return true;
 }
 
 /**
@@ -350,67 +358,69 @@ export function isValidWasmHeader(data: ArrayLike<number>): boolean {
  * }
  * ```
  */
-export function parseWasmSections(data: ArrayLike<number>): Map<Section, ParsedSection> {
-  if (!isValidWasmHeader(data)) {
-    throw new Error("Invalid WASM header");
-  }
+export function parseWasmSections(
+	data: ArrayLike<number>,
+): Map<Section, ParsedSection> {
+	if (!isValidWasmHeader(data)) {
+		throw new Error("Invalid WASM header");
+	}
 
-  const sections = new Map<Section, ParsedSection>();
-  let pos = 8; // After header
+	const sections = new Map<Section, ParsedSection>();
+	let pos = 8; // After header
 
-  while (pos < data.length) {
-    // Validate section ID byte is accessible (always true here due to loop condition,
-    // but explicit for clarity)
-    if (pos >= data.length) {
-      throw new RangeError(`Unexpected end of data at position ${pos}`);
-    }
+	while (pos < data.length) {
+		// Validate section ID byte is accessible (always true here due to loop condition,
+		// but explicit for clarity)
+		if (pos >= data.length) {
+			throw new RangeError(`Unexpected end of data at position ${pos}`);
+		}
 
-    const sectionId = data[pos] as Section;
+		const sectionId = data[pos] as Section;
 
-    // Validate at least one byte exists for ULEB128 size
-    if (pos + 1 >= data.length) {
-      throw new RangeError(`Incomplete section header at position ${pos}`);
-    }
+		// Validate at least one byte exists for ULEB128 size
+		if (pos + 1 >= data.length) {
+			throw new RangeError(`Incomplete section header at position ${pos}`);
+		}
 
-    // decodeUleb128 will throw RangeError if ULEB128 is truncated or overflows
-    const [contentSize, sizeBytes] = decodeUleb128(data, pos + 1);
-    const totalSize = 1 + sizeBytes + contentSize;
+		// decodeUleb128 will throw RangeError if ULEB128 is truncated or overflows
+		const [contentSize, sizeBytes] = decodeUleb128(data, pos + 1);
+		const totalSize = 1 + sizeBytes + contentSize;
 
-    // Validate section content fits within data bounds
-    if (pos + totalSize > data.length) {
-      throw new RangeError(
-        `Section ${sectionId} extends beyond data bounds: `
-          + `expected ${totalSize} bytes at position ${pos}, but only ${data.length - pos} bytes remain`,
-      );
-    }
+		// Validate section content fits within data bounds
+		if (pos + totalSize > data.length) {
+			throw new RangeError(
+				`Section ${sectionId} extends beyond data bounds: ` +
+					`expected ${totalSize} bytes at position ${pos}, but only ${data.length - pos} bytes remain`,
+			);
+		}
 
-    sections.set(sectionId, {
-      offset: pos,
-      contentSize,
-      totalSize,
-    });
+		sections.set(sectionId, {
+			offset: pos,
+			contentSize,
+			totalSize,
+		});
 
-    pos += totalSize;
-  }
+		pos += totalSize;
+	}
 
-  return sections;
+	return sections;
 }
 
 /**
  * Names for section IDs (for debugging/display).
  */
 export const SECTION_NAMES: Readonly<Record<Section, string>> = {
-  [Section.Custom]: "custom",
-  [Section.Type]: "type",
-  [Section.Import]: "import",
-  [Section.Function]: "function",
-  [Section.Table]: "table",
-  [Section.Memory]: "memory",
-  [Section.Global]: "global",
-  [Section.Export]: "export",
-  [Section.Start]: "start",
-  [Section.Element]: "element",
-  [Section.Code]: "code",
-  [Section.Data]: "data",
-  [Section.DataCount]: "datacount",
+	[Section.Custom]: "custom",
+	[Section.Type]: "type",
+	[Section.Import]: "import",
+	[Section.Function]: "function",
+	[Section.Table]: "table",
+	[Section.Memory]: "memory",
+	[Section.Global]: "global",
+	[Section.Export]: "export",
+	[Section.Start]: "start",
+	[Section.Element]: "element",
+	[Section.Code]: "code",
+	[Section.Data]: "data",
+	[Section.DataCount]: "datacount",
 } as const;

@@ -69,43 +69,49 @@ let initPromise: Promise<void> | null = null;
  * ```
  */
 export async function init(options?: InitOptions): Promise<void> {
-  if (wasmExports) return;
+	if (wasmExports) return;
 
-  if (initPromise) {
-    await initPromise;
-    return;
-  }
+	if (initPromise) {
+		await initPromise;
+		return;
+	}
 
-  initPromise = (async () => {
-    const env = getEnvironment();
-    let result: Awaited<ReturnType<typeof loadWasm<MathWasmExports>>>;
+	initPromise = (async () => {
+		const env = getEnvironment();
+		let result: Awaited<ReturnType<typeof loadWasm<MathWasmExports>>>;
 
-    // v8 ignore else: -- @preserve -- browser fallback uses fetch() which doesn't support file:// URLs in Node
-    if (options?.wasmBytes) {
-      result = await loadWasm<MathWasmExports>({ wasmBytes: options.wasmBytes, imports: options.imports });
-    } else if (options?.wasmPath) {
-      result = await loadWasm<MathWasmExports>({ wasmPath: options.wasmPath, imports: options.imports });
-    } else if (options?.wasmUrl) {
-      result = await loadWasm<MathWasmExports>({
-        wasmUrl: options.wasmUrl,
-        imports: options.imports,
-        fetchFn: options.fetchFn,
-      });
-    } else if (env.isNode || env.isBun) {
-      const { fileURLToPath } = await import("node:url");
-      const { dirname, join } = await import("node:path");
-      const currentDir = dirname(fileURLToPath(import.meta.url));
-      const wasmPath = join(currentDir, "../wasm/math.wasm");
-      result = await loadWasm<MathWasmExports>({ wasmPath });
-    } else {
-      const wasmUrl = new URL("../wasm/math.wasm", import.meta.url);
-      result = await loadWasm<MathWasmExports>({ wasmUrl: wasmUrl.href });
-    }
+		// v8 ignore else: -- @preserve -- browser fallback uses fetch() which doesn't support file:// URLs in Node
+		if (options?.wasmBytes) {
+			result = await loadWasm<MathWasmExports>({
+				wasmBytes: options.wasmBytes,
+				imports: options.imports,
+			});
+		} else if (options?.wasmPath) {
+			result = await loadWasm<MathWasmExports>({
+				wasmPath: options.wasmPath,
+				imports: options.imports,
+			});
+		} else if (options?.wasmUrl) {
+			result = await loadWasm<MathWasmExports>({
+				wasmUrl: options.wasmUrl,
+				imports: options.imports,
+				fetchFn: options.fetchFn,
+			});
+		} else if (env.isNode || env.isBun) {
+			const { fileURLToPath } = await import("node:url");
+			const { dirname, join } = await import("node:path");
+			const currentDir = dirname(fileURLToPath(import.meta.url));
+			const wasmPath = join(currentDir, "../wasm/math.wasm");
+			result = await loadWasm<MathWasmExports>({ wasmPath });
+		} else {
+			const wasmUrl = new URL("../wasm/math.wasm", import.meta.url);
+			result = await loadWasm<MathWasmExports>({ wasmUrl: wasmUrl.href });
+		}
 
-    wasmExports = result.exports;
-  })();
+		wasmExports = result.exports;
+	})();
 
-  await initPromise;
+	await initPromise;
 }
 
 /**
@@ -124,20 +130,20 @@ export async function init(options?: InitOptions): Promise<void> {
  * ```
  */
 export function isInitialized(): boolean {
-  return wasmExports !== null;
+	return wasmExports !== null;
 }
 
 async function ensureInit(): Promise<MathWasmExports> {
-  await init();
-  // After init(), this is guaranteed to be set
-  return wasmExports as MathWasmExports;
+	await init();
+	// After init(), this is guaranteed to be set
+	return wasmExports as MathWasmExports;
 }
 
 function getSyncExports(): MathWasmExports {
-  if (!wasmExports) {
-    throw new NotInitializedError("math");
-  }
-  return wasmExports;
+	if (!wasmExports) {
+		throw new NotInitializedError("math");
+	}
+	return wasmExports;
 }
 
 /**
@@ -149,7 +155,7 @@ function getSyncExports(): MathWasmExports {
  * @returns Promise resolving to the raw WASM exports object
  */
 export async function getExports(): Promise<MathWasmExports> {
-  return ensureInit();
+	return ensureInit();
 }
 
 /**
@@ -159,7 +165,7 @@ export async function getExports(): Promise<MathWasmExports> {
  * @throws {NotInitializedError} If {@link init} has not been called
  */
 export function getExportsSync(): MathWasmExports {
-  return getSyncExports();
+	return getSyncExports();
 }
 
 // ============================================================================
@@ -179,22 +185,22 @@ export function getExportsSync(): MathWasmExports {
  * ```
  */
 export async function abs(x: number): Promise<number> {
-  return (await ensureInit()).abs_f64(x);
+	return (await ensureInit()).abs_f64(x);
 }
 
 /** Compute absolute value (f32 single precision). See {@link abs}. */
 export async function absF32(x: number): Promise<number> {
-  return (await ensureInit()).abs_f32(x);
+	return (await ensureInit()).abs_f32(x);
 }
 
 /** Compute absolute value (i32 signed integer). See {@link abs}. */
 export async function absI32(x: number): Promise<number> {
-  return (await ensureInit()).abs_i32(x);
+	return (await ensureInit()).abs_i32(x);
 }
 
 /** Compute absolute value (i64 signed bigint). See {@link abs}. */
 export async function absI64(x: bigint): Promise<bigint> {
-  return (await ensureInit()).abs_i64(x);
+	return (await ensureInit()).abs_i64(x);
 }
 
 /**
@@ -211,32 +217,32 @@ export async function absI64(x: bigint): Promise<bigint> {
  * ```
  */
 export async function min(a: number, b: number): Promise<number> {
-  return (await ensureInit()).min_f64(a, b);
+	return (await ensureInit()).min_f64(a, b);
 }
 
 /** Return minimum (f32 single precision). See {@link min}. */
 export async function minF32(a: number, b: number): Promise<number> {
-  return (await ensureInit()).min_f32(a, b);
+	return (await ensureInit()).min_f32(a, b);
 }
 
 /** Return minimum (i32 signed integer). See {@link min}. */
 export async function minI32(a: number, b: number): Promise<number> {
-  return (await ensureInit()).min_i32(a, b);
+	return (await ensureInit()).min_i32(a, b);
 }
 
 /** Return minimum (i64 signed bigint). See {@link min}. */
 export async function minI64(a: bigint, b: bigint): Promise<bigint> {
-  return (await ensureInit()).min_i64(a, b);
+	return (await ensureInit()).min_i64(a, b);
 }
 
 /** Return minimum (u32 unsigned integer). See {@link min}. */
 export async function minU32(a: number, b: number): Promise<number> {
-  return (await ensureInit()).min_u32(a, b);
+	return (await ensureInit()).min_u32(a, b);
 }
 
 /** Return minimum (u64 unsigned bigint). See {@link min}. */
 export async function minU64(a: bigint, b: bigint): Promise<bigint> {
-  return (await ensureInit()).min_u64(a, b);
+	return (await ensureInit()).min_u64(a, b);
 }
 
 /**
@@ -253,32 +259,32 @@ export async function minU64(a: bigint, b: bigint): Promise<bigint> {
  * ```
  */
 export async function max(a: number, b: number): Promise<number> {
-  return (await ensureInit()).max_f64(a, b);
+	return (await ensureInit()).max_f64(a, b);
 }
 
 /** Return maximum (f32 single precision). See {@link max}. */
 export async function maxF32(a: number, b: number): Promise<number> {
-  return (await ensureInit()).max_f32(a, b);
+	return (await ensureInit()).max_f32(a, b);
 }
 
 /** Return maximum (i32 signed integer). See {@link max}. */
 export async function maxI32(a: number, b: number): Promise<number> {
-  return (await ensureInit()).max_i32(a, b);
+	return (await ensureInit()).max_i32(a, b);
 }
 
 /** Return maximum (i64 signed bigint). See {@link max}. */
 export async function maxI64(a: bigint, b: bigint): Promise<bigint> {
-  return (await ensureInit()).max_i64(a, b);
+	return (await ensureInit()).max_i64(a, b);
 }
 
 /** Return maximum (u32 unsigned integer). See {@link max}. */
 export async function maxU32(a: number, b: number): Promise<number> {
-  return (await ensureInit()).max_u32(a, b);
+	return (await ensureInit()).max_u32(a, b);
 }
 
 /** Return maximum (u64 unsigned bigint). See {@link max}. */
 export async function maxU64(a: bigint, b: bigint): Promise<bigint> {
-  return (await ensureInit()).max_u64(a, b);
+	return (await ensureInit()).max_u64(a, b);
 }
 
 /**
@@ -298,33 +304,57 @@ export async function maxU64(a: bigint, b: bigint): Promise<bigint> {
  * const c = await clamp(50, 0, 100);   // 50
  * ```
  */
-export async function clamp(val: number, lo: number, hi: number): Promise<number> {
-  return (await ensureInit()).clamp_f64(val, lo, hi);
+export async function clamp(
+	val: number,
+	lo: number,
+	hi: number,
+): Promise<number> {
+	return (await ensureInit()).clamp_f64(val, lo, hi);
 }
 
 /** Clamp value (f32 single precision). See {@link clamp}. */
-export async function clampF32(val: number, lo: number, hi: number): Promise<number> {
-  return (await ensureInit()).clamp_f32(val, lo, hi);
+export async function clampF32(
+	val: number,
+	lo: number,
+	hi: number,
+): Promise<number> {
+	return (await ensureInit()).clamp_f32(val, lo, hi);
 }
 
 /** Clamp value (i32 signed integer). See {@link clamp}. */
-export async function clampI32(val: number, lo: number, hi: number): Promise<number> {
-  return (await ensureInit()).clamp_i32(val, lo, hi);
+export async function clampI32(
+	val: number,
+	lo: number,
+	hi: number,
+): Promise<number> {
+	return (await ensureInit()).clamp_i32(val, lo, hi);
 }
 
 /** Clamp value (i64 signed bigint). See {@link clamp}. */
-export async function clampI64(val: bigint, lo: bigint, hi: bigint): Promise<bigint> {
-  return (await ensureInit()).clamp_i64(val, lo, hi);
+export async function clampI64(
+	val: bigint,
+	lo: bigint,
+	hi: bigint,
+): Promise<bigint> {
+	return (await ensureInit()).clamp_i64(val, lo, hi);
 }
 
 /** Clamp value (u32 unsigned integer). See {@link clamp}. */
-export async function clampU32(val: number, lo: number, hi: number): Promise<number> {
-  return (await ensureInit()).clamp_u32(val, lo, hi);
+export async function clampU32(
+	val: number,
+	lo: number,
+	hi: number,
+): Promise<number> {
+	return (await ensureInit()).clamp_u32(val, lo, hi);
 }
 
 /** Clamp value (u64 unsigned bigint). See {@link clamp}. */
-export async function clampU64(val: bigint, lo: bigint, hi: bigint): Promise<bigint> {
-  return (await ensureInit()).clamp_u64(val, lo, hi);
+export async function clampU64(
+	val: bigint,
+	lo: bigint,
+	hi: bigint,
+): Promise<bigint> {
+	return (await ensureInit()).clamp_u64(val, lo, hi);
 }
 
 // ============================================================================
@@ -344,12 +374,12 @@ export async function clampU64(val: bigint, lo: bigint, hi: bigint): Promise<big
  * ```
  */
 export async function sqrt(x: number): Promise<number> {
-  return (await ensureInit()).sqrt_f64(x);
+	return (await ensureInit()).sqrt_f64(x);
 }
 
 /** Compute square root (f32 single precision). See {@link sqrt}. */
 export async function sqrtF32(x: number): Promise<number> {
-  return (await ensureInit()).sqrt_f32(x);
+	return (await ensureInit()).sqrt_f32(x);
 }
 
 /**
@@ -365,12 +395,12 @@ export async function sqrtF32(x: number): Promise<number> {
  * ```
  */
 export async function cbrt(x: number): Promise<number> {
-  return (await ensureInit()).cbrt_f64(x);
+	return (await ensureInit()).cbrt_f64(x);
 }
 
 /** Compute cube root (f32 single precision). See {@link cbrt}. */
 export async function cbrtF32(x: number): Promise<number> {
-  return (await ensureInit()).cbrt_f32(x);
+	return (await ensureInit()).cbrt_f32(x);
 }
 
 /**
@@ -388,12 +418,12 @@ export async function cbrtF32(x: number): Promise<number> {
  * ```
  */
 export async function pow(base: number, exp: number): Promise<number> {
-  return (await ensureInit()).pow_f64(base, exp);
+	return (await ensureInit()).pow_f64(base, exp);
 }
 
 /** Compute power (f32 single precision). See {@link pow}. */
 export async function powF32(base: number, exp: number): Promise<number> {
-  return (await ensureInit()).pow_f32(base, exp);
+	return (await ensureInit()).pow_f32(base, exp);
 }
 
 /**
@@ -409,12 +439,12 @@ export async function powF32(base: number, exp: number): Promise<number> {
  * ```
  */
 export async function hypot(x: number, y: number): Promise<number> {
-  return (await ensureInit()).hypot_f64(x, y);
+	return (await ensureInit()).hypot_f64(x, y);
 }
 
 /** Compute hypotenuse (f32 single precision). See {@link hypot}. */
 export async function hypotF32(x: number, y: number): Promise<number> {
-  return (await ensureInit()).hypot_f32(x, y);
+	return (await ensureInit()).hypot_f32(x, y);
 }
 
 // ============================================================================
@@ -434,12 +464,12 @@ export async function hypotF32(x: number, y: number): Promise<number> {
  * ```
  */
 export async function exp(x: number): Promise<number> {
-  return (await ensureInit()).exp_f64(x);
+	return (await ensureInit()).exp_f64(x);
 }
 
 /** Compute e^x (f32 single precision). See {@link exp}. */
 export async function expF32(x: number): Promise<number> {
-  return (await ensureInit()).exp_f32(x);
+	return (await ensureInit()).exp_f32(x);
 }
 
 /**
@@ -449,12 +479,12 @@ export async function expF32(x: number): Promise<number> {
  * @returns 2 raised to the power x
  */
 export async function exp2(x: number): Promise<number> {
-  return (await ensureInit()).exp2_f64(x);
+	return (await ensureInit()).exp2_f64(x);
 }
 
 /** Compute 2^x (f32 single precision). See {@link exp2}. */
 export async function exp2F32(x: number): Promise<number> {
-  return (await ensureInit()).exp2_f32(x);
+	return (await ensureInit()).exp2_f32(x);
 }
 
 /**
@@ -464,12 +494,12 @@ export async function exp2F32(x: number): Promise<number> {
  * @returns e^x - 1
  */
 export async function expm1(x: number): Promise<number> {
-  return (await ensureInit()).expm1_f64(x);
+	return (await ensureInit()).expm1_f64(x);
 }
 
 /** Compute e^x - 1 (f32 single precision). See {@link expm1}. */
 export async function expm1F32(x: number): Promise<number> {
-  return (await ensureInit()).expm1_f32(x);
+	return (await ensureInit()).expm1_f32(x);
 }
 
 /**
@@ -485,12 +515,12 @@ export async function expm1F32(x: number): Promise<number> {
  * ```
  */
 export async function log(x: number): Promise<number> {
-  return (await ensureInit()).log_f64(x);
+	return (await ensureInit()).log_f64(x);
 }
 
 /** Compute natural log (f32 single precision). See {@link log}. */
 export async function logF32(x: number): Promise<number> {
-  return (await ensureInit()).log_f32(x);
+	return (await ensureInit()).log_f32(x);
 }
 
 /**
@@ -506,12 +536,12 @@ export async function logF32(x: number): Promise<number> {
  * ```
  */
 export async function log2(x: number): Promise<number> {
-  return (await ensureInit()).log2_f64(x);
+	return (await ensureInit()).log2_f64(x);
 }
 
 /** Compute log base 2 (f32 single precision). See {@link log2}. */
 export async function log2F32(x: number): Promise<number> {
-  return (await ensureInit()).log2_f32(x);
+	return (await ensureInit()).log2_f32(x);
 }
 
 /**
@@ -527,12 +557,12 @@ export async function log2F32(x: number): Promise<number> {
  * ```
  */
 export async function log10(x: number): Promise<number> {
-  return (await ensureInit()).log10_f64(x);
+	return (await ensureInit()).log10_f64(x);
 }
 
 /** Compute log base 10 (f32 single precision). See {@link log10}. */
 export async function log10F32(x: number): Promise<number> {
-  return (await ensureInit()).log10_f32(x);
+	return (await ensureInit()).log10_f32(x);
 }
 
 /**
@@ -542,12 +572,12 @@ export async function log10F32(x: number): Promise<number> {
  * @returns ln(1 + x)
  */
 export async function log1p(x: number): Promise<number> {
-  return (await ensureInit()).log1p_f64(x);
+	return (await ensureInit()).log1p_f64(x);
 }
 
 /** Compute ln(1 + x) (f32 single precision). See {@link log1p}. */
 export async function log1pF32(x: number): Promise<number> {
-  return (await ensureInit()).log1p_f32(x);
+	return (await ensureInit()).log1p_f32(x);
 }
 
 // ============================================================================
@@ -567,12 +597,12 @@ export async function log1pF32(x: number): Promise<number> {
  * ```
  */
 export async function sin(x: number): Promise<number> {
-  return (await ensureInit()).sin_f64(x);
+	return (await ensureInit()).sin_f64(x);
 }
 
 /** Compute sine (f32 single precision). See {@link sin}. */
 export async function sinF32(x: number): Promise<number> {
-  return (await ensureInit()).sin_f32(x);
+	return (await ensureInit()).sin_f32(x);
 }
 
 /**
@@ -588,12 +618,12 @@ export async function sinF32(x: number): Promise<number> {
  * ```
  */
 export async function cos(x: number): Promise<number> {
-  return (await ensureInit()).cos_f64(x);
+	return (await ensureInit()).cos_f64(x);
 }
 
 /** Compute cosine (f32 single precision). See {@link cos}. */
 export async function cosF32(x: number): Promise<number> {
-  return (await ensureInit()).cos_f32(x);
+	return (await ensureInit()).cos_f32(x);
 }
 
 /**
@@ -603,12 +633,12 @@ export async function cosF32(x: number): Promise<number> {
  * @returns The tangent of x
  */
 export async function tan(x: number): Promise<number> {
-  return (await ensureInit()).tan_f64(x);
+	return (await ensureInit()).tan_f64(x);
 }
 
 /** Compute tangent (f32 single precision). See {@link tan}. */
 export async function tanF32(x: number): Promise<number> {
-  return (await ensureInit()).tan_f32(x);
+	return (await ensureInit()).tan_f32(x);
 }
 
 /**
@@ -618,12 +648,12 @@ export async function tanF32(x: number): Promise<number> {
  * @returns Angle in radians, in range [-PI/2, PI/2]
  */
 export async function asin(x: number): Promise<number> {
-  return (await ensureInit()).asin_f64(x);
+	return (await ensureInit()).asin_f64(x);
 }
 
 /** Compute arc sine (f32 single precision). See {@link asin}. */
 export async function asinF32(x: number): Promise<number> {
-  return (await ensureInit()).asin_f32(x);
+	return (await ensureInit()).asin_f32(x);
 }
 
 /**
@@ -633,12 +663,12 @@ export async function asinF32(x: number): Promise<number> {
  * @returns Angle in radians, in range [0, PI]
  */
 export async function acos(x: number): Promise<number> {
-  return (await ensureInit()).acos_f64(x);
+	return (await ensureInit()).acos_f64(x);
 }
 
 /** Compute arc cosine (f32 single precision). See {@link acos}. */
 export async function acosF32(x: number): Promise<number> {
-  return (await ensureInit()).acos_f32(x);
+	return (await ensureInit()).acos_f32(x);
 }
 
 /**
@@ -648,12 +678,12 @@ export async function acosF32(x: number): Promise<number> {
  * @returns Angle in radians, in range [-PI/2, PI/2]
  */
 export async function atan(x: number): Promise<number> {
-  return (await ensureInit()).atan_f64(x);
+	return (await ensureInit()).atan_f64(x);
 }
 
 /** Compute arc tangent (f32 single precision). See {@link atan}. */
 export async function atanF32(x: number): Promise<number> {
-  return (await ensureInit()).atan_f32(x);
+	return (await ensureInit()).atan_f32(x);
 }
 
 /**
@@ -672,12 +702,12 @@ export async function atanF32(x: number): Promise<number> {
  * ```
  */
 export async function atan2(y: number, x: number): Promise<number> {
-  return (await ensureInit()).atan2_f64(y, x);
+	return (await ensureInit()).atan2_f64(y, x);
 }
 
 /** Compute atan2 (f32 single precision). See {@link atan2}. */
 export async function atan2F32(y: number, x: number): Promise<number> {
-  return (await ensureInit()).atan2_f32(y, x);
+	return (await ensureInit()).atan2_f32(y, x);
 }
 
 /**
@@ -693,12 +723,12 @@ export async function atan2F32(y: number, x: number): Promise<number> {
  * ```
  */
 export async function deg2rad(deg: number): Promise<number> {
-  return (await ensureInit()).deg2rad_f64(deg);
+	return (await ensureInit()).deg2rad_f64(deg);
 }
 
 /** Convert degrees to radians (f32 single precision). See {@link deg2rad}. */
 export async function deg2radF32(deg: number): Promise<number> {
-  return (await ensureInit()).deg2rad_f32(deg);
+	return (await ensureInit()).deg2rad_f32(deg);
 }
 
 /**
@@ -714,12 +744,12 @@ export async function deg2radF32(deg: number): Promise<number> {
  * ```
  */
 export async function rad2deg(rad: number): Promise<number> {
-  return (await ensureInit()).rad2deg_f64(rad);
+	return (await ensureInit()).rad2deg_f64(rad);
 }
 
 /** Convert radians to degrees (f32 single precision). See {@link rad2deg}. */
 export async function rad2degF32(rad: number): Promise<number> {
-  return (await ensureInit()).rad2deg_f32(rad);
+	return (await ensureInit()).rad2deg_f32(rad);
 }
 
 // ============================================================================
@@ -733,12 +763,12 @@ export async function rad2degF32(rad: number): Promise<number> {
  * @returns sinh(x) = (e^x - e^-x) / 2
  */
 export async function sinh(x: number): Promise<number> {
-  return (await ensureInit()).sinh_f64(x);
+	return (await ensureInit()).sinh_f64(x);
 }
 
 /** Compute hyperbolic sine (f32 single precision). See {@link sinh}. */
 export async function sinhF32(x: number): Promise<number> {
-  return (await ensureInit()).sinh_f32(x);
+	return (await ensureInit()).sinh_f32(x);
 }
 
 /**
@@ -748,12 +778,12 @@ export async function sinhF32(x: number): Promise<number> {
  * @returns cosh(x) = (e^x + e^-x) / 2
  */
 export async function cosh(x: number): Promise<number> {
-  return (await ensureInit()).cosh_f64(x);
+	return (await ensureInit()).cosh_f64(x);
 }
 
 /** Compute hyperbolic cosine (f32 single precision). See {@link cosh}. */
 export async function coshF32(x: number): Promise<number> {
-  return (await ensureInit()).cosh_f32(x);
+	return (await ensureInit()).cosh_f32(x);
 }
 
 /**
@@ -763,12 +793,12 @@ export async function coshF32(x: number): Promise<number> {
  * @returns tanh(x), in range (-1, 1)
  */
 export async function tanh(x: number): Promise<number> {
-  return (await ensureInit()).tanh_f64(x);
+	return (await ensureInit()).tanh_f64(x);
 }
 
 /** Compute hyperbolic tangent (f32 single precision). See {@link tanh}. */
 export async function tanhF32(x: number): Promise<number> {
-  return (await ensureInit()).tanh_f32(x);
+	return (await ensureInit()).tanh_f32(x);
 }
 
 /**
@@ -778,12 +808,12 @@ export async function tanhF32(x: number): Promise<number> {
  * @returns asinh(x)
  */
 export async function asinh(x: number): Promise<number> {
-  return (await ensureInit()).asinh_f64(x);
+	return (await ensureInit()).asinh_f64(x);
 }
 
 /** Compute inverse hyperbolic sine (f32 single precision). See {@link asinh}. */
 export async function asinhF32(x: number): Promise<number> {
-  return (await ensureInit()).asinh_f32(x);
+	return (await ensureInit()).asinh_f32(x);
 }
 
 /**
@@ -793,12 +823,12 @@ export async function asinhF32(x: number): Promise<number> {
  * @returns acosh(x)
  */
 export async function acosh(x: number): Promise<number> {
-  return (await ensureInit()).acosh_f64(x);
+	return (await ensureInit()).acosh_f64(x);
 }
 
 /** Compute inverse hyperbolic cosine (f32 single precision). See {@link acosh}. */
 export async function acoshF32(x: number): Promise<number> {
-  return (await ensureInit()).acosh_f32(x);
+	return (await ensureInit()).acosh_f32(x);
 }
 
 /**
@@ -808,12 +838,12 @@ export async function acoshF32(x: number): Promise<number> {
  * @returns atanh(x)
  */
 export async function atanh(x: number): Promise<number> {
-  return (await ensureInit()).atanh_f64(x);
+	return (await ensureInit()).atanh_f64(x);
 }
 
 /** Compute inverse hyperbolic tangent (f32 single precision). See {@link atanh}. */
 export async function atanhF32(x: number): Promise<number> {
-  return (await ensureInit()).atanh_f32(x);
+	return (await ensureInit()).atanh_f32(x);
 }
 
 // ============================================================================
@@ -833,12 +863,12 @@ export async function atanhF32(x: number): Promise<number> {
  * ```
  */
 export async function floor(x: number): Promise<number> {
-  return (await ensureInit()).floor_f64(x);
+	return (await ensureInit()).floor_f64(x);
 }
 
 /** Round down (f32 single precision). See {@link floor}. */
 export async function floorF32(x: number): Promise<number> {
-  return (await ensureInit()).floor_f32(x);
+	return (await ensureInit()).floor_f32(x);
 }
 
 /**
@@ -854,12 +884,12 @@ export async function floorF32(x: number): Promise<number> {
  * ```
  */
 export async function ceil(x: number): Promise<number> {
-  return (await ensureInit()).ceil_f64(x);
+	return (await ensureInit()).ceil_f64(x);
 }
 
 /** Round up (f32 single precision). See {@link ceil}. */
 export async function ceilF32(x: number): Promise<number> {
-  return (await ensureInit()).ceil_f32(x);
+	return (await ensureInit()).ceil_f32(x);
 }
 
 /**
@@ -876,12 +906,12 @@ export async function ceilF32(x: number): Promise<number> {
  * ```
  */
 export async function round(x: number): Promise<number> {
-  return (await ensureInit()).round_f64(x);
+	return (await ensureInit()).round_f64(x);
 }
 
 /** Round to nearest (f32 single precision). See {@link round}. */
 export async function roundF32(x: number): Promise<number> {
-  return (await ensureInit()).round_f32(x);
+	return (await ensureInit()).round_f32(x);
 }
 
 /**
@@ -897,12 +927,12 @@ export async function roundF32(x: number): Promise<number> {
  * ```
  */
 export async function trunc(x: number): Promise<number> {
-  return (await ensureInit()).trunc_f64(x);
+	return (await ensureInit()).trunc_f64(x);
 }
 
 /** Truncate (f32 single precision). See {@link trunc}. */
 export async function truncF32(x: number): Promise<number> {
-  return (await ensureInit()).trunc_f32(x);
+	return (await ensureInit()).trunc_f32(x);
 }
 
 // ============================================================================
@@ -916,12 +946,12 @@ export async function truncF32(x: number): Promise<number> {
  * @returns `true` if x is NaN
  */
 export async function isNaN_(x: number): Promise<boolean> {
-  return (await ensureInit()).isnan_f64(x) !== 0;
+	return (await ensureInit()).isnan_f64(x) !== 0;
 }
 
 /** Check if NaN (f32 single precision). See {@link isNaN_}. */
 export async function isNaN_F32(x: number): Promise<boolean> {
-  return (await ensureInit()).isnan_f32(x) !== 0;
+	return (await ensureInit()).isnan_f32(x) !== 0;
 }
 
 /**
@@ -931,12 +961,12 @@ export async function isNaN_F32(x: number): Promise<boolean> {
  * @returns `true` if x is positive or negative infinity
  */
 export async function isInf(x: number): Promise<boolean> {
-  return (await ensureInit()).isinf_f64(x) !== 0;
+	return (await ensureInit()).isinf_f64(x) !== 0;
 }
 
 /** Check if infinite (f32 single precision). See {@link isInf}. */
 export async function isInfF32(x: number): Promise<boolean> {
-  return (await ensureInit()).isinf_f32(x) !== 0;
+	return (await ensureInit()).isinf_f32(x) !== 0;
 }
 
 /**
@@ -946,12 +976,12 @@ export async function isInfF32(x: number): Promise<boolean> {
  * @returns `true` if x is a finite number
  */
 export async function isFinite_(x: number): Promise<boolean> {
-  return (await ensureInit()).isfinite_f64(x) !== 0;
+	return (await ensureInit()).isfinite_f64(x) !== 0;
 }
 
 /** Check if finite (f32 single precision). See {@link isFinite_}. */
 export async function isFinite_F32(x: number): Promise<boolean> {
-  return (await ensureInit()).isfinite_f32(x) !== 0;
+	return (await ensureInit()).isfinite_f32(x) !== 0;
 }
 
 /**
@@ -961,12 +991,12 @@ export async function isFinite_F32(x: number): Promise<boolean> {
  * @returns -1 for negative, 0 for zero, 1 for positive
  */
 export async function sign(x: number): Promise<number> {
-  return (await ensureInit()).sign_f64(x);
+	return (await ensureInit()).sign_f64(x);
 }
 
 /** Get sign (f32 single precision). See {@link sign}. */
 export async function signF32(x: number): Promise<number> {
-  return (await ensureInit()).sign_f32(x);
+	return (await ensureInit()).sign_f32(x);
 }
 
 // ============================================================================
@@ -985,12 +1015,12 @@ export async function signF32(x: number): Promise<number> {
  * ```
  */
 export async function pi(): Promise<number> {
-  return (await ensureInit()).pi_f64();
+	return (await ensureInit()).pi_f64();
 }
 
 /** Get PI (f32 single precision). See {@link pi}. */
 export async function piF32(): Promise<number> {
-  return (await ensureInit()).pi_f32();
+	return (await ensureInit()).pi_f32();
 }
 
 /**
@@ -999,12 +1029,12 @@ export async function piF32(): Promise<number> {
  * @returns 2.718281828459045...
  */
 export async function e(): Promise<number> {
-  return (await ensureInit()).e_f64();
+	return (await ensureInit()).e_f64();
 }
 
 /** Get e (f32 single precision). See {@link e}. */
 export async function eF32(): Promise<number> {
-  return (await ensureInit()).e_f32();
+	return (await ensureInit()).e_f32();
 }
 
 /**
@@ -1013,7 +1043,7 @@ export async function eF32(): Promise<number> {
  * @returns ln(2) = 0.6931471805599453...
  */
 export async function ln2(): Promise<number> {
-  return (await ensureInit()).ln2_f64();
+	return (await ensureInit()).ln2_f64();
 }
 
 /**
@@ -1022,7 +1052,7 @@ export async function ln2(): Promise<number> {
  * @returns ln(10) = 2.302585092994046...
  */
 export async function ln10(): Promise<number> {
-  return (await ensureInit()).ln10_f64();
+	return (await ensureInit()).ln10_f64();
 }
 
 // ============================================================================
@@ -1043,12 +1073,12 @@ export async function ln10(): Promise<number> {
  * ```
  */
 export async function clz(x: number): Promise<number> {
-  return (await ensureInit()).clz_u32(x);
+	return (await ensureInit()).clz_u32(x);
 }
 
 /** Count leading zeros (u64). See {@link clz}. */
 export async function clzU64(x: bigint): Promise<bigint> {
-  return (await ensureInit()).clz_u64(x);
+	return (await ensureInit()).clz_u64(x);
 }
 
 /**
@@ -1064,12 +1094,12 @@ export async function clzU64(x: bigint): Promise<bigint> {
  * ```
  */
 export async function ctz(x: number): Promise<number> {
-  return (await ensureInit()).ctz_u32(x);
+	return (await ensureInit()).ctz_u32(x);
 }
 
 /** Count trailing zeros (u64). See {@link ctz}. */
 export async function ctzU64(x: bigint): Promise<bigint> {
-  return (await ensureInit()).ctz_u64(x);
+	return (await ensureInit()).ctz_u64(x);
 }
 
 /**
@@ -1085,12 +1115,12 @@ export async function ctzU64(x: bigint): Promise<bigint> {
  * ```
  */
 export async function popcount(x: number): Promise<number> {
-  return (await ensureInit()).popcount_u32(x);
+	return (await ensureInit()).popcount_u32(x);
 }
 
 /** Count set bits (u64). See {@link popcount}. */
 export async function popcountU64(x: bigint): Promise<bigint> {
-  return (await ensureInit()).popcount_u64(x);
+	return (await ensureInit()).popcount_u64(x);
 }
 
 /**
@@ -1105,7 +1135,7 @@ export async function popcountU64(x: bigint): Promise<bigint> {
  * ```
  */
 export async function bswap16(x: number): Promise<number> {
-  return (await ensureInit()).bswap_u16(x);
+	return (await ensureInit()).bswap_u16(x);
 }
 
 /**
@@ -1120,12 +1150,12 @@ export async function bswap16(x: number): Promise<number> {
  * ```
  */
 export async function bswap32(x: number): Promise<number> {
-  return (await ensureInit()).bswap_u32(x);
+	return (await ensureInit()).bswap_u32(x);
 }
 
 /** Byte-swap (u64). See {@link bswap32}. */
 export async function bswap64(x: bigint): Promise<bigint> {
-  return (await ensureInit()).bswap_u64(x);
+	return (await ensureInit()).bswap_u64(x);
 }
 
 /**
@@ -1141,12 +1171,12 @@ export async function bswap64(x: bigint): Promise<bigint> {
  * ```
  */
 export async function rotl(x: number, r: number): Promise<number> {
-  return (await ensureInit()).rotl_u32(x, r);
+	return (await ensureInit()).rotl_u32(x, r);
 }
 
 /** Rotate left (u64). See {@link rotl}. */
 export async function rotlU64(x: bigint, r: number): Promise<bigint> {
-  return (await ensureInit()).rotl_u64(x, r);
+	return (await ensureInit()).rotl_u64(x, r);
 }
 
 /**
@@ -1157,12 +1187,12 @@ export async function rotlU64(x: bigint, r: number): Promise<bigint> {
  * @returns Rotated value
  */
 export async function rotr(x: number, r: number): Promise<number> {
-  return (await ensureInit()).rotr_u32(x, r);
+	return (await ensureInit()).rotr_u32(x, r);
 }
 
 /** Rotate right (u64). See {@link rotr}. */
 export async function rotrU64(x: bigint, r: number): Promise<bigint> {
-  return (await ensureInit()).rotr_u64(x, r);
+	return (await ensureInit()).rotr_u64(x, r);
 }
 
 // ============================================================================
@@ -1189,12 +1219,12 @@ export async function rotrU64(x: bigint, r: number): Promise<bigint> {
  * ```
  */
 export async function gcd(a: number, b: number): Promise<number> {
-  return (await ensureInit()).gcd_u32(a, b);
+	return (await ensureInit()).gcd_u32(a, b);
 }
 
 /** Compute GCD (u64). See {@link gcd}. */
 export async function gcdU64(a: bigint, b: bigint): Promise<bigint> {
-  return (await ensureInit()).gcd_u64(a, b);
+	return (await ensureInit()).gcd_u64(a, b);
 }
 
 /**
@@ -1211,12 +1241,12 @@ export async function gcdU64(a: bigint, b: bigint): Promise<bigint> {
  * ```
  */
 export async function lcm(a: number, b: number): Promise<number> {
-  return (await ensureInit()).lcm_u32(a, b);
+	return (await ensureInit()).lcm_u32(a, b);
 }
 
 /** Compute LCM (u64). See {@link lcm}. */
 export async function lcmU64(a: bigint, b: bigint): Promise<bigint> {
-  return (await ensureInit()).lcm_u64(a, b);
+	return (await ensureInit()).lcm_u64(a, b);
 }
 
 // ============================================================================
@@ -1237,12 +1267,12 @@ export async function lcmU64(a: bigint, b: bigint): Promise<bigint> {
  * ```
  */
 export async function fmod(x: number, y: number): Promise<number> {
-  return (await ensureInit()).fmod_f64(x, y);
+	return (await ensureInit()).fmod_f64(x, y);
 }
 
 /** Compute fmod (f32 single precision). See {@link fmod}. */
 export async function fmodF32(x: number, y: number): Promise<number> {
-  return (await ensureInit()).fmod_f32(x, y);
+	return (await ensureInit()).fmod_f32(x, y);
 }
 
 /**
@@ -1259,12 +1289,12 @@ export async function fmodF32(x: number, y: number): Promise<number> {
  * ```
  */
 export async function copysign(mag: number, sgn: number): Promise<number> {
-  return (await ensureInit()).copysign_f64(mag, sgn);
+	return (await ensureInit()).copysign_f64(mag, sgn);
 }
 
 /** Copy sign (f32 single precision). See {@link copysign}. */
 export async function copysignF32(mag: number, sgn: number): Promise<number> {
-  return (await ensureInit()).copysign_f32(mag, sgn);
+	return (await ensureInit()).copysign_f32(mag, sgn);
 }
 
 /**
@@ -1283,12 +1313,12 @@ export async function copysignF32(mag: number, sgn: number): Promise<number> {
  * ```
  */
 export async function fma(x: number, y: number, z: number): Promise<number> {
-  return (await ensureInit()).fma_f64(x, y, z);
+	return (await ensureInit()).fma_f64(x, y, z);
 }
 
 /** Fused multiply-add (f32 single precision). See {@link fma}. */
 export async function fmaF32(x: number, y: number, z: number): Promise<number> {
-  return (await ensureInit()).fma_f32(x, y, z);
+	return (await ensureInit()).fma_f32(x, y, z);
 }
 
 // ============================================================================
@@ -1302,147 +1332,147 @@ export async function fmaF32(x: number, y: number, z: number): Promise<number> {
  * @throws {NotInitializedError} If module not initialized
  */
 export function absSync(x: number): number {
-  return getSyncExports().abs_f64(x);
+	return getSyncExports().abs_f64(x);
 }
 export function absF32Sync(x: number): number {
-  return getSyncExports().abs_f32(x);
+	return getSyncExports().abs_f32(x);
 }
 export function absI32Sync(x: number): number {
-  return getSyncExports().abs_i32(x);
+	return getSyncExports().abs_i32(x);
 }
 export function absI64Sync(x: bigint): bigint {
-  return getSyncExports().abs_i64(x);
+	return getSyncExports().abs_i64(x);
 }
 
 export function minSync(a: number, b: number): number {
-  return getSyncExports().min_f64(a, b);
+	return getSyncExports().min_f64(a, b);
 }
 export function minF32Sync(a: number, b: number): number {
-  return getSyncExports().min_f32(a, b);
+	return getSyncExports().min_f32(a, b);
 }
 export function minI32Sync(a: number, b: number): number {
-  return getSyncExports().min_i32(a, b);
+	return getSyncExports().min_i32(a, b);
 }
 export function minI64Sync(a: bigint, b: bigint): bigint {
-  return getSyncExports().min_i64(a, b);
+	return getSyncExports().min_i64(a, b);
 }
 export function minU32Sync(a: number, b: number): number {
-  return getSyncExports().min_u32(a, b);
+	return getSyncExports().min_u32(a, b);
 }
 export function minU64Sync(a: bigint, b: bigint): bigint {
-  return getSyncExports().min_u64(a, b);
+	return getSyncExports().min_u64(a, b);
 }
 
 export function maxSync(a: number, b: number): number {
-  return getSyncExports().max_f64(a, b);
+	return getSyncExports().max_f64(a, b);
 }
 export function maxF32Sync(a: number, b: number): number {
-  return getSyncExports().max_f32(a, b);
+	return getSyncExports().max_f32(a, b);
 }
 export function maxI32Sync(a: number, b: number): number {
-  return getSyncExports().max_i32(a, b);
+	return getSyncExports().max_i32(a, b);
 }
 export function maxI64Sync(a: bigint, b: bigint): bigint {
-  return getSyncExports().max_i64(a, b);
+	return getSyncExports().max_i64(a, b);
 }
 export function maxU32Sync(a: number, b: number): number {
-  return getSyncExports().max_u32(a, b);
+	return getSyncExports().max_u32(a, b);
 }
 export function maxU64Sync(a: bigint, b: bigint): bigint {
-  return getSyncExports().max_u64(a, b);
+	return getSyncExports().max_u64(a, b);
 }
 
 export function clampSync(val: number, lo: number, hi: number): number {
-  return getSyncExports().clamp_f64(val, lo, hi);
+	return getSyncExports().clamp_f64(val, lo, hi);
 }
 export function clampF32Sync(val: number, lo: number, hi: number): number {
-  return getSyncExports().clamp_f32(val, lo, hi);
+	return getSyncExports().clamp_f32(val, lo, hi);
 }
 export function clampI32Sync(val: number, lo: number, hi: number): number {
-  return getSyncExports().clamp_i32(val, lo, hi);
+	return getSyncExports().clamp_i32(val, lo, hi);
 }
 export function clampI64Sync(val: bigint, lo: bigint, hi: bigint): bigint {
-  return getSyncExports().clamp_i64(val, lo, hi);
+	return getSyncExports().clamp_i64(val, lo, hi);
 }
 export function clampU32Sync(val: number, lo: number, hi: number): number {
-  return getSyncExports().clamp_u32(val, lo, hi);
+	return getSyncExports().clamp_u32(val, lo, hi);
 }
 export function clampU64Sync(val: bigint, lo: bigint, hi: bigint): bigint {
-  return getSyncExports().clamp_u64(val, lo, hi);
+	return getSyncExports().clamp_u64(val, lo, hi);
 }
 
 // Power and root - Sync variants
 
 /** Square root synchronously (f64). Requires {@link init} first. */
 export function sqrtSync(x: number): number {
-  return getSyncExports().sqrt_f64(x);
+	return getSyncExports().sqrt_f64(x);
 }
 export function sqrtF32Sync(x: number): number {
-  return getSyncExports().sqrt_f32(x);
+	return getSyncExports().sqrt_f32(x);
 }
 export function cbrtSync(x: number): number {
-  return getSyncExports().cbrt_f64(x);
+	return getSyncExports().cbrt_f64(x);
 }
 export function cbrtF32Sync(x: number): number {
-  return getSyncExports().cbrt_f32(x);
+	return getSyncExports().cbrt_f32(x);
 }
 export function powSync(base: number, exp: number): number {
-  return getSyncExports().pow_f64(base, exp);
+	return getSyncExports().pow_f64(base, exp);
 }
 export function powF32Sync(base: number, exp: number): number {
-  return getSyncExports().pow_f32(base, exp);
+	return getSyncExports().pow_f32(base, exp);
 }
 export function hypotSync(x: number, y: number): number {
-  return getSyncExports().hypot_f64(x, y);
+	return getSyncExports().hypot_f64(x, y);
 }
 export function hypotF32Sync(x: number, y: number): number {
-  return getSyncExports().hypot_f32(x, y);
+	return getSyncExports().hypot_f32(x, y);
 }
 
 // Exponential and logarithmic - Sync variants
 
 /** Compute e^x synchronously (f64). Requires {@link init} first. */
 export function expSync(x: number): number {
-  return getSyncExports().exp_f64(x);
+	return getSyncExports().exp_f64(x);
 }
 export function expF32Sync(x: number): number {
-  return getSyncExports().exp_f32(x);
+	return getSyncExports().exp_f32(x);
 }
 export function exp2Sync(x: number): number {
-  return getSyncExports().exp2_f64(x);
+	return getSyncExports().exp2_f64(x);
 }
 export function exp2F32Sync(x: number): number {
-  return getSyncExports().exp2_f32(x);
+	return getSyncExports().exp2_f32(x);
 }
 export function expm1Sync(x: number): number {
-  return getSyncExports().expm1_f64(x);
+	return getSyncExports().expm1_f64(x);
 }
 export function expm1F32Sync(x: number): number {
-  return getSyncExports().expm1_f32(x);
+	return getSyncExports().expm1_f32(x);
 }
 export function logSync(x: number): number {
-  return getSyncExports().log_f64(x);
+	return getSyncExports().log_f64(x);
 }
 export function logF32Sync(x: number): number {
-  return getSyncExports().log_f32(x);
+	return getSyncExports().log_f32(x);
 }
 export function log2Sync(x: number): number {
-  return getSyncExports().log2_f64(x);
+	return getSyncExports().log2_f64(x);
 }
 export function log2F32Sync(x: number): number {
-  return getSyncExports().log2_f32(x);
+	return getSyncExports().log2_f32(x);
 }
 export function log10Sync(x: number): number {
-  return getSyncExports().log10_f64(x);
+	return getSyncExports().log10_f64(x);
 }
 export function log10F32Sync(x: number): number {
-  return getSyncExports().log10_f32(x);
+	return getSyncExports().log10_f32(x);
 }
 export function log1pSync(x: number): number {
-  return getSyncExports().log1p_f64(x);
+	return getSyncExports().log1p_f64(x);
 }
 export function log1pF32Sync(x: number): number {
-  return getSyncExports().log1p_f32(x);
+	return getSyncExports().log1p_f32(x);
 }
 
 // Trigonometric - Sync variants
@@ -1459,223 +1489,223 @@ export function log1pF32Sync(x: number): number {
  * ```
  */
 export function sinSync(x: number): number {
-  return getSyncExports().sin_f64(x);
+	return getSyncExports().sin_f64(x);
 }
 export function sinF32Sync(x: number): number {
-  return getSyncExports().sin_f32(x);
+	return getSyncExports().sin_f32(x);
 }
 export function cosSync(x: number): number {
-  return getSyncExports().cos_f64(x);
+	return getSyncExports().cos_f64(x);
 }
 export function cosF32Sync(x: number): number {
-  return getSyncExports().cos_f32(x);
+	return getSyncExports().cos_f32(x);
 }
 export function tanSync(x: number): number {
-  return getSyncExports().tan_f64(x);
+	return getSyncExports().tan_f64(x);
 }
 export function tanF32Sync(x: number): number {
-  return getSyncExports().tan_f32(x);
+	return getSyncExports().tan_f32(x);
 }
 export function asinSync(x: number): number {
-  return getSyncExports().asin_f64(x);
+	return getSyncExports().asin_f64(x);
 }
 export function asinF32Sync(x: number): number {
-  return getSyncExports().asin_f32(x);
+	return getSyncExports().asin_f32(x);
 }
 export function acosSync(x: number): number {
-  return getSyncExports().acos_f64(x);
+	return getSyncExports().acos_f64(x);
 }
 export function acosF32Sync(x: number): number {
-  return getSyncExports().acos_f32(x);
+	return getSyncExports().acos_f32(x);
 }
 export function atanSync(x: number): number {
-  return getSyncExports().atan_f64(x);
+	return getSyncExports().atan_f64(x);
 }
 export function atanF32Sync(x: number): number {
-  return getSyncExports().atan_f32(x);
+	return getSyncExports().atan_f32(x);
 }
 export function atan2Sync(y: number, x: number): number {
-  return getSyncExports().atan2_f64(y, x);
+	return getSyncExports().atan2_f64(y, x);
 }
 export function atan2F32Sync(y: number, x: number): number {
-  return getSyncExports().atan2_f32(y, x);
+	return getSyncExports().atan2_f32(y, x);
 }
 
 /** Convert degrees to radians synchronously (f64). Requires {@link init} first. */
 export function deg2radSync(deg: number): number {
-  return getSyncExports().deg2rad_f64(deg);
+	return getSyncExports().deg2rad_f64(deg);
 }
 export function deg2radF32Sync(deg: number): number {
-  return getSyncExports().deg2rad_f32(deg);
+	return getSyncExports().deg2rad_f32(deg);
 }
 
 /** Convert radians to degrees synchronously (f64). Requires {@link init} first. */
 export function rad2degSync(rad: number): number {
-  return getSyncExports().rad2deg_f64(rad);
+	return getSyncExports().rad2deg_f64(rad);
 }
 export function rad2degF32Sync(rad: number): number {
-  return getSyncExports().rad2deg_f32(rad);
+	return getSyncExports().rad2deg_f32(rad);
 }
 
 // Hyperbolic - Sync variants
 
 /** Compute hyperbolic sine synchronously (f64). Requires {@link init} first. */
 export function sinhSync(x: number): number {
-  return getSyncExports().sinh_f64(x);
+	return getSyncExports().sinh_f64(x);
 }
 export function sinhF32Sync(x: number): number {
-  return getSyncExports().sinh_f32(x);
+	return getSyncExports().sinh_f32(x);
 }
 export function coshSync(x: number): number {
-  return getSyncExports().cosh_f64(x);
+	return getSyncExports().cosh_f64(x);
 }
 export function coshF32Sync(x: number): number {
-  return getSyncExports().cosh_f32(x);
+	return getSyncExports().cosh_f32(x);
 }
 export function tanhSync(x: number): number {
-  return getSyncExports().tanh_f64(x);
+	return getSyncExports().tanh_f64(x);
 }
 export function tanhF32Sync(x: number): number {
-  return getSyncExports().tanh_f32(x);
+	return getSyncExports().tanh_f32(x);
 }
 export function asinhSync(x: number): number {
-  return getSyncExports().asinh_f64(x);
+	return getSyncExports().asinh_f64(x);
 }
 export function asinhF32Sync(x: number): number {
-  return getSyncExports().asinh_f32(x);
+	return getSyncExports().asinh_f32(x);
 }
 export function acoshSync(x: number): number {
-  return getSyncExports().acosh_f64(x);
+	return getSyncExports().acosh_f64(x);
 }
 export function acoshF32Sync(x: number): number {
-  return getSyncExports().acosh_f32(x);
+	return getSyncExports().acosh_f32(x);
 }
 export function atanhSync(x: number): number {
-  return getSyncExports().atanh_f64(x);
+	return getSyncExports().atanh_f64(x);
 }
 export function atanhF32Sync(x: number): number {
-  return getSyncExports().atanh_f32(x);
+	return getSyncExports().atanh_f32(x);
 }
 
 // Rounding - Sync variants
 
 /** Round down synchronously (f64). Requires {@link init} first. */
 export function floorSync(x: number): number {
-  return getSyncExports().floor_f64(x);
+	return getSyncExports().floor_f64(x);
 }
 export function floorF32Sync(x: number): number {
-  return getSyncExports().floor_f32(x);
+	return getSyncExports().floor_f32(x);
 }
 export function ceilSync(x: number): number {
-  return getSyncExports().ceil_f64(x);
+	return getSyncExports().ceil_f64(x);
 }
 export function ceilF32Sync(x: number): number {
-  return getSyncExports().ceil_f32(x);
+	return getSyncExports().ceil_f32(x);
 }
 export function roundSync(x: number): number {
-  return getSyncExports().round_f64(x);
+	return getSyncExports().round_f64(x);
 }
 export function roundF32Sync(x: number): number {
-  return getSyncExports().round_f32(x);
+	return getSyncExports().round_f32(x);
 }
 export function truncSync(x: number): number {
-  return getSyncExports().trunc_f64(x);
+	return getSyncExports().trunc_f64(x);
 }
 export function truncF32Sync(x: number): number {
-  return getSyncExports().trunc_f32(x);
+	return getSyncExports().trunc_f32(x);
 }
 
 // Classification - Sync variants
 
 /** Check if NaN synchronously (f64). Requires {@link init} first. */
 export function isNaN_Sync(x: number): boolean {
-  return getSyncExports().isnan_f64(x) !== 0;
+	return getSyncExports().isnan_f64(x) !== 0;
 }
 export function isNaN_F32Sync(x: number): boolean {
-  return getSyncExports().isnan_f32(x) !== 0;
+	return getSyncExports().isnan_f32(x) !== 0;
 }
 export function isInfSync(x: number): boolean {
-  return getSyncExports().isinf_f64(x) !== 0;
+	return getSyncExports().isinf_f64(x) !== 0;
 }
 export function isInfF32Sync(x: number): boolean {
-  return getSyncExports().isinf_f32(x) !== 0;
+	return getSyncExports().isinf_f32(x) !== 0;
 }
 export function isFinite_Sync(x: number): boolean {
-  return getSyncExports().isfinite_f64(x) !== 0;
+	return getSyncExports().isfinite_f64(x) !== 0;
 }
 export function isFinite_F32Sync(x: number): boolean {
-  return getSyncExports().isfinite_f32(x) !== 0;
+	return getSyncExports().isfinite_f32(x) !== 0;
 }
 export function signSync(x: number): number {
-  return getSyncExports().sign_f64(x);
+	return getSyncExports().sign_f64(x);
 }
 export function signF32Sync(x: number): number {
-  return getSyncExports().sign_f32(x);
+	return getSyncExports().sign_f32(x);
 }
 
 // Constants - Sync variants
 
 /** Get PI synchronously (f64). Requires {@link init} first. */
 export function piSync(): number {
-  return getSyncExports().pi_f64();
+	return getSyncExports().pi_f64();
 }
 export function piF32Sync(): number {
-  return getSyncExports().pi_f32();
+	return getSyncExports().pi_f32();
 }
 export function eSync(): number {
-  return getSyncExports().e_f64();
+	return getSyncExports().e_f64();
 }
 export function eF32Sync(): number {
-  return getSyncExports().e_f32();
+	return getSyncExports().e_f32();
 }
 export function ln2Sync(): number {
-  return getSyncExports().ln2_f64();
+	return getSyncExports().ln2_f64();
 }
 export function ln10Sync(): number {
-  return getSyncExports().ln10_f64();
+	return getSyncExports().ln10_f64();
 }
 
 // Bit manipulation - Sync variants
 
 /** Count leading zeros synchronously (u32). Requires {@link init} first. */
 export function clzSync(x: number): number {
-  return getSyncExports().clz_u32(x);
+	return getSyncExports().clz_u32(x);
 }
 export function clzU64Sync(x: bigint): bigint {
-  return getSyncExports().clz_u64(x);
+	return getSyncExports().clz_u64(x);
 }
 export function ctzSync(x: number): number {
-  return getSyncExports().ctz_u32(x);
+	return getSyncExports().ctz_u32(x);
 }
 export function ctzU64Sync(x: bigint): bigint {
-  return getSyncExports().ctz_u64(x);
+	return getSyncExports().ctz_u64(x);
 }
 export function popcountSync(x: number): number {
-  return getSyncExports().popcount_u32(x);
+	return getSyncExports().popcount_u32(x);
 }
 export function popcountU64Sync(x: bigint): bigint {
-  return getSyncExports().popcount_u64(x);
+	return getSyncExports().popcount_u64(x);
 }
 export function bswap16Sync(x: number): number {
-  return getSyncExports().bswap_u16(x);
+	return getSyncExports().bswap_u16(x);
 }
 export function bswap32Sync(x: number): number {
-  return getSyncExports().bswap_u32(x);
+	return getSyncExports().bswap_u32(x);
 }
 export function bswap64Sync(x: bigint): bigint {
-  return getSyncExports().bswap_u64(x);
+	return getSyncExports().bswap_u64(x);
 }
 export function rotlSync(x: number, r: number): number {
-  return getSyncExports().rotl_u32(x, r);
+	return getSyncExports().rotl_u32(x, r);
 }
 export function rotlU64Sync(x: bigint, r: number): bigint {
-  return getSyncExports().rotl_u64(x, r);
+	return getSyncExports().rotl_u64(x, r);
 }
 export function rotrSync(x: number, r: number): number {
-  return getSyncExports().rotr_u32(x, r);
+	return getSyncExports().rotr_u32(x, r);
 }
 export function rotrU64Sync(x: bigint, r: number): bigint {
-  return getSyncExports().rotr_u64(x, r);
+	return getSyncExports().rotr_u64(x, r);
 }
 
 // Integer math - Sync variants
@@ -1685,40 +1715,40 @@ export function rotrU64Sync(x: bigint, r: number): bigint {
  * @see {@link gcd} for details on the gcd(0, 0) limitation
  */
 export function gcdSync(a: number, b: number): number {
-  return getSyncExports().gcd_u32(a, b);
+	return getSyncExports().gcd_u32(a, b);
 }
 export function gcdU64Sync(a: bigint, b: bigint): bigint {
-  return getSyncExports().gcd_u64(a, b);
+	return getSyncExports().gcd_u64(a, b);
 }
 
 /** Compute LCM synchronously (u32). Requires {@link init} first. */
 export function lcmSync(a: number, b: number): number {
-  return getSyncExports().lcm_u32(a, b);
+	return getSyncExports().lcm_u32(a, b);
 }
 export function lcmU64Sync(a: bigint, b: bigint): bigint {
-  return getSyncExports().lcm_u64(a, b);
+	return getSyncExports().lcm_u64(a, b);
 }
 
 // Floating-point utilities - Sync variants
 
 /** Compute fmod synchronously (f64). Requires {@link init} first. */
 export function fmodSync(x: number, y: number): number {
-  return getSyncExports().fmod_f64(x, y);
+	return getSyncExports().fmod_f64(x, y);
 }
 export function fmodF32Sync(x: number, y: number): number {
-  return getSyncExports().fmod_f32(x, y);
+	return getSyncExports().fmod_f32(x, y);
 }
 export function copysignSync(mag: number, sgn: number): number {
-  return getSyncExports().copysign_f64(mag, sgn);
+	return getSyncExports().copysign_f64(mag, sgn);
 }
 export function copysignF32Sync(mag: number, sgn: number): number {
-  return getSyncExports().copysign_f32(mag, sgn);
+	return getSyncExports().copysign_f32(mag, sgn);
 }
 
 /** Fused multiply-add synchronously (f64). Requires {@link init} first. */
 export function fmaSync(x: number, y: number, z: number): number {
-  return getSyncExports().fma_f64(x, y, z);
+	return getSyncExports().fma_f64(x, y, z);
 }
 export function fmaF32Sync(x: number, y: number, z: number): number {
-  return getSyncExports().fma_f32(x, y, z);
+	return getSyncExports().fma_f32(x, y, z);
 }

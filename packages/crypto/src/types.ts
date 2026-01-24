@@ -49,195 +49,195 @@ import type { WasmMemoryExports } from "@zig-wasm/core";
  * - `hmac_{algorithm}_length()` - get HMAC output size in bytes
  */
 export interface CryptoWasmExports extends WasmMemoryExports {
-  [key: string]: unknown;
+	[key: string]: unknown;
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // MD5 (128-bit / 16 bytes) - Legacy, not recommended for security
-  // ──────────────────────────────────────────────────────────────────────────
+	// ──────────────────────────────────────────────────────────────────────────
+	// MD5 (128-bit / 16 bytes) - Legacy, not recommended for security
+	// ──────────────────────────────────────────────────────────────────────────
 
-  /**
-   * Compute MD5 hash of input data.
-   * @param dataPtr - Pointer to input data in WASM memory
-   * @param dataLen - Length of input data in bytes
-   * @param outPtr - Pointer to output buffer (16 bytes)
-   */
-  md5_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
+	/**
+	 * Compute MD5 hash of input data.
+	 * @param dataPtr - Pointer to input data in WASM memory
+	 * @param dataLen - Length of input data in bytes
+	 * @param outPtr - Pointer to output buffer (16 bytes)
+	 */
+	md5_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
 
-  /** Returns MD5 digest length (16 bytes). */
-  md5_digest_length: () => number;
+	/** Returns MD5 digest length (16 bytes). */
+	md5_digest_length: () => number;
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // SHA-1 (160-bit / 20 bytes) - Legacy, not recommended for security
-  // ──────────────────────────────────────────────────────────────────────────
+	// ──────────────────────────────────────────────────────────────────────────
+	// SHA-1 (160-bit / 20 bytes) - Legacy, not recommended for security
+	// ──────────────────────────────────────────────────────────────────────────
 
-  /**
-   * Compute SHA-1 hash of input data.
-   * @param dataPtr - Pointer to input data in WASM memory
-   * @param dataLen - Length of input data in bytes
-   * @param outPtr - Pointer to output buffer (20 bytes)
-   */
-  sha1_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
+	/**
+	 * Compute SHA-1 hash of input data.
+	 * @param dataPtr - Pointer to input data in WASM memory
+	 * @param dataLen - Length of input data in bytes
+	 * @param outPtr - Pointer to output buffer (20 bytes)
+	 */
+	sha1_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
 
-  /** Returns SHA-1 digest length (20 bytes). */
-  sha1_digest_length: () => number;
+	/** Returns SHA-1 digest length (20 bytes). */
+	sha1_digest_length: () => number;
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // SHA-2 Family
-  // ──────────────────────────────────────────────────────────────────────────
+	// ──────────────────────────────────────────────────────────────────────────
+	// SHA-2 Family
+	// ──────────────────────────────────────────────────────────────────────────
 
-  /**
-   * Compute SHA-256 hash of input data.
-   * @param dataPtr - Pointer to input data in WASM memory
-   * @param dataLen - Length of input data in bytes
-   * @param outPtr - Pointer to output buffer (32 bytes)
-   */
-  sha256_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
+	/**
+	 * Compute SHA-256 hash of input data.
+	 * @param dataPtr - Pointer to input data in WASM memory
+	 * @param dataLen - Length of input data in bytes
+	 * @param outPtr - Pointer to output buffer (32 bytes)
+	 */
+	sha256_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
 
-  /** Returns SHA-256 digest length (32 bytes). */
-  sha256_digest_length: () => number;
+	/** Returns SHA-256 digest length (32 bytes). */
+	sha256_digest_length: () => number;
 
-  /**
-   * Compute SHA-384 hash of input data.
-   * @param dataPtr - Pointer to input data in WASM memory
-   * @param dataLen - Length of input data in bytes
-   * @param outPtr - Pointer to output buffer (48 bytes)
-   */
-  sha384_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
+	/**
+	 * Compute SHA-384 hash of input data.
+	 * @param dataPtr - Pointer to input data in WASM memory
+	 * @param dataLen - Length of input data in bytes
+	 * @param outPtr - Pointer to output buffer (48 bytes)
+	 */
+	sha384_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
 
-  /** Returns SHA-384 digest length (48 bytes). */
-  sha384_digest_length: () => number;
+	/** Returns SHA-384 digest length (48 bytes). */
+	sha384_digest_length: () => number;
 
-  /**
-   * Compute SHA-512 hash of input data.
-   * @param dataPtr - Pointer to input data in WASM memory
-   * @param dataLen - Length of input data in bytes
-   * @param outPtr - Pointer to output buffer (64 bytes)
-   */
-  sha512_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
+	/**
+	 * Compute SHA-512 hash of input data.
+	 * @param dataPtr - Pointer to input data in WASM memory
+	 * @param dataLen - Length of input data in bytes
+	 * @param outPtr - Pointer to output buffer (64 bytes)
+	 */
+	sha512_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
 
-  /** Returns SHA-512 digest length (64 bytes). */
-  sha512_digest_length: () => number;
+	/** Returns SHA-512 digest length (64 bytes). */
+	sha512_digest_length: () => number;
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // SHA-3 Family (Keccak-based)
-  // ──────────────────────────────────────────────────────────────────────────
+	// ──────────────────────────────────────────────────────────────────────────
+	// SHA-3 Family (Keccak-based)
+	// ──────────────────────────────────────────────────────────────────────────
 
-  /**
-   * Compute SHA3-256 hash of input data.
-   * @param dataPtr - Pointer to input data in WASM memory
-   * @param dataLen - Length of input data in bytes
-   * @param outPtr - Pointer to output buffer (32 bytes)
-   */
-  sha3_256_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
+	/**
+	 * Compute SHA3-256 hash of input data.
+	 * @param dataPtr - Pointer to input data in WASM memory
+	 * @param dataLen - Length of input data in bytes
+	 * @param outPtr - Pointer to output buffer (32 bytes)
+	 */
+	sha3_256_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
 
-  /** Returns SHA3-256 digest length (32 bytes). */
-  sha3_256_digest_length: () => number;
+	/** Returns SHA3-256 digest length (32 bytes). */
+	sha3_256_digest_length: () => number;
 
-  /**
-   * Compute SHA3-512 hash of input data.
-   * @param dataPtr - Pointer to input data in WASM memory
-   * @param dataLen - Length of input data in bytes
-   * @param outPtr - Pointer to output buffer (64 bytes)
-   */
-  sha3_512_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
+	/**
+	 * Compute SHA3-512 hash of input data.
+	 * @param dataPtr - Pointer to input data in WASM memory
+	 * @param dataLen - Length of input data in bytes
+	 * @param outPtr - Pointer to output buffer (64 bytes)
+	 */
+	sha3_512_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
 
-  /** Returns SHA3-512 digest length (64 bytes). */
-  sha3_512_digest_length: () => number;
+	/** Returns SHA3-512 digest length (64 bytes). */
+	sha3_512_digest_length: () => number;
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // BLAKE2 Family
-  // ──────────────────────────────────────────────────────────────────────────
+	// ──────────────────────────────────────────────────────────────────────────
+	// BLAKE2 Family
+	// ──────────────────────────────────────────────────────────────────────────
 
-  /**
-   * Compute BLAKE2b-256 hash of input data.
-   *
-   * BLAKE2b is optimized for 64-bit platforms.
-   *
-   * @param dataPtr - Pointer to input data in WASM memory
-   * @param dataLen - Length of input data in bytes
-   * @param outPtr - Pointer to output buffer (32 bytes)
-   */
-  blake2b256_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
+	/**
+	 * Compute BLAKE2b-256 hash of input data.
+	 *
+	 * BLAKE2b is optimized for 64-bit platforms.
+	 *
+	 * @param dataPtr - Pointer to input data in WASM memory
+	 * @param dataLen - Length of input data in bytes
+	 * @param outPtr - Pointer to output buffer (32 bytes)
+	 */
+	blake2b256_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
 
-  /** Returns BLAKE2b-256 digest length (32 bytes). */
-  blake2b256_digest_length: () => number;
+	/** Returns BLAKE2b-256 digest length (32 bytes). */
+	blake2b256_digest_length: () => number;
 
-  /**
-   * Compute BLAKE2s-256 hash of input data.
-   *
-   * BLAKE2s is optimized for 32-bit platforms and smaller messages.
-   *
-   * @param dataPtr - Pointer to input data in WASM memory
-   * @param dataLen - Length of input data in bytes
-   * @param outPtr - Pointer to output buffer (32 bytes)
-   */
-  blake2s256_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
+	/**
+	 * Compute BLAKE2s-256 hash of input data.
+	 *
+	 * BLAKE2s is optimized for 32-bit platforms and smaller messages.
+	 *
+	 * @param dataPtr - Pointer to input data in WASM memory
+	 * @param dataLen - Length of input data in bytes
+	 * @param outPtr - Pointer to output buffer (32 bytes)
+	 */
+	blake2s256_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
 
-  /** Returns BLAKE2s-256 digest length (32 bytes). */
-  blake2s256_digest_length: () => number;
+	/** Returns BLAKE2s-256 digest length (32 bytes). */
+	blake2s256_digest_length: () => number;
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // BLAKE3
-  // ──────────────────────────────────────────────────────────────────────────
+	// ──────────────────────────────────────────────────────────────────────────
+	// BLAKE3
+	// ──────────────────────────────────────────────────────────────────────────
 
-  /**
-   * Compute BLAKE3 hash of input data.
-   *
-   * BLAKE3 is the latest in the BLAKE family, offering excellent performance
-   * and security. It supports parallelism and is suitable for all use cases.
-   *
-   * @param dataPtr - Pointer to input data in WASM memory
-   * @param dataLen - Length of input data in bytes
-   * @param outPtr - Pointer to output buffer (32 bytes)
-   */
-  blake3_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
+	/**
+	 * Compute BLAKE3 hash of input data.
+	 *
+	 * BLAKE3 is the latest in the BLAKE family, offering excellent performance
+	 * and security. It supports parallelism and is suitable for all use cases.
+	 *
+	 * @param dataPtr - Pointer to input data in WASM memory
+	 * @param dataLen - Length of input data in bytes
+	 * @param outPtr - Pointer to output buffer (32 bytes)
+	 */
+	blake3_hash: (dataPtr: number, dataLen: number, outPtr: number) => void;
 
-  /** Returns BLAKE3 digest length (32 bytes). */
-  blake3_digest_length: () => number;
+	/** Returns BLAKE3 digest length (32 bytes). */
+	blake3_digest_length: () => number;
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // HMAC (Hash-based Message Authentication Code)
-  // ──────────────────────────────────────────────────────────────────────────
+	// ──────────────────────────────────────────────────────────────────────────
+	// HMAC (Hash-based Message Authentication Code)
+	// ──────────────────────────────────────────────────────────────────────────
 
-  /**
-   * Compute HMAC-SHA256 of input data with the given key.
-   *
-   * @param keyPtr - Pointer to secret key in WASM memory
-   * @param keyLen - Length of secret key in bytes
-   * @param dataPtr - Pointer to message data in WASM memory
-   * @param dataLen - Length of message data in bytes
-   * @param outPtr - Pointer to output buffer (32 bytes)
-   */
-  hmac_sha256: (
-    keyPtr: number,
-    keyLen: number,
-    dataPtr: number,
-    dataLen: number,
-    outPtr: number,
-  ) => void;
+	/**
+	 * Compute HMAC-SHA256 of input data with the given key.
+	 *
+	 * @param keyPtr - Pointer to secret key in WASM memory
+	 * @param keyLen - Length of secret key in bytes
+	 * @param dataPtr - Pointer to message data in WASM memory
+	 * @param dataLen - Length of message data in bytes
+	 * @param outPtr - Pointer to output buffer (32 bytes)
+	 */
+	hmac_sha256: (
+		keyPtr: number,
+		keyLen: number,
+		dataPtr: number,
+		dataLen: number,
+		outPtr: number,
+	) => void;
 
-  /** Returns HMAC-SHA256 output length (32 bytes). */
-  hmac_sha256_length: () => number;
+	/** Returns HMAC-SHA256 output length (32 bytes). */
+	hmac_sha256_length: () => number;
 
-  /**
-   * Compute HMAC-SHA512 of input data with the given key.
-   *
-   * @param keyPtr - Pointer to secret key in WASM memory
-   * @param keyLen - Length of secret key in bytes
-   * @param dataPtr - Pointer to message data in WASM memory
-   * @param dataLen - Length of message data in bytes
-   * @param outPtr - Pointer to output buffer (64 bytes)
-   */
-  hmac_sha512: (
-    keyPtr: number,
-    keyLen: number,
-    dataPtr: number,
-    dataLen: number,
-    outPtr: number,
-  ) => void;
+	/**
+	 * Compute HMAC-SHA512 of input data with the given key.
+	 *
+	 * @param keyPtr - Pointer to secret key in WASM memory
+	 * @param keyLen - Length of secret key in bytes
+	 * @param dataPtr - Pointer to message data in WASM memory
+	 * @param dataLen - Length of message data in bytes
+	 * @param outPtr - Pointer to output buffer (64 bytes)
+	 */
+	hmac_sha512: (
+		keyPtr: number,
+		keyLen: number,
+		dataPtr: number,
+		dataLen: number,
+		outPtr: number,
+	) => void;
 
-  /** Returns HMAC-SHA512 output length (64 bytes). */
-  hmac_sha512_length: () => number;
+	/** Returns HMAC-SHA512 output length (64 bytes). */
+	hmac_sha512_length: () => number;
 }
 
 /**
@@ -271,16 +271,16 @@ export interface CryptoWasmExports extends WasmMemoryExports {
  * ```
  */
 export type HashAlgorithm =
-  | "md5"
-  | "sha1"
-  | "sha256"
-  | "sha384"
-  | "sha512"
-  | "sha3-256"
-  | "sha3-512"
-  | "blake2b256"
-  | "blake2s256"
-  | "blake3";
+	| "md5"
+	| "sha1"
+	| "sha256"
+	| "sha384"
+	| "sha512"
+	| "sha3-256"
+	| "sha3-512"
+	| "blake2b256"
+	| "blake2s256"
+	| "blake3";
 
 /**
  * Supported HMAC (Hash-based Message Authentication Code) algorithms.

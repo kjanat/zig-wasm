@@ -1,11 +1,11 @@
 {
-  "extends": "@zig-wasm/tooling/tsconfig",
-  "compilerOptions": {
-    "paths": {
-      "$/*": ["./src/*"],
-      "@zig-wasm/crypto": ["./src/index.ts"],
-      "@zig-wasm/crypto/*": ["./src/*"],
-      "~/*": ["../../*"]
-    }
-  }
+	"extends": "@zig-wasm/tooling/tsconfig",
+	"compilerOptions": {
+		"paths": {
+			"$/*": ["./src/*"],
+			"@zig-wasm/crypto": ["./src/index.ts"],
+			"@zig-wasm/crypto/*": ["./src/*"],
+			"~/*": ["../../*"]
+		}
+	}
 }

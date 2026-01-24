@@ -1,29 +1,29 @@
 {
-  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "extends": ["@zig-wasm/tooling/biome"],
-  "root": true,
-  "vcs": {
-    "enabled": true,
-    "clientKind": "git",
-    "useIgnoreFile": true,
-    "defaultBranch": "master"
-  },
-  "formatter": { "enabled": true },
-  "files": {
-    "ignoreUnknown": false,
-    "includes": [
-      "**",
-      ".opencode/tool/**",
-      "internal/**",
-      "packages/**",
-      "!!**/*.wasm",
-      "!!**/.ruff_cache",
-      "!!**/.zig-cache",
-      "!!**/coverage",
-      "!!**/dist",
-      "!!**/html",
-      "!!**/test-results",
-      "!!**/zig"
-    ]
-  }
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"extends": ["@zig-wasm/tooling/biome"],
+	"root": true,
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true,
+		"defaultBranch": "master"
+	},
+	"formatter": { "enabled": true },
+	"files": {
+		"ignoreUnknown": false,
+		"includes": [
+			"**",
+			".opencode/tool/**",
+			"internal/**",
+			"packages/**",
+			"!!**/*.wasm",
+			"!!**/.ruff_cache",
+			"!!**/.zig-cache",
+			"!!**/coverage",
+			"!!**/dist",
+			"!!**/html",
+			"!!**/test-results",
+			"!!**/zig"
+		]
+	}
 }

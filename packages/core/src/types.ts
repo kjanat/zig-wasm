@@ -50,24 +50,24 @@
  * built with the WASM target.
  */
 export interface WasmMemoryExports {
-  /** The WebAssembly linear memory instance */
-  memory: WebAssembly.Memory;
+	/** The WebAssembly linear memory instance */
+	memory: WebAssembly.Memory;
 
-  /**
-   * Allocate memory in the WASM linear memory.
-   *
-   * @param size - Number of bytes to allocate
-   * @returns Pointer to the allocated memory, or 0 on failure
-   */
-  alloc: (size: number) => number;
+	/**
+	 * Allocate memory in the WASM linear memory.
+	 *
+	 * @param size - Number of bytes to allocate
+	 * @returns Pointer to the allocated memory, or 0 on failure
+	 */
+	alloc: (size: number) => number;
 
-  /**
-   * Free previously allocated memory.
-   *
-   * @param ptr - Pointer to the memory to free
-   * @param size - Size of the allocation in bytes
-   */
-  free: (ptr: number, size: number) => void;
+	/**
+	 * Free previously allocated memory.
+	 *
+	 * @param ptr - Pointer to the memory to free
+	 * @param size - Size of the allocation in bytes
+	 */
+	free: (ptr: number, size: number) => void;
 }
 
 /**
@@ -89,8 +89,8 @@ export interface WasmMemoryExports {
  * ```
  */
 export interface ZigWasmExports extends WasmMemoryExports {
-  /** Additional exports from the module */
-  [key: string]: unknown;
+	/** Additional exports from the module */
+	[key: string]: unknown;
 }
 
 /**
@@ -121,44 +121,44 @@ export type FetchWasmFn = (url: string) => Promise<ArrayBuffer>;
  * - `wasmPath`: File path to read from (Node.js/Bun)
  */
 export interface WasmLoadOptions {
-  /**
-   * Pre-loaded WASM bytes.
-   *
-   * Use this when you've already fetched or embedded the WASM binary.
-   */
-  wasmBytes?: ArrayBuffer | Uint8Array;
+	/**
+	 * Pre-loaded WASM bytes.
+	 *
+	 * Use this when you've already fetched or embedded the WASM binary.
+	 */
+	wasmBytes?: ArrayBuffer | Uint8Array;
 
-  /**
-   * URL to fetch WASM from.
-   *
-   * Best for browser and Deno environments. Streaming instantiation
-   * is used automatically when available.
-   */
-  wasmUrl?: string | URL;
+	/**
+	 * URL to fetch WASM from.
+	 *
+	 * Best for browser and Deno environments. Streaming instantiation
+	 * is used automatically when available.
+	 */
+	wasmUrl?: string | URL;
 
-  /**
-   * File path to WASM file.
-   *
-   * Only works in Node.js and Bun environments. The file is read
-   * using `node:fs/promises`.
-   */
-  wasmPath?: string;
+	/**
+	 * File path to WASM file.
+	 *
+	 * Only works in Node.js and Bun environments. The file is read
+	 * using `node:fs/promises`.
+	 */
+	wasmPath?: string;
 
-  /**
-   * Custom WebAssembly imports.
-   *
-   * Merged with the default imports (Zig panic handler). Use this to
-   * provide additional imports your WASM module requires.
-   */
-  imports?: WebAssembly.Imports;
+	/**
+	 * Custom WebAssembly imports.
+	 *
+	 * Merged with the default imports (Zig panic handler). Use this to
+	 * provide additional imports your WASM module requires.
+	 */
+	imports?: WebAssembly.Imports;
 
-  /**
-   * Custom fetch function for loading WASM.
-   *
-   * Overrides the default `fetch` call. Useful for authenticated
-   * requests or custom caching strategies.
-   */
-  fetchFn?: FetchWasmFn;
+	/**
+	 * Custom fetch function for loading WASM.
+	 *
+	 * Overrides the default `fetch` call. Useful for authenticated
+	 * requests or custom caching strategies.
+	 */
+	fetchFn?: FetchWasmFn;
 }
 
 /**
@@ -167,14 +167,14 @@ export interface WasmLoadOptions {
  * @typeParam T - The type of module exports (extends {@link ZigWasmExports})
  */
 export interface WasmLoadResult<T extends ZigWasmExports = ZigWasmExports> {
-  /** The instantiated WebAssembly instance */
-  instance: WebAssembly.Instance;
+	/** The instantiated WebAssembly instance */
+	instance: WebAssembly.Instance;
 
-  /** The typed module exports */
-  exports: T;
+	/** The typed module exports */
+	exports: T;
 
-  /** The WebAssembly linear memory */
-  memory: WebAssembly.Memory;
+	/** The WebAssembly linear memory */
+	memory: WebAssembly.Memory;
 }
 
 /**
@@ -183,25 +183,25 @@ export interface WasmLoadResult<T extends ZigWasmExports = ZigWasmExports> {
  * Returned by {@link detectEnvironment} and {@link getEnvironment}.
  */
 export interface RuntimeEnvironment {
-  /** True if running in Node.js */
-  isNode: boolean;
+	/** True if running in Node.js */
+	isNode: boolean;
 
-  /** True if running in a browser */
-  isBrowser: boolean;
+	/** True if running in a browser */
+	isBrowser: boolean;
 
-  /** True if running in Deno */
-  isDeno: boolean;
+	/** True if running in Deno */
+	isDeno: boolean;
 
-  /** True if running in Bun */
-  isBun: boolean;
+	/** True if running in Bun */
+	isBun: boolean;
 
-  /**
-   * True if `WebAssembly.instantiateStreaming` is available and recommended.
-   *
-   * Streaming instantiation is more efficient as it compiles WASM while
-   * downloading. Currently supported in browsers and Deno.
-   */
-  supportsStreaming: boolean;
+	/**
+	 * True if `WebAssembly.instantiateStreaming` is available and recommended.
+	 *
+	 * Streaming instantiation is more efficient as it compiles WASM while
+	 * downloading. Currently supported in browsers and Deno.
+	 */
+	supportsStreaming: boolean;
 }
 
 /**
@@ -238,9 +238,9 @@ export type WasmSize = number;
  * ```
  */
 export interface WasmSlice {
-  /** Pointer to the start of the data */
-  ptr: WasmPtr;
+	/** Pointer to the start of the data */
+	ptr: WasmPtr;
 
-  /** Length of the data in bytes */
-  len: WasmSize;
+	/** Length of the data in bytes */
+	len: WasmSize;
 }

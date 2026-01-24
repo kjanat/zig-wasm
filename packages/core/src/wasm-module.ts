@@ -74,7 +74,12 @@ import { getEnvironment } from "./env.ts";
 import { NotInitializedError } from "./errors.ts";
 import { loadWasm } from "./loader.ts";
 import { WasmMemory } from "./memory.ts";
-import type { FetchWasmFn, WasmLoadOptions, WasmLoadResult, ZigWasmExports } from "./types.ts";
+import type {
+	FetchWasmFn,
+	WasmLoadOptions,
+	WasmLoadResult,
+	ZigWasmExports,
+} from "./types.ts";
 
 // Re-export for backwards compatibility
 export { NotInitializedError } from "./errors.ts";
@@ -87,50 +92,50 @@ export { NotInitializedError } from "./errors.ts";
  * will attempt to load from a default location based on the environment.
  */
 export interface InitOptions {
-  /**
-   * URL to load WASM from (browser/Deno).
-   *
-   * @example
-   * ```ts
-   * await module.init({ wasmUrl: "/wasm/my-module.wasm" });
-   * ```
-   */
-  wasmUrl?: string;
+	/**
+	 * URL to load WASM from (browser/Deno).
+	 *
+	 * @example
+	 * ```ts
+	 * await module.init({ wasmUrl: "/wasm/my-module.wasm" });
+	 * ```
+	 */
+	wasmUrl?: string;
 
-  /**
-   * File path to load WASM from (Node.js/Bun).
-   *
-   * @example
-   * ```ts
-   * await module.init({ wasmPath: "./dist/my-module.wasm" });
-   * ```
-   */
-  wasmPath?: string;
+	/**
+	 * File path to load WASM from (Node.js/Bun).
+	 *
+	 * @example
+	 * ```ts
+	 * await module.init({ wasmPath: "./dist/my-module.wasm" });
+	 * ```
+	 */
+	wasmPath?: string;
 
-  /**
-   * Pre-loaded WASM bytes.
-   *
-   * @example
-   * ```ts
-   * const bytes = await fs.readFile("./module.wasm");
-   * await module.init({ wasmBytes: bytes });
-   * ```
-   */
-  wasmBytes?: ArrayBuffer | Uint8Array;
+	/**
+	 * Pre-loaded WASM bytes.
+	 *
+	 * @example
+	 * ```ts
+	 * const bytes = await fs.readFile("./module.wasm");
+	 * await module.init({ wasmBytes: bytes });
+	 * ```
+	 */
+	wasmBytes?: ArrayBuffer | Uint8Array;
 
-  /**
-   * Custom WebAssembly imports.
-   *
-   * Merged with the default Zig panic handler.
-   */
-  imports?: WebAssembly.Imports;
+	/**
+	 * Custom WebAssembly imports.
+	 *
+	 * Merged with the default Zig panic handler.
+	 */
+	imports?: WebAssembly.Imports;
 
-  /**
-   * Custom fetch function for loading WASM.
-   *
-   * Overrides the default `fetch` behavior.
-   */
-  fetchFn?: FetchWasmFn;
+	/**
+	 * Custom fetch function for loading WASM.
+	 *
+	 * Overrides the default `fetch` behavior.
+	 */
+	fetchFn?: FetchWasmFn;
 }
 
 /**
@@ -142,70 +147,72 @@ export interface InitOptions {
  * @typeParam TExports - The typed exports interface for the module
  */
 export interface WasmModule<TExports extends ZigWasmExports> {
-  /**
-   * Initialize the module.
-   *
-   * Idempotent and concurrency-safe: multiple calls are no-ops if already
-   * initialized, and parallel calls share the same initialization promise.
-   *
-   * @param options - Optional loading configuration
-   */
-  init(options?: InitOptions): Promise<void>;
+	/**
+	 * Initialize the module.
+	 *
+	 * Idempotent and concurrency-safe: multiple calls are no-ops if already
+	 * initialized, and parallel calls share the same initialization promise.
+	 *
+	 * @param options - Optional loading configuration
+	 */
+	init(options?: InitOptions): Promise<void>;
 
-  /**
-   * Check if the module is initialized.
-   *
-   * @returns True if `init()` has completed successfully
-   */
-  isInitialized(): boolean;
+	/**
+	 * Check if the module is initialized.
+	 *
+	 * @returns True if `init()` has completed successfully
+	 */
+	isInitialized(): boolean;
 
-  /**
-   * Get the module exports synchronously.
-   *
-   * @returns The typed module exports
-   * @throws {@link NotInitializedError} if `init()` hasn't been called
-   */
-  getExports(): TExports;
+	/**
+	 * Get the module exports synchronously.
+	 *
+	 * @returns The typed module exports
+	 * @throws {@link NotInitializedError} if `init()` hasn't been called
+	 */
+	getExports(): TExports;
 
-  /**
-   * Get the memory manager synchronously.
-   *
-   * @returns The {@link WasmMemory} instance for this module
-   * @throws {@link NotInitializedError} if `init()` hasn't been called
-   */
-  getMemory(): WasmMemory;
+	/**
+	 * Get the memory manager synchronously.
+	 *
+	 * @returns The {@link WasmMemory} instance for this module
+	 * @throws {@link NotInitializedError} if `init()` hasn't been called
+	 */
+	getMemory(): WasmMemory;
 
-  /**
-   * Ensure the module is initialized and return exports + memory.
-   *
-   * Convenience method for async code that combines `init()` with
-   * `getExports()` and `getMemory()`.
-   *
-   * @param options - Optional loading configuration
-   * @returns Object containing typed exports and memory manager
-   */
-  ensureInitialized(options?: InitOptions): Promise<{ exports: TExports; memory: WasmMemory }>;
+	/**
+	 * Ensure the module is initialized and return exports + memory.
+	 *
+	 * Convenience method for async code that combines `init()` with
+	 * `getExports()` and `getMemory()`.
+	 *
+	 * @param options - Optional loading configuration
+	 * @returns Object containing typed exports and memory manager
+	 */
+	ensureInitialized(
+		options?: InitOptions,
+	): Promise<{ exports: TExports; memory: WasmMemory }>;
 }
 
 /**
  * Configuration for creating a WASM module via {@link createWasmModule}.
  */
 export interface WasmModuleConfig {
-  /**
-   * Module name for error messages.
-   *
-   * Used in {@link NotInitializedError} messages to identify which module
-   * wasn't initialized.
-   */
-  name: string;
+	/**
+	 * Module name for error messages.
+	 *
+	 * Used in {@link NotInitializedError} messages to identify which module
+	 * wasn't initialized.
+	 */
+	name: string;
 
-  /**
-   * WASM filename (e.g., "crypto.wasm").
-   *
-   * Used as the default filename when no explicit path/URL is provided
-   * to `init()`.
-   */
-  wasmFileName: string;
+	/**
+	 * WASM filename (e.g., "crypto.wasm").
+	 *
+	 * Used as the default filename when no explicit path/URL is provided
+	 * to `init()`.
+	 */
+	wasmFileName: string;
 }
 
 /**
@@ -264,98 +271,101 @@ export interface WasmModuleConfig {
  * ```
  */
 export function createWasmModule<TExports extends ZigWasmExports>(
-  config: WasmModuleConfig,
+	config: WasmModuleConfig,
 ): WasmModule<TExports> {
-  let result: WasmLoadResult<TExports> | null = null;
-  let memory: WasmMemory | null = null;
-  let initPromise: Promise<void> | null = null;
+	let result: WasmLoadResult<TExports> | null = null;
+	let memory: WasmMemory | null = null;
+	let initPromise: Promise<void> | null = null;
 
-  async function init(options?: InitOptions): Promise<void> {
-    // Already initialized
-    if (result) return;
+	async function init(options?: InitOptions): Promise<void> {
+		// Already initialized
+		if (result) return;
 
-    // Initialization in progress - wait for it
-    if (initPromise) {
-      await initPromise;
-      return;
-    }
+		// Initialization in progress - wait for it
+		if (initPromise) {
+			await initPromise;
+			return;
+		}
 
-    // Start initialization
-    initPromise = (async () => {
-      const loadOptions = buildLoadOptions(config.wasmFileName, options);
-      result = await loadWasm<TExports>(loadOptions);
-      memory = new WasmMemory(result.exports);
-    })();
+		// Start initialization
+		initPromise = (async () => {
+			const loadOptions = buildLoadOptions(config.wasmFileName, options);
+			result = await loadWasm<TExports>(loadOptions);
+			memory = new WasmMemory(result.exports);
+		})();
 
-    await initPromise;
-  }
+		await initPromise;
+	}
 
-  function isInitialized(): boolean {
-    return result !== null;
-  }
+	function isInitialized(): boolean {
+		return result !== null;
+	}
 
-  function getExports(): TExports {
-    if (!result) {
-      throw new NotInitializedError(config.name);
-    }
-    return result.exports;
-  }
+	function getExports(): TExports {
+		if (!result) {
+			throw new NotInitializedError(config.name);
+		}
+		return result.exports;
+	}
 
-  function getMemory(): WasmMemory {
-    if (!memory) {
-      throw new NotInitializedError(config.name);
-    }
-    return memory;
-  }
+	function getMemory(): WasmMemory {
+		if (!memory) {
+			throw new NotInitializedError(config.name);
+		}
+		return memory;
+	}
 
-  async function ensureInitialized(
-    options?: InitOptions,
-  ): Promise<{ exports: TExports; memory: WasmMemory }> {
-    await init(options);
-    return { exports: getExports(), memory: getMemory() };
-  }
+	async function ensureInitialized(
+		options?: InitOptions,
+	): Promise<{ exports: TExports; memory: WasmMemory }> {
+		await init(options);
+		return { exports: getExports(), memory: getMemory() };
+	}
 
-  return {
-    init,
-    isInitialized,
-    getExports,
-    getMemory,
-    ensureInitialized,
-  };
+	return {
+		init,
+		isInitialized,
+		getExports,
+		getMemory,
+		ensureInitialized,
+	};
 }
 
 /**
  * Build load options from InitOptions and default paths.
  * @internal
  */
-function buildLoadOptions(wasmFileName: string, options?: InitOptions): WasmLoadOptions {
-  const baseOpts = {
-    imports: options?.imports,
-    fetchFn: options?.fetchFn,
-  };
+function buildLoadOptions(
+	wasmFileName: string,
+	options?: InitOptions,
+): WasmLoadOptions {
+	const baseOpts = {
+		imports: options?.imports,
+		fetchFn: options?.fetchFn,
+	};
 
-  // If explicit options provided, use them
-  if (options?.wasmBytes) {
-    return { ...baseOpts, wasmBytes: options.wasmBytes };
-  }
-  if (options?.wasmUrl) {
-    return { ...baseOpts, wasmUrl: options.wasmUrl };
-  }
-  if (options?.wasmPath) {
-    return { ...baseOpts, wasmPath: options.wasmPath };
-  }
+	// If explicit options provided, use them
+	if (options?.wasmBytes) {
+		return { ...baseOpts, wasmBytes: options.wasmBytes };
+	}
+	if (options?.wasmUrl) {
+		return { ...baseOpts, wasmUrl: options.wasmUrl };
+	}
+	if (options?.wasmPath) {
+		return { ...baseOpts, wasmPath: options.wasmPath };
+	}
 
-  // Default: detect environment and build appropriate path
-  const env = getEnvironment();
+	// Default: detect environment and build appropriate path
+	const env = getEnvironment();
 
-  if (env.isNode || env.isBun) {
-    // Will be resolved by the package's loader
-    // This is a placeholder - each package overrides this
-    return { ...baseOpts, wasmPath: wasmFileName };
-  }
+	if (env.isNode || env.isBun) {
+		// Will be resolved by the package's loader
+		// This is a placeholder - each package overrides this
+		return { ...baseOpts, wasmPath: wasmFileName };
+	}
 
-  // Browser/Deno: use URL relative to module
-  return { ...baseOpts, wasmUrl: wasmFileName };
+	// Browser/Deno: use URL relative to module
+	return { ...baseOpts, wasmUrl: wasmFileName };
 }
 
 /**
@@ -381,13 +391,13 @@ function buildLoadOptions(wasmFileName: string, options?: InitOptions): WasmLoad
  * ```
  */
 export async function resolveWasmPathForNode(
-  importMetaUrl: string,
-  wasmFileName: string,
+	importMetaUrl: string,
+	wasmFileName: string,
 ): Promise<string> {
-  const { fileURLToPath } = await import("node:url");
-  const { dirname, join } = await import("node:path");
-  const currentDir = dirname(fileURLToPath(importMetaUrl));
-  return join(currentDir, wasmFileName);
+	const { fileURLToPath } = await import("node:url");
+	const { dirname, join } = await import("node:path");
+	const currentDir = dirname(fileURLToPath(importMetaUrl));
+	return join(currentDir, wasmFileName);
 }
 
 /**
@@ -412,8 +422,8 @@ export async function resolveWasmPathForNode(
  * ```
  */
 export function resolveWasmUrlForBrowser(
-  importMetaUrl: string,
-  wasmFileName: string,
+	importMetaUrl: string,
+	wasmFileName: string,
 ): string {
-  return new URL(wasmFileName, importMetaUrl).href;
+	return new URL(wasmFileName, importMetaUrl).href;
 }

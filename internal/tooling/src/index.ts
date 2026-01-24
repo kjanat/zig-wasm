@@ -70,6 +70,9 @@ export { checkPublished, checkPublishedCli } from "./check-published.ts";
 export type { CheckPublishedResult } from "./check-published.ts";
 
 export { syncVersions } from "./sync-versions.ts";
-export type { SyncVersionsOptions, SyncVersionsResult } from "./sync-versions.ts";
+export type {
+	SyncVersionsOptions,
+	SyncVersionsResult,
+} from "./sync-versions.ts";
 
 export { findMonorepoRoot } from "./monorepo.ts";

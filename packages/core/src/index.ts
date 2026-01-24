@@ -89,58 +89,88 @@
  */
 
 // Errors
-export { NotInitializedError, WasmLoadError, WasmMemoryError, ZigWasmError } from "./errors.ts";
+export {
+	NotInitializedError,
+	WasmLoadError,
+	WasmMemoryError,
+	ZigWasmError,
+} from "./errors.ts";
 
 // Environment detection
 export { detectEnvironment, getEnvironment } from "./env.ts";
 
 // Module loading
-export { createModuleLoader, defaultFetchFn, loadWasm, resolveWasmPath } from "./loader.ts";
+export {
+	createModuleLoader,
+	defaultFetchFn,
+	loadWasm,
+	resolveWasmPath,
+} from "./loader.ts";
 
 // WASM module factory (init/sync pattern)
-export { createWasmModule, resolveWasmPathForNode, resolveWasmUrlForBrowser } from "./wasm-module.ts";
-export type { InitOptions, WasmModule, WasmModuleConfig } from "./wasm-module.ts";
+export {
+	createWasmModule,
+	resolveWasmPathForNode,
+	resolveWasmUrlForBrowser,
+} from "./wasm-module.ts";
+export type {
+	InitOptions,
+	WasmModule,
+	WasmModuleConfig,
+} from "./wasm-module.ts";
 
 // Memory management
 export { AllocationScope, WasmMemory } from "./memory.ts";
 
 // Types
 export type {
-  FetchWasmFn,
-  RuntimeEnvironment,
-  WasmLoadOptions,
-  WasmLoadResult,
-  WasmMemoryExports,
-  WasmPtr,
-  WasmSize,
-  WasmSlice,
-  ZigWasmExports,
+	FetchWasmFn,
+	RuntimeEnvironment,
+	WasmLoadOptions,
+	WasmLoadResult,
+	WasmMemoryExports,
+	WasmPtr,
+	WasmSize,
+	WasmSlice,
+	ZigWasmExports,
 } from "./types.ts";
 
 // Utilities
-export { bytesToString, compareBytes, concatBytes, fromHex, stringToBytes, toHex } from "./utils.ts";
+export {
+	bytesToString,
+	compareBytes,
+	concatBytes,
+	fromHex,
+	stringToBytes,
+	toHex,
+} from "./utils.ts";
 
 // LEB128 encoding/decoding
-export { decodeSleb128, decodeUleb128, encodeSleb128, encodeUleb128 } from "./leb128.ts";
+export {
+	decodeSleb128,
+	decodeUleb128,
+	encodeSleb128,
+	encodeUleb128,
+} from "./leb128.ts";
 
 // WASM binary format utilities
 export {
-  encodeFuncType,
-  encodeLimits,
-  encodeSection,
-  encodeString,
-  encodeVec,
-  ExportKind,
-  ImportKind,
-  isValidWasmHeader,
-  Op,
-  parseWasmSections,
-  Section,
-  SECTION_NAMES,
-  TypeConstructor,
-  ValType,
-  WASM_HEADER,
-  WASM_MAGIC,
-  WASM_VERSION,
+	encodeFuncType,
+	encodeLimits,
+	encodeSection,
+	encodeString,
+	encodeVec,
+	ExportKind,
+	ImportKind,
+	isValidWasmHeader,
+	Op,
+	parseWasmSections,
+	Section,
+	SECTION_NAMES,
+	TypeConstructor,
+	ValType,
+	WASM_HEADER,
+	WASM_MAGIC,
+	WASM_VERSION,
 } from "./wasm-binary.ts";
 export type { ParsedSection } from "./wasm-binary.ts";

@@ -34,125 +34,125 @@ import type { WasmMemoryExports } from "@zig-wasm/core";
  * Seeded variants accept an additional seed parameter.
  */
 export interface HashWasmExports extends WasmMemoryExports {
-  /** Index signature for dynamic access */
-  [key: string]: unknown;
+	/** Index signature for dynamic access */
+	[key: string]: unknown;
 
-  /**
-   * Compute CRC32 checksum.
-   * @param dataPtr - Pointer to data in WASM memory
-   * @param dataLen - Length of data in bytes
-   * @returns 32-bit CRC32 checksum
-   */
-  crc32: (dataPtr: number, dataLen: number) => number;
+	/**
+	 * Compute CRC32 checksum.
+	 * @param dataPtr - Pointer to data in WASM memory
+	 * @param dataLen - Length of data in bytes
+	 * @returns 32-bit CRC32 checksum
+	 */
+	crc32: (dataPtr: number, dataLen: number) => number;
 
-  /**
-   * Compute Adler-32 checksum.
-   * @param dataPtr - Pointer to data in WASM memory
-   * @param dataLen - Length of data in bytes
-   * @returns 32-bit Adler-32 checksum
-   */
-  adler32: (dataPtr: number, dataLen: number) => number;
+	/**
+	 * Compute Adler-32 checksum.
+	 * @param dataPtr - Pointer to data in WASM memory
+	 * @param dataLen - Length of data in bytes
+	 * @returns 32-bit Adler-32 checksum
+	 */
+	adler32: (dataPtr: number, dataLen: number) => number;
 
-  /**
-   * Compute xxHash64 with default seed.
-   * @param dataPtr - Pointer to data in WASM memory
-   * @param dataLen - Length of data in bytes
-   * @returns 64-bit xxHash64 value
-   */
-  xxhash64: (dataPtr: number, dataLen: number) => bigint;
+	/**
+	 * Compute xxHash64 with default seed.
+	 * @param dataPtr - Pointer to data in WASM memory
+	 * @param dataLen - Length of data in bytes
+	 * @returns 64-bit xxHash64 value
+	 */
+	xxhash64: (dataPtr: number, dataLen: number) => bigint;
 
-  /**
-   * Compute xxHash64 with custom seed.
-   * @param seed - 64-bit seed value
-   * @param dataPtr - Pointer to data in WASM memory
-   * @param dataLen - Length of data in bytes
-   * @returns 64-bit xxHash64 value
-   */
-  xxhash64_seeded: (seed: bigint, dataPtr: number, dataLen: number) => bigint;
+	/**
+	 * Compute xxHash64 with custom seed.
+	 * @param seed - 64-bit seed value
+	 * @param dataPtr - Pointer to data in WASM memory
+	 * @param dataLen - Length of data in bytes
+	 * @returns 64-bit xxHash64 value
+	 */
+	xxhash64_seeded: (seed: bigint, dataPtr: number, dataLen: number) => bigint;
 
-  /**
-   * Compute xxHash32 with default seed.
-   * @param dataPtr - Pointer to data in WASM memory
-   * @param dataLen - Length of data in bytes
-   * @returns 32-bit xxHash32 value
-   */
-  xxhash32: (dataPtr: number, dataLen: number) => number;
+	/**
+	 * Compute xxHash32 with default seed.
+	 * @param dataPtr - Pointer to data in WASM memory
+	 * @param dataLen - Length of data in bytes
+	 * @returns 32-bit xxHash32 value
+	 */
+	xxhash32: (dataPtr: number, dataLen: number) => number;
 
-  /**
-   * Compute xxHash32 with custom seed.
-   * @param seed - 32-bit seed value
-   * @param dataPtr - Pointer to data in WASM memory
-   * @param dataLen - Length of data in bytes
-   * @returns 32-bit xxHash32 value
-   */
-  xxhash32_seeded: (seed: number, dataPtr: number, dataLen: number) => number;
+	/**
+	 * Compute xxHash32 with custom seed.
+	 * @param seed - 32-bit seed value
+	 * @param dataPtr - Pointer to data in WASM memory
+	 * @param dataLen - Length of data in bytes
+	 * @returns 32-bit xxHash32 value
+	 */
+	xxhash32_seeded: (seed: number, dataPtr: number, dataLen: number) => number;
 
-  /**
-   * Compute wyhash with default seed.
-   * @param dataPtr - Pointer to data in WASM memory
-   * @param dataLen - Length of data in bytes
-   * @returns 64-bit wyhash value
-   */
-  wyhash: (dataPtr: number, dataLen: number) => bigint;
+	/**
+	 * Compute wyhash with default seed.
+	 * @param dataPtr - Pointer to data in WASM memory
+	 * @param dataLen - Length of data in bytes
+	 * @returns 64-bit wyhash value
+	 */
+	wyhash: (dataPtr: number, dataLen: number) => bigint;
 
-  /**
-   * Compute wyhash with custom seed.
-   * @param seed - 64-bit seed value
-   * @param dataPtr - Pointer to data in WASM memory
-   * @param dataLen - Length of data in bytes
-   * @returns 64-bit wyhash value
-   */
-  wyhash_seeded: (seed: bigint, dataPtr: number, dataLen: number) => bigint;
+	/**
+	 * Compute wyhash with custom seed.
+	 * @param seed - 64-bit seed value
+	 * @param dataPtr - Pointer to data in WASM memory
+	 * @param dataLen - Length of data in bytes
+	 * @returns 64-bit wyhash value
+	 */
+	wyhash_seeded: (seed: bigint, dataPtr: number, dataLen: number) => bigint;
 
-  /**
-   * Compute CityHash64 with default seed.
-   * @param dataPtr - Pointer to data in WASM memory
-   * @param dataLen - Length of data in bytes
-   * @returns 64-bit CityHash64 value
-   */
-  cityhash64: (dataPtr: number, dataLen: number) => bigint;
+	/**
+	 * Compute CityHash64 with default seed.
+	 * @param dataPtr - Pointer to data in WASM memory
+	 * @param dataLen - Length of data in bytes
+	 * @returns 64-bit CityHash64 value
+	 */
+	cityhash64: (dataPtr: number, dataLen: number) => bigint;
 
-  /**
-   * Compute CityHash64 with custom seed.
-   * @param seed - 64-bit seed value
-   * @param dataPtr - Pointer to data in WASM memory
-   * @param dataLen - Length of data in bytes
-   * @returns 64-bit CityHash64 value
-   */
-  cityhash64_seeded: (seed: bigint, dataPtr: number, dataLen: number) => bigint;
+	/**
+	 * Compute CityHash64 with custom seed.
+	 * @param seed - 64-bit seed value
+	 * @param dataPtr - Pointer to data in WASM memory
+	 * @param dataLen - Length of data in bytes
+	 * @returns 64-bit CityHash64 value
+	 */
+	cityhash64_seeded: (seed: bigint, dataPtr: number, dataLen: number) => bigint;
 
-  /**
-   * Compute Murmur2-64 with default seed.
-   * @param dataPtr - Pointer to data in WASM memory
-   * @param dataLen - Length of data in bytes
-   * @returns 64-bit Murmur2-64 value
-   */
-  murmur2_64: (dataPtr: number, dataLen: number) => bigint;
+	/**
+	 * Compute Murmur2-64 with default seed.
+	 * @param dataPtr - Pointer to data in WASM memory
+	 * @param dataLen - Length of data in bytes
+	 * @returns 64-bit Murmur2-64 value
+	 */
+	murmur2_64: (dataPtr: number, dataLen: number) => bigint;
 
-  /**
-   * Compute Murmur2-64 with custom seed.
-   * @param seed - 64-bit seed value
-   * @param dataPtr - Pointer to data in WASM memory
-   * @param dataLen - Length of data in bytes
-   * @returns 64-bit Murmur2-64 value
-   */
-  murmur2_64_seeded: (seed: bigint, dataPtr: number, dataLen: number) => bigint;
+	/**
+	 * Compute Murmur2-64 with custom seed.
+	 * @param seed - 64-bit seed value
+	 * @param dataPtr - Pointer to data in WASM memory
+	 * @param dataLen - Length of data in bytes
+	 * @returns 64-bit Murmur2-64 value
+	 */
+	murmur2_64_seeded: (seed: bigint, dataPtr: number, dataLen: number) => bigint;
 
-  /**
-   * Compute FNV-1a 64-bit hash.
-   * @param dataPtr - Pointer to data in WASM memory
-   * @param dataLen - Length of data in bytes
-   * @returns 64-bit FNV-1a hash value
-   */
-  fnv1a_64: (dataPtr: number, dataLen: number) => bigint;
+	/**
+	 * Compute FNV-1a 64-bit hash.
+	 * @param dataPtr - Pointer to data in WASM memory
+	 * @param dataLen - Length of data in bytes
+	 * @returns 64-bit FNV-1a hash value
+	 */
+	fnv1a_64: (dataPtr: number, dataLen: number) => bigint;
 
-  /**
-   * Compute FNV-1a 32-bit hash.
-   * @param dataPtr - Pointer to data in WASM memory
-   * @param dataLen - Length of data in bytes
-   * @returns 32-bit FNV-1a hash value
-   */
-  fnv1a_32: (dataPtr: number, dataLen: number) => number;
+	/**
+	 * Compute FNV-1a 32-bit hash.
+	 * @param dataPtr - Pointer to data in WASM memory
+	 * @param dataLen - Length of data in bytes
+	 * @returns 32-bit FNV-1a hash value
+	 */
+	fnv1a_32: (dataPtr: number, dataLen: number) => number;
 }
 
 /**
@@ -198,11 +198,11 @@ export type Hash32Algorithm = "crc32" | "adler32" | "xxhash32" | "fnv1a32";
  * ```
  */
 export type Hash64Algorithm =
-  | "xxhash64"
-  | "wyhash"
-  | "cityhash64"
-  | "murmur2_64"
-  | "fnv1a64";
+	| "xxhash64"
+	| "wyhash"
+	| "cityhash64"
+	| "murmur2_64"
+	| "fnv1a64";
 
 /**
  * Union of all hash algorithm identifiers.

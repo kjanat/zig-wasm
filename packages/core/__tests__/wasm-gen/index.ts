@@ -26,31 +26,31 @@
 
 // Valid WASM builders
 export {
-  createAddFunction,
-  createEmptyModule,
-  createMinimalWasmWithMemory,
-  createWasmThatCallsPanic,
-  createWasmWithoutMemory,
-  createWasmWithPanicImport,
+	createAddFunction,
+	createEmptyModule,
+	createMinimalWasmWithMemory,
+	createWasmThatCallsPanic,
+	createWasmWithoutMemory,
+	createWasmWithPanicImport,
 } from "./builders.ts";
 
 // Invalid WASM builders
 export {
-  createBadLeb128,
-  createBadSectionId,
-  createDuplicateSection,
-  createEmptyBytes,
-  createGarbageBytes,
-  createInvalidMagic,
-  createInvalidTypeReference,
-  createInvalidVersion,
-  createMismatchedFunctionCount,
-  createSingleByte,
-  createTruncatedHeader,
-  createTruncatedSection,
-  createWrongSectionOrder,
-  createZeroSizeSection,
-  getAllInvalidWasm,
+	createBadLeb128,
+	createBadSectionId,
+	createDuplicateSection,
+	createEmptyBytes,
+	createGarbageBytes,
+	createInvalidMagic,
+	createInvalidTypeReference,
+	createInvalidVersion,
+	createMismatchedFunctionCount,
+	createSingleByte,
+	createTruncatedHeader,
+	createTruncatedSection,
+	createWrongSectionOrder,
+	createZeroSizeSection,
+	getAllInvalidWasm,
 } from "./invalid.ts";
 
 // Types

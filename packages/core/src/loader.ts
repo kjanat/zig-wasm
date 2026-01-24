@@ -77,7 +77,12 @@
 
 import { getEnvironment } from "./env.ts";
 import { WasmLoadError } from "./errors.ts";
-import type { FetchWasmFn, WasmLoadOptions, WasmLoadResult, ZigWasmExports } from "./types.ts";
+import type {
+	FetchWasmFn,
+	WasmLoadOptions,
+	WasmLoadResult,
+	ZigWasmExports,
+} from "./types.ts";
 
 /**
  * Default fetch function for loading WASM from URLs.
@@ -99,90 +104,99 @@ import type { FetchWasmFn, WasmLoadOptions, WasmLoadResult, ZigWasmExports } fro
  * ```
  */
 export async function defaultFetchFn(url: string): Promise<ArrayBuffer> {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch WASM: ${response.status} ${response.statusText}`);
-  }
-  return response.arrayBuffer();
+	const response = await fetch(url);
+	if (!response.ok) {
+		throw new Error(
+			`Failed to fetch WASM: ${response.status} ${response.statusText}`,
+		);
+	}
+	return response.arrayBuffer();
 }
 
 /** Default imports provided to all Zig WASM modules */
 function getDefaultImports(): WebAssembly.Imports {
-  return {
-    env: {
-      // Zig's panic handler - we convert to JS error
-      _panic: (ptr: number, len: number) => {
-        throw new Error(`Zig panic at ptr=${ptr}, len=${len}`);
-      },
-    },
-  };
+	return {
+		env: {
+			// Zig's panic handler - we convert to JS error
+			_panic: (ptr: number, len: number) => {
+				throw new Error(`Zig panic at ptr=${ptr}, len=${len}`);
+			},
+		},
+	};
 }
 
 /** Merge user imports with defaults */
 function mergeImports(
-  defaults: WebAssembly.Imports,
-  custom?: WebAssembly.Imports,
+	defaults: WebAssembly.Imports,
+	custom?: WebAssembly.Imports,
 ): WebAssembly.Imports {
-  if (!custom) return defaults;
+	if (!custom) return defaults;
 
-  const result: WebAssembly.Imports = { ...defaults };
-  for (const [key, value] of Object.entries(custom)) {
-    if (typeof value === "object" && value !== null) {
-      result[key] = { ...(result[key] as object), ...value };
-    } else {
-      result[key] = value;
-    }
-  }
-  return result;
+	const result: WebAssembly.Imports = { ...defaults };
+	for (const [key, value] of Object.entries(custom)) {
+		if (typeof value === "object" && value !== null) {
+			result[key] = { ...(result[key] as object), ...value };
+		} else {
+			result[key] = value;
+		}
+	}
+	return result;
 }
 
 /** Load WASM bytes from URL (browser/Deno) */
-async function loadFromUrl(url: string | URL, fetchFn?: FetchWasmFn): Promise<ArrayBuffer> {
-  const urlStr = url instanceof URL ? url.href : url;
-  if (fetchFn) {
-    return fetchFn(urlStr);
-  }
-  return defaultFetchFn(urlStr);
+async function loadFromUrl(
+	url: string | URL,
+	fetchFn?: FetchWasmFn,
+): Promise<ArrayBuffer> {
+	const urlStr = url instanceof URL ? url.href : url;
+	if (fetchFn) {
+		return fetchFn(urlStr);
+	}
+	return defaultFetchFn(urlStr);
 }
 
 /** Load WASM bytes from file path (Node.js/Bun) */
 async function loadFromPath(path: string): Promise<ArrayBuffer> {
-  const env = getEnvironment();
+	const env = getEnvironment();
 
-  if (env.isNode || env.isBun) {
-    const fs = await import("node:fs/promises");
-    const buffer = await fs.readFile(path);
-    return buffer.buffer.slice(
-      buffer.byteOffset,
-      buffer.byteOffset + buffer.byteLength,
-    );
-  }
+	if (env.isNode || env.isBun) {
+		const fs = await import("node:fs/promises");
+		const buffer = await fs.readFile(path);
+		return buffer.buffer.slice(
+			buffer.byteOffset,
+			buffer.byteOffset + buffer.byteLength,
+		);
+	}
 
-  throw new WasmLoadError("unknown", new Error("File path loading only supported in Node.js/Bun"));
+	throw new WasmLoadError(
+		"unknown",
+		new Error("File path loading only supported in Node.js/Bun"),
+	);
 }
 
 /** Load WASM module with streaming if available */
 async function instantiateWasm(
-  source: ArrayBuffer | Response | Promise<Response>,
-  imports: WebAssembly.Imports,
+	source: ArrayBuffer | Response | Promise<Response>,
+	imports: WebAssembly.Imports,
 ): Promise<WebAssembly.WebAssemblyInstantiatedSource> {
-  const env = getEnvironment();
+	const env = getEnvironment();
 
-  // Use streaming instantiation if available and source is Response
-  if (
-    env.supportsStreaming
-    && (source instanceof Response || source instanceof Promise)
-  ) {
-    return WebAssembly.instantiateStreaming(source as Response, imports);
-  }
+	// Use streaming instantiation if available and source is Response
+	if (
+		env.supportsStreaming &&
+		(source instanceof Response || source instanceof Promise)
+	) {
+		return WebAssembly.instantiateStreaming(source as Response, imports);
+	}
 
-  // Fall back to ArrayBuffer instantiation
-  const bytes = source instanceof ArrayBuffer
-    ? source
-    : /* v8 ignore next -- @preserve: Promise<Response> unreachable in Node */ await (source as Promise<Response>).then(
-      r => r.arrayBuffer(),
-    );
-  return WebAssembly.instantiate(bytes, imports);
+	// Fall back to ArrayBuffer instantiation
+	const bytes =
+		source instanceof ArrayBuffer
+			? source
+			: /* v8 ignore next -- @preserve: Promise<Response> unreachable in Node */ await (
+					source as Promise<Response>
+				).then((r) => r.arrayBuffer());
+	return WebAssembly.instantiate(bytes, imports);
 }
 
 /**
@@ -247,54 +261,61 @@ async function instantiateWasm(
  * ```
  */
 export async function loadWasm<T extends ZigWasmExports = ZigWasmExports>(
-  options: WasmLoadOptions,
+	options: WasmLoadOptions,
 ): Promise<WasmLoadResult<T>> {
-  const defaultImports = getDefaultImports();
-  const imports = mergeImports(defaultImports, options.imports);
+	const defaultImports = getDefaultImports();
+	const imports = mergeImports(defaultImports, options.imports);
 
-  let wasmSource: ArrayBuffer | Response | Promise<Response>;
+	let wasmSource: ArrayBuffer | Response | Promise<Response>;
 
-  try {
-    if (options.wasmBytes) {
-      // Direct bytes provided
-      wasmSource = options.wasmBytes instanceof Uint8Array
-        ? (options.wasmBytes.buffer.slice(
-          options.wasmBytes.byteOffset,
-          options.wasmBytes.byteOffset + options.wasmBytes.byteLength,
-        ) as ArrayBuffer)
-        : options.wasmBytes;
-    } else if (options.wasmUrl) {
-      const env = getEnvironment();
-      // Use streaming only if no custom fetchFn and browser supports it
-      if (env.supportsStreaming && !options.fetchFn) {
-        wasmSource = fetch(options.wasmUrl);
-      } else {
-        wasmSource = await loadFromUrl(options.wasmUrl, options.fetchFn);
-      }
-    } else if (options.wasmPath) {
-      wasmSource = await loadFromPath(options.wasmPath);
-    } else {
-      throw new WasmLoadError("unknown", new Error("Must provide one of: wasmBytes, wasmUrl, or wasmPath"));
-    }
+	try {
+		if (options.wasmBytes) {
+			// Direct bytes provided
+			wasmSource =
+				options.wasmBytes instanceof Uint8Array
+					? (options.wasmBytes.buffer.slice(
+							options.wasmBytes.byteOffset,
+							options.wasmBytes.byteOffset + options.wasmBytes.byteLength,
+						) as ArrayBuffer)
+					: options.wasmBytes;
+		} else if (options.wasmUrl) {
+			const env = getEnvironment();
+			// Use streaming only if no custom fetchFn and browser supports it
+			if (env.supportsStreaming && !options.fetchFn) {
+				wasmSource = fetch(options.wasmUrl);
+			} else {
+				wasmSource = await loadFromUrl(options.wasmUrl, options.fetchFn);
+			}
+		} else if (options.wasmPath) {
+			wasmSource = await loadFromPath(options.wasmPath);
+		} else {
+			throw new WasmLoadError(
+				"unknown",
+				new Error("Must provide one of: wasmBytes, wasmUrl, or wasmPath"),
+			);
+		}
 
-    const { instance } = await instantiateWasm(wasmSource, imports);
-    const exports = instance.exports as T;
+		const { instance } = await instantiateWasm(wasmSource, imports);
+		const exports = instance.exports as T;
 
-    if (!exports.memory) {
-      throw new WasmLoadError("unknown", new Error("WASM module must export 'memory'"));
-    }
+		if (!exports.memory) {
+			throw new WasmLoadError(
+				"unknown",
+				new Error("WASM module must export 'memory'"),
+			);
+		}
 
-    return {
-      instance,
-      exports,
-      memory: exports.memory,
-    };
-  } catch (error) {
-    if (error instanceof WasmLoadError) {
-      throw error;
-    }
-    throw new WasmLoadError("unknown", error);
-  }
+		return {
+			instance,
+			exports,
+			memory: exports.memory,
+		};
+	} catch (error) {
+		if (error instanceof WasmLoadError) {
+			throw error;
+		}
+		throw new WasmLoadError("unknown", error);
+	}
 }
 
 /**
@@ -331,16 +352,16 @@ export async function loadWasm<T extends ZigWasmExports = ZigWasmExports>(
  * ```
  */
 export function createModuleLoader<T extends ZigWasmExports>(
-  getWasmSource: () => WasmLoadOptions,
+	getWasmSource: () => WasmLoadOptions,
 ): () => Promise<WasmLoadResult<T>> {
-  let cached: Promise<WasmLoadResult<T>> | null = null;
+	let cached: Promise<WasmLoadResult<T>> | null = null;
 
-  return () => {
-    if (!cached) {
-      cached = loadWasm<T>(getWasmSource());
-    }
-    return cached;
-  };
+	return () => {
+		if (!cached) {
+			cached = loadWasm<T>(getWasmSource());
+		}
+		return cached;
+	};
 }
 
 /**
@@ -368,18 +389,18 @@ export function createModuleLoader<T extends ZigWasmExports>(
  * ```
  */
 export function resolveWasmPath(
-  importMetaUrl: string,
-  relativePath: string,
+	importMetaUrl: string,
+	relativePath: string,
 ): string {
-  const url = new URL(relativePath, importMetaUrl);
-  const env = getEnvironment();
+	const url = new URL(relativePath, importMetaUrl);
+	const env = getEnvironment();
 
-  if (env.isNode || env.isBun) {
-    // Convert file:// URL to path for Node.js
-    if (url.protocol === "file:") {
-      return url.pathname;
-    }
-  }
+	if (env.isNode || env.isBun) {
+		// Convert file:// URL to path for Node.js
+		if (url.protocol === "file:") {
+			return url.pathname;
+		}
+	}
 
-  return url.href;
+	return url.href;
 }

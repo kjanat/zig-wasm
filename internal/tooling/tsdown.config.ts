@@ -1,7 +1,7 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  banner: `/**
+	banner: `/**
  * @package "@zig-wasm/tooling"
  * @license MIT
  */
