@@ -10,6 +10,7 @@
  * - **Sync functions**: Require explicit {@link init} call first, throw {@link NotInitializedError} otherwise
  *
  * The module uses a singleton pattern - initialization happens once and is shared across all calls.
+ * For isolated instances (useful for testing), use {@link createMath}.
  *
  * @example Using async API (recommended for most cases)
  * ```ts
@@ -30,6 +31,16 @@
  *   const s = sinSync(i * 0.01);
  *   const c = cosSync(i * 0.01);
  * }
+ * ```
+ *
+ * @example Using factory for isolated instances (testing)
+ * ```ts
+ * import { createMath } from "@zig-wasm/math";
+ *
+ * const math = createMath();
+ * await math.init();
+ * const result = math.absSync(-5); // 5
+ * math.dispose(); // Clean up
  * ```
  *
  * @module math
@@ -133,6 +144,31 @@ export function isInitialized(): boolean {
 	return wasmExports !== null;
 }
 
+/**
+ * Dispose of the math module, resetting all state.
+ *
+ * After calling dispose, the module can be re-initialized by calling {@link init} again.
+ * This is useful for testing scenarios or when you need to reconfigure the WASM module.
+ *
+ * @example
+ * ```ts
+ * import { init, dispose, isInitialized } from "@zig-wasm/math";
+ *
+ * await init();
+ * console.log(isInitialized()); // true
+ *
+ * dispose();
+ * console.log(isInitialized()); // false
+ *
+ * // Can re-initialize with different options
+ * await init({ wasmPath: "/custom/math.wasm" });
+ * ```
+ */
+export function dispose(): void {
+	wasmExports = null;
+	initPromise = null;
+}
+
 async function ensureInit(): Promise<MathWasmExports> {
 	await init();
 	// After init(), this is guaranteed to be set
@@ -166,6 +202,192 @@ export async function getExports(): Promise<MathWasmExports> {
  */
 export function getExportsSync(): MathWasmExports {
 	return getSyncExports();
+}
+
+// ============================================================================
+// Factory pattern for isolated instances
+// ============================================================================
+
+/**
+ * Interface for an isolated math module instance.
+ *
+ * Created by {@link createMath}. Each instance has its own WASM module state,
+ * useful for testing scenarios that need fresh, uninitialized instances.
+ */
+export interface MathInstance {
+	/** Initialize this instance */
+	init(options?: InitOptions): Promise<void>;
+	/** Check if this instance is initialized */
+	isInitialized(): boolean;
+	/** Get WASM exports (throws if not initialized) */
+	getExports(): MathWasmExports;
+	/** Get WASM exports asynchronously (auto-initializes) */
+	getExportsAsync(): Promise<MathWasmExports>;
+	/** Reset instance state for re-initialization */
+	dispose(): void;
+
+	// Sync API (requires init)
+	absSync(x: number): number;
+	absF32Sync(x: number): number;
+	absI32Sync(x: number): number;
+	absI64Sync(x: bigint): bigint;
+	minSync(a: number, b: number): number;
+	maxSync(a: number, b: number): number;
+	clampSync(val: number, lo: number, hi: number): number;
+	sqrtSync(x: number): number;
+	sinSync(x: number): number;
+	cosSync(x: number): number;
+	piSync(): number;
+
+	// Async API (auto-initializes)
+	abs(x: number): Promise<number>;
+	sin(x: number): Promise<number>;
+	cos(x: number): Promise<number>;
+	pi(): Promise<number>;
+}
+
+/**
+ * Create an isolated math module instance.
+ *
+ * Unlike the singleton API (the default exports), this factory creates
+ * independent instances with their own initialization state. This is
+ * primarily useful for testing scenarios where you need:
+ *
+ * - Fresh, uninitialized module state
+ * - Multiple independent instances
+ * - Ability to dispose and re-initialize
+ *
+ * @returns A new {@link MathInstance} with its own state
+ *
+ * @example Testing uninitialized state
+ * ```ts
+ * import { createMath } from "@zig-wasm/math";
+ *
+ * const math = createMath();
+ * expect(math.isInitialized()).toBe(false);
+ * expect(() => math.absSync(5)).toThrow(); // NotInitializedError
+ *
+ * await math.init();
+ * expect(math.absSync(-5)).toBe(5);
+ * ```
+ *
+ * @example Clean test isolation
+ * ```ts
+ * describe('math tests', () => {
+ *   let math: MathInstance;
+ *
+ *   beforeEach(() => {
+ *     math = createMath();
+ *   });
+ *
+ *   it('starts uninitialized', () => {
+ *     expect(math.isInitialized()).toBe(false);
+ *   });
+ *
+ *   it('works after init', async () => {
+ *     await math.init();
+ *     expect(math.sinSync(0)).toBe(0);
+ *   });
+ * });
+ * ```
+ */
+export function createMath(): MathInstance {
+	let instanceExports: MathWasmExports | null = null;
+	let instanceInitPromise: Promise<void> | null = null;
+
+	async function instanceInit(options?: InitOptions): Promise<void> {
+		if (instanceExports) return;
+
+		if (instanceInitPromise) {
+			await instanceInitPromise;
+			return;
+		}
+
+		instanceInitPromise = (async () => {
+			const env = getEnvironment();
+			let result: Awaited<ReturnType<typeof loadWasm<MathWasmExports>>>;
+
+			if (options?.wasmBytes) {
+				result = await loadWasm<MathWasmExports>({
+					wasmBytes: options.wasmBytes,
+					imports: options.imports,
+				});
+			} else if (options?.wasmPath) {
+				result = await loadWasm<MathWasmExports>({
+					wasmPath: options.wasmPath,
+					imports: options.imports,
+				});
+			} else if (options?.wasmUrl) {
+				result = await loadWasm<MathWasmExports>({
+					wasmUrl: options.wasmUrl,
+					imports: options.imports,
+					fetchFn: options.fetchFn,
+				});
+			} else if (env.isNode || env.isBun) {
+				const { fileURLToPath } = await import('node:url');
+				const { dirname, join } = await import('node:path');
+				const currentDir = dirname(fileURLToPath(import.meta.url));
+				const wasmPath = join(currentDir, '../wasm/math.wasm');
+				result = await loadWasm<MathWasmExports>({ wasmPath });
+			} else {
+				const wasmUrl = new URL('../wasm/math.wasm', import.meta.url);
+				result = await loadWasm<MathWasmExports>({ wasmUrl: wasmUrl.href });
+			}
+
+			instanceExports = result.exports;
+		})();
+
+		await instanceInitPromise;
+	}
+
+	function instanceIsInitialized(): boolean {
+		return instanceExports !== null;
+	}
+
+	function instanceGetExports(): MathWasmExports {
+		if (!instanceExports) {
+			throw new NotInitializedError('math');
+		}
+		return instanceExports;
+	}
+
+	async function instanceGetExportsAsync(): Promise<MathWasmExports> {
+		await instanceInit();
+		return instanceExports as MathWasmExports;
+	}
+
+	function dispose(): void {
+		instanceExports = null;
+		instanceInitPromise = null;
+	}
+
+	return {
+		init: instanceInit,
+		isInitialized: instanceIsInitialized,
+		getExports: instanceGetExports,
+		getExportsAsync: instanceGetExportsAsync,
+		dispose,
+
+		// Sync API
+		absSync: (x: number) => instanceGetExports().abs_f64(x),
+		absF32Sync: (x: number) => instanceGetExports().abs_f32(x),
+		absI32Sync: (x: number) => instanceGetExports().abs_i32(x),
+		absI64Sync: (x: bigint) => instanceGetExports().abs_i64(x),
+		minSync: (a: number, b: number) => instanceGetExports().min_f64(a, b),
+		maxSync: (a: number, b: number) => instanceGetExports().max_f64(a, b),
+		clampSync: (val: number, lo: number, hi: number) =>
+			instanceGetExports().clamp_f64(val, lo, hi),
+		sqrtSync: (x: number) => instanceGetExports().sqrt_f64(x),
+		sinSync: (x: number) => instanceGetExports().sin_f64(x),
+		cosSync: (x: number) => instanceGetExports().cos_f64(x),
+		piSync: () => instanceGetExports().pi_f64(),
+
+		// Async API
+		abs: async (x: number) => (await instanceGetExportsAsync()).abs_f64(x),
+		sin: async (x: number) => (await instanceGetExportsAsync()).sin_f64(x),
+		cos: async (x: number) => (await instanceGetExportsAsync()).cos_f64(x),
+		pi: async () => (await instanceGetExportsAsync()).pi_f64(),
+	};
 }
 
 // ============================================================================

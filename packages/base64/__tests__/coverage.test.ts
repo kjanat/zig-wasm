@@ -3,8 +3,9 @@
  * Covers: decodeNoPadding, decodeUrl, decodeUrlNoPadding async functions
  * and various edge cases
  */
+
+import { beforeAll, describe, expect, it } from 'bun:test';
 import * as base64 from '@zig-wasm/base64';
-import { beforeAll, describe, expect, it } from 'vitest';
 
 describe('Init options (coverage)', () => {
 	it('init with wasmPath option', async () => {

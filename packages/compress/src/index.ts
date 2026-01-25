@@ -77,8 +77,12 @@
  * @module
  */
 
+// Factory
+export { createCompressor } from './compress.ts';
+export type { Compressor } from './compress.ts';
+
 // Lifecycle
-export { init, isInitialized } from './compress.ts';
+export { dispose, init, isInitialized } from './compress.ts';
 
 // Async API
 export { decompressLzma, decompressXz } from './compress.ts';

@@ -4,10 +4,10 @@
  * Tests empty strings, binary data, Unicode, and large inputs for all algorithms.
  */
 
+import { beforeAll, describe, expect, it } from 'bun:test';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as hash from '@zig-wasm/hash';
-import { beforeAll, describe, expect, it } from 'vitest';
 
 const wasmPath = join(
 	dirname(fileURLToPath(import.meta.url)),

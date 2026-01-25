@@ -1,207 +1,301 @@
 /**
  * Tests for initialization paths and error handling in @zig-wasm/hash.
  *
- * Covers uncovered branches:
- * - Concurrent initialization (initPromise reuse)
- * - wasmBytes initialization
- * - wasmUrl initialization
- * - NotInitializedError thrown by sync functions
+ * Uses the factory pattern (createHasher) for proper test isolation.
+ * Each test gets a fresh hasher instance via beforeEach.
  */
 
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { NotInitializedError } from '@zig-wasm/core';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createHasher, type Hasher } from '@zig-wasm/hash';
 
-const wasmPath = join(
-	dirname(fileURLToPath(import.meta.url)),
-	'../wasm/hash.wasm',
-);
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const wasmPath = join(__dirname, '../wasm/hash.wasm');
 
 describe('Initialization Paths', () => {
+	let hasher: Hasher;
+
 	beforeEach(() => {
-		vi.resetModules();
+		hasher = createHasher();
+	});
+
+	afterEach(() => {
+		hasher.dispose();
 	});
 
 	describe('wasmBytes initialization', () => {
 		it('initializes with wasmBytes', async () => {
-			const hashModule = await import('@zig-wasm/hash');
 			const wasmBytes = new Uint8Array(readFileSync(wasmPath));
 
-			await hashModule.init({ wasmBytes });
+			await hasher.init({ wasmBytes });
 
-			expect(hashModule.isInitialized()).toBe(true);
-			const result = hashModule.crc32Sync('test');
+			expect(hasher.isInitialized()).toBe(true);
+			const result = hasher.crc32Sync('test');
 			expect(typeof result).toBe('number');
 		});
 
 		it('supports imports option with wasmBytes', async () => {
-			vi.resetModules();
-			const hashModule = await import('@zig-wasm/hash');
 			const wasmBytes = new Uint8Array(readFileSync(wasmPath));
 
-			await hashModule.init({
+			await hasher.init({
 				wasmBytes,
 				imports: {}, // empty imports object
 			});
 
-			expect(hashModule.isInitialized()).toBe(true);
+			expect(hasher.isInitialized()).toBe(true);
 		});
 	});
 
 	describe('wasmUrl initialization', () => {
 		it('initializes with wasmUrl and custom fetchFn', async () => {
-			vi.resetModules();
-			const { readFile } = await import('node:fs/promises');
-			const { pathToFileURL } = await import('node:url');
-			const hashModule = await import('@zig-wasm/hash');
-
 			const wasmUrl = pathToFileURL(wasmPath).href;
 
-			await hashModule.init({
+			await hasher.init({
 				wasmUrl,
 				fetchFn: async (url) => {
+					// Use Bun's native file API for reliable reads
 					const filePath = fileURLToPath(url);
-					const buffer = await readFile(filePath);
-					return buffer.buffer.slice(
-						buffer.byteOffset,
-						buffer.byteOffset + buffer.byteLength,
-					);
+					return Bun.file(filePath).arrayBuffer();
 				},
 			});
 
-			expect(hashModule.isInitialized()).toBe(true);
-			const result = hashModule.crc32Sync('test');
+			expect(hasher.isInitialized()).toBe(true);
+			const result = hasher.crc32Sync('test');
 			expect(typeof result).toBe('number');
 		});
 	});
 
-	describe('concurrent initialization', () => {
-		it('reuses initPromise for concurrent init calls', async () => {
-			vi.resetModules();
-			const hashModule = await import('@zig-wasm/hash');
+	describe('wasmPath initialization', () => {
+		it('initializes with wasmPath', async () => {
+			await hasher.init({ wasmPath });
 
-			// Start multiple init calls simultaneously
-			const promise1 = hashModule.init({ wasmPath });
-			const promise2 = hashModule.init({ wasmPath });
-			const promise3 = hashModule.init({ wasmPath });
-
-			// All should resolve to the same initialization
-			await Promise.all([promise1, promise2, promise3]);
-
-			expect(hashModule.isInitialized()).toBe(true);
-
-			// Verify functional after concurrent init
-			const result = hashModule.crc32Sync('concurrent test');
+			expect(hasher.isInitialized()).toBe(true);
+			const result = hasher.crc32Sync('test');
 			expect(typeof result).toBe('number');
 		});
+	});
+});
 
-		it('handles init called while initialization is in progress', async () => {
-			vi.resetModules();
-			const hashModule = await import('@zig-wasm/hash');
+describe('Concurrent initialization', () => {
+	let hasher: Hasher;
 
-			// First call starts initialization
-			const firstInit = hashModule.init({ wasmPath });
-
-			// Second call should reuse the pending promise (covers line 104-105)
-			const secondInit = hashModule.init({ wasmPath });
-
-			await firstInit;
-			await secondInit;
-
-			expect(hashModule.isInitialized()).toBe(true);
-		});
+	beforeEach(() => {
+		hasher = createHasher();
 	});
 
-	describe('NotInitializedError', () => {
-		// Helper to check error name matches imported class (avoids instanceof issues across module boundaries)
-		const expectNotInitializedError = (fn: () => void) => {
-			try {
-				fn();
-				expect.fail('Should have thrown');
-			} catch (error) {
-				expect((error as Error).name).toBe(NotInitializedError.name);
-			}
-		};
-
-		it('throws NotInitializedError when sync functions called before init', async () => {
-			vi.resetModules();
-			const hashModule = await import('@zig-wasm/hash');
-
-			expectNotInitializedError(() => hashModule.crc32Sync('test'));
-		});
-
-		it('throws with correct module name in error', async () => {
-			vi.resetModules();
-			const hashModule = await import('@zig-wasm/hash');
-
-			try {
-				hashModule.crc32Sync('test');
-				expect.fail('Should have thrown');
-			} catch (error) {
-				expect((error as Error).name).toBe(NotInitializedError.name);
-				expect((error as Error).message).toContain('hash');
-			}
-		});
-
-		it('throws for all sync functions before init', async () => {
-			vi.resetModules();
-			const hashModule = await import('@zig-wasm/hash');
-
-			// 32-bit sync functions
-			expectNotInitializedError(() => hashModule.hash32Sync('crc32', 'test'));
-			expectNotInitializedError(() => hashModule.adler32Sync('test'));
-			expectNotInitializedError(() => hashModule.xxhash32Sync('test'));
-			expectNotInitializedError(() => hashModule.fnv1a32Sync('test'));
-
-			// 64-bit sync functions
-			expectNotInitializedError(() =>
-				hashModule.hash64Sync('xxhash64', 'test'),
-			);
-			expectNotInitializedError(() => hashModule.xxhash64Sync('test'));
-			expectNotInitializedError(() => hashModule.wyhashSync('test'));
-			expectNotInitializedError(() => hashModule.cityhash64Sync('test'));
-			expectNotInitializedError(() => hashModule.murmur2_64Sync('test'));
-			expectNotInitializedError(() => hashModule.fnv1a64Sync('test'));
-
-			// Generic sync functions
-			expectNotInitializedError(() => hashModule.hashSync('crc32', 'test'));
-			expectNotInitializedError(() => hashModule.hashHexSync('crc32', 'test'));
-		});
-
-		it('throws for hex sync functions before init', async () => {
-			vi.resetModules();
-			const hashModule = await import('@zig-wasm/hash');
-
-			expectNotInitializedError(() => hashModule.crc32HexSync('test'));
-			expectNotInitializedError(() => hashModule.adler32HexSync('test'));
-			expectNotInitializedError(() => hashModule.xxhash32HexSync('test'));
-			expectNotInitializedError(() => hashModule.xxhash64HexSync('test'));
-			expectNotInitializedError(() => hashModule.wyhashHexSync('test'));
-			expectNotInitializedError(() => hashModule.cityhash64HexSync('test'));
-			expectNotInitializedError(() => hashModule.murmur2_64HexSync('test'));
-			expectNotInitializedError(() => hashModule.fnv1a32HexSync('test'));
-			expectNotInitializedError(() => hashModule.fnv1a64HexSync('test'));
-		});
+	afterEach(() => {
+		hasher.dispose();
 	});
 
-	describe('idempotent initialization', () => {
-		it('returns immediately if already initialized', async () => {
-			vi.resetModules();
-			const hashModule = await import('@zig-wasm/hash');
+	it('reuses initPromise for concurrent init calls', async () => {
+		// Start multiple init calls simultaneously
+		const promise1 = hasher.init({ wasmPath });
+		const promise2 = hasher.init({ wasmPath });
+		const promise3 = hasher.init({ wasmPath });
 
-			// First initialization
-			await hashModule.init({ wasmPath });
-			expect(hashModule.isInitialized()).toBe(true);
+		// All should resolve to the same initialization
+		await Promise.all([promise1, promise2, promise3]);
 
-			// Second call should return immediately (covers line 101)
-			await hashModule.init({ wasmPath });
-			expect(hashModule.isInitialized()).toBe(true);
+		expect(hasher.isInitialized()).toBe(true);
 
-			// Should still work
-			const result = hashModule.crc32Sync('idempotent');
-			expect(typeof result).toBe('number');
-		});
+		// Verify functional after concurrent init
+		const result = hasher.crc32Sync('concurrent test');
+		expect(typeof result).toBe('number');
+	});
+
+	it('handles init called while initialization is in progress', async () => {
+		// First call starts initialization
+		const firstInit = hasher.init({ wasmPath });
+
+		// Second call should reuse the pending promise
+		const secondInit = hasher.init({ wasmPath });
+
+		await firstInit;
+		await secondInit;
+
+		expect(hasher.isInitialized()).toBe(true);
+	});
+});
+
+describe('NotInitializedError', () => {
+	let hasher: Hasher;
+
+	beforeEach(() => {
+		hasher = createHasher();
+	});
+
+	afterEach(() => {
+		hasher.dispose();
+	});
+
+	// Helper to check error name matches imported class
+	const expectNotInitializedError = (fn: () => void) => {
+		try {
+			fn();
+			throw new Error('Should have thrown');
+		} catch (error) {
+			expect((error as Error).name).toBe(NotInitializedError.name);
+		}
+	};
+
+	it('throws NotInitializedError when sync functions called before init', () => {
+		expect(hasher.isInitialized()).toBe(false);
+		expectNotInitializedError(() => hasher.crc32Sync('test'));
+	});
+
+	it('throws with correct module name in error', () => {
+		try {
+			hasher.crc32Sync('test');
+			throw new Error('Should have thrown');
+		} catch (error) {
+			expect((error as Error).name).toBe(NotInitializedError.name);
+			expect((error as Error).message).toContain('hash');
+		}
+	});
+
+	it('throws for all sync functions before init', () => {
+		// 32-bit sync functions
+		expectNotInitializedError(() => hasher.hash32Sync('crc32', 'test'));
+		expectNotInitializedError(() => hasher.adler32Sync('test'));
+		expectNotInitializedError(() => hasher.xxhash32Sync('test'));
+		expectNotInitializedError(() => hasher.fnv1a32Sync('test'));
+
+		// 64-bit sync functions
+		expectNotInitializedError(() => hasher.hash64Sync('xxhash64', 'test'));
+		expectNotInitializedError(() => hasher.xxhash64Sync('test'));
+		expectNotInitializedError(() => hasher.wyhashSync('test'));
+		expectNotInitializedError(() => hasher.cityhash64Sync('test'));
+		expectNotInitializedError(() => hasher.murmur2_64Sync('test'));
+		expectNotInitializedError(() => hasher.fnv1a64Sync('test'));
+
+		// Generic sync functions
+		expectNotInitializedError(() => hasher.hashSync('crc32', 'test'));
+		expectNotInitializedError(() => hasher.hashHexSync('crc32', 'test'));
+	});
+
+	it('throws for hex sync functions before init', () => {
+		expectNotInitializedError(() => hasher.crc32HexSync('test'));
+		expectNotInitializedError(() => hasher.adler32HexSync('test'));
+		expectNotInitializedError(() => hasher.xxhash32HexSync('test'));
+		expectNotInitializedError(() => hasher.xxhash64HexSync('test'));
+		expectNotInitializedError(() => hasher.wyhashHexSync('test'));
+		expectNotInitializedError(() => hasher.cityhash64HexSync('test'));
+		expectNotInitializedError(() => hasher.murmur2_64HexSync('test'));
+		expectNotInitializedError(() => hasher.fnv1a32HexSync('test'));
+		expectNotInitializedError(() => hasher.fnv1a64HexSync('test'));
+	});
+});
+
+describe('Idempotent initialization', () => {
+	let hasher: Hasher;
+
+	beforeEach(() => {
+		hasher = createHasher();
+	});
+
+	afterEach(() => {
+		hasher.dispose();
+	});
+
+	it('returns immediately if already initialized', async () => {
+		// First initialization
+		await hasher.init({ wasmPath });
+		expect(hasher.isInitialized()).toBe(true);
+
+		// Second call should return immediately
+		await hasher.init({ wasmPath });
+		expect(hasher.isInitialized()).toBe(true);
+
+		// Should still work
+		const result = hasher.crc32Sync('idempotent');
+		expect(typeof result).toBe('number');
+	});
+});
+
+describe('Factory isolation', () => {
+	it('creates independent instances', async () => {
+		const hasher1 = createHasher();
+		const hasher2 = createHasher();
+
+		// Initialize only hasher1
+		await hasher1.init({ wasmPath });
+
+		expect(hasher1.isInitialized()).toBe(true);
+		expect(hasher2.isInitialized()).toBe(false);
+
+		// hasher1 works, hasher2 throws
+		expect(typeof hasher1.crc32Sync('test')).toBe('number');
+		expect(() => hasher2.crc32Sync('test')).toThrow('not initialized');
+
+		hasher1.dispose();
+		hasher2.dispose();
+	});
+
+	it('dispose allows re-initialization', async () => {
+		const hasher = createHasher();
+
+		await hasher.init({ wasmPath });
+		expect(hasher.isInitialized()).toBe(true);
+
+		hasher.dispose();
+		expect(hasher.isInitialized()).toBe(false);
+
+		// Can re-initialize
+		await hasher.init({ wasmPath });
+		expect(hasher.isInitialized()).toBe(true);
+		expect(typeof hasher.crc32Sync('test')).toBe('number');
+
+		hasher.dispose();
+	});
+});
+
+describe('Hash function correctness', () => {
+	let hasher: Hasher;
+
+	beforeEach(async () => {
+		hasher = createHasher();
+		await hasher.init({ wasmPath });
+	});
+
+	afterEach(() => {
+		hasher.dispose();
+	});
+
+	it('computes correct CRC32 values', () => {
+		const result = hasher.crc32Sync('Hello, World!');
+		// CRC32 returns unsigned 32-bit, JavaScript may show as signed
+		// Use >>> 0 to compare as unsigned
+		expect(result >>> 0).toBe(3964322768);
+	});
+
+	it('computes correct hex output', () => {
+		const result = hasher.crc32HexSync('test');
+		expect(result).toBe('d87f7e0c');
+	});
+
+	it('handles Uint8Array input', () => {
+		const data = new Uint8Array([72, 101, 108, 108, 111]); // "Hello"
+		const result = hasher.crc32Sync(data);
+		expect(typeof result).toBe('number');
+		// CRC32 may be negative due to signed 32-bit representation
+		expect(result >>> 0 !== 0).toBe(true);
+	});
+
+	it('64-bit functions return bigint', () => {
+		const result = hasher.xxhash64Sync('test');
+		expect(typeof result).toBe('bigint');
+	});
+
+	it('seeded functions accept seeds', () => {
+		const unseeded = hasher.xxhash32Sync('test');
+		const seeded = hasher.xxhash32Sync('test', 42);
+		expect(unseeded).not.toBe(seeded);
+
+		const unseeded64 = hasher.xxhash64Sync('test');
+		const seeded64 = hasher.xxhash64Sync('test', 42n);
+		expect(unseeded64).not.toBe(seeded64);
 	});
 });

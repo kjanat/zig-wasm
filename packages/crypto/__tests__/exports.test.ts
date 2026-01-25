@@ -1,10 +1,14 @@
+import { beforeAll, describe, expect, it } from 'bun:test';
 import * as crypto from '@zig-wasm/crypto';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 describe('@zig-wasm/crypto exports', () => {
 	it('exposes lifecycle helpers', () => {
-		expect(crypto.isInitialized()).toBe(false);
+		// Use factory to get a fresh instance for testing uninitialized state
+		const freshCrypto = crypto.createCrypto();
+		expect(freshCrypto.isInitialized()).toBe(false);
 		expect(crypto.init).toBeTypeOf('function');
+		expect(crypto.createCrypto).toBeTypeOf('function');
+		expect(crypto.dispose).toBeTypeOf('function');
 	});
 
 	it('exposes hash functions', () => {
@@ -486,11 +490,12 @@ describe('Sync API', () => {
 
 describe('NotInitializedError', () => {
 	it('throws NotInitializedError when using sync method before init', async () => {
-		vi.resetModules();
-		const { sha256Sync, NotInitializedError } = await import(
+		const { createCrypto, NotInitializedError } = await import(
 			'@zig-wasm/crypto'
 		);
-		expect(() => sha256Sync('test')).toThrow(NotInitializedError);
+		// Use factory to get a fresh, uninitialized instance
+		const freshCrypto = createCrypto();
+		expect(() => freshCrypto.sha256Sync('test')).toThrow(NotInitializedError);
 	});
 });
 

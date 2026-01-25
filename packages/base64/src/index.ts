@@ -108,8 +108,12 @@
  * @module
  */
 
+// Factory
+export { createBase64 } from './base64.ts';
+export type { Base64Instance } from './base64.ts';
+
 // Lifecycle
-export { init, isInitialized } from './base64.ts';
+export { dispose, init, isInitialized } from './base64.ts';
 
 // Async API
 // dprint-ignore

@@ -1,5 +1,5 @@
+import { describe, expect, it } from 'bun:test';
 import * as std from '@zig-wasm/std';
-import { describe, expect, it } from 'vitest';
 
 describe('@zig-wasm/std exports', () => {
 	describe('Module Structure', () => {

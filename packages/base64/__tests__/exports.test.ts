@@ -1,5 +1,5 @@
+import { beforeAll, describe, expect, it } from 'bun:test';
 import * as base64 from '@zig-wasm/base64';
-import { beforeAll, describe, expect, it } from 'vitest';
 
 describe('@zig-wasm/base64 exports', () => {
 	it('exposes lifecycle helpers', () => {

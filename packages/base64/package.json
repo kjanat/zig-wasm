@@ -22,6 +22,7 @@
   "type": "module",
   "exports": {
     ".": {
+      "bun": "./src/index.ts",
       "require": "./dist/index.cjs",
       "import": "./dist/index.mjs"
     },
@@ -42,7 +43,7 @@
     "lint": "biome lint",
     "lint:fix": "biome check --write && pnpm fmt",
     "publish:jsr": "pnpm dlx jsr publish --allow-dirty",
-    "test": "vitest run",
+    "test": "bun test",
     "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
@@ -54,5 +55,15 @@
     "@zig-wasm/tooling": "workspace:*",
     "dprint": "catalog:",
     "tsdown": "catalog:"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "require": "./dist/index.cjs",
+        "import": "./dist/index.mjs"
+      },
+      "./package.json": "./package.json",
+      "./base64.wasm": "./wasm/base64.wasm"
+    }
   }
 }

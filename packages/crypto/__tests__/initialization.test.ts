@@ -1,7 +1,18 @@
 /**
  * Tests for crypto module initialization and edge cases
  */
-import { describe, expect, it, vi } from 'vitest';
+
+import { describe, expect, it } from 'bun:test';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { NotInitializedError } from '@zig-wasm/core';
+import { type CryptoInstance, createCrypto } from '@zig-wasm/crypto';
+
+const wasmPath = join(
+	dirname(fileURLToPath(import.meta.url)),
+	'../wasm/crypto.wasm',
+);
 
 // Helper to convert Uint8Array to hex string
 function bytesToHex(bytes: Uint8Array): string {
@@ -20,93 +31,82 @@ function hexToBytes(hex: string): Uint8Array {
 }
 
 describe('NotInitializedError', () => {
-	it('throws NotInitializedError when calling sync functions before init', async () => {
-		// Use dynamic import to get a fresh module instance
-		vi.resetModules();
-		const freshCrypto = await import('@zig-wasm/crypto');
+	it('throws NotInitializedError when calling sync functions before init', () => {
+		const crypto = createCrypto();
 
-		// Verify module is not initialized
-		expect(freshCrypto.isInitialized()).toBe(false);
+		expect(crypto.isInitialized()).toBe(false);
 
 		// Test that sync functions throw with correct error name
-		expect(() => freshCrypto.hashSync('sha256', 'test')).toThrowError(
+		expect(() => crypto.hashSync('sha256', 'test')).toThrowError(
 			/not initialized/i,
 		);
-		expect(() => freshCrypto.hashHexSync('sha256', 'test')).toThrowError(
+		expect(() => crypto.hashHexSync('sha256', 'test')).toThrowError(
 			/not initialized/i,
 		);
-		expect(() => freshCrypto.md5Sync('test')).toThrowError(/not initialized/i);
-		expect(() => freshCrypto.sha1Sync('test')).toThrowError(/not initialized/i);
-		expect(() => freshCrypto.sha256Sync('test')).toThrowError(
+		expect(() => crypto.md5Sync('test')).toThrowError(/not initialized/i);
+		expect(() => crypto.sha1Sync('test')).toThrowError(/not initialized/i);
+		expect(() => crypto.sha256Sync('test')).toThrowError(/not initialized/i);
+		expect(() => crypto.sha384Sync('test')).toThrowError(/not initialized/i);
+		expect(() => crypto.sha512Sync('test')).toThrowError(/not initialized/i);
+		expect(() => crypto.sha3_256Sync('test')).toThrowError(/not initialized/i);
+		expect(() => crypto.sha3_512Sync('test')).toThrowError(/not initialized/i);
+		expect(() => crypto.blake2b256Sync('test')).toThrowError(
 			/not initialized/i,
 		);
-		expect(() => freshCrypto.sha384Sync('test')).toThrowError(
+		expect(() => crypto.blake2s256Sync('test')).toThrowError(
 			/not initialized/i,
 		);
-		expect(() => freshCrypto.sha512Sync('test')).toThrowError(
+		expect(() => crypto.blake3Sync('test')).toThrowError(/not initialized/i);
+		expect(() => crypto.hmacSync('sha256', 'key', 'data')).toThrowError(
 			/not initialized/i,
 		);
-		expect(() => freshCrypto.sha3_256Sync('test')).toThrowError(
+		expect(() => crypto.hmacHexSync('sha256', 'key', 'data')).toThrowError(
 			/not initialized/i,
 		);
-		expect(() => freshCrypto.sha3_512Sync('test')).toThrowError(
+		expect(() => crypto.hmacSha256Sync('key', 'data')).toThrowError(
 			/not initialized/i,
 		);
-		expect(() => freshCrypto.blake2b256Sync('test')).toThrowError(
+		expect(() => crypto.hmacSha512Sync('key', 'data')).toThrowError(
 			/not initialized/i,
 		);
-		expect(() => freshCrypto.blake2s256Sync('test')).toThrowError(
-			/not initialized/i,
-		);
-		expect(() => freshCrypto.blake3Sync('test')).toThrowError(
-			/not initialized/i,
-		);
-		expect(() => freshCrypto.hmacSync('sha256', 'key', 'data')).toThrowError(
-			/not initialized/i,
-		);
-		expect(() => freshCrypto.hmacHexSync('sha256', 'key', 'data')).toThrowError(
-			/not initialized/i,
-		);
-		expect(() => freshCrypto.hmacSha256Sync('key', 'data')).toThrowError(
-			/not initialized/i,
-		);
-		expect(() => freshCrypto.hmacSha512Sync('key', 'data')).toThrowError(
-			/not initialized/i,
-		);
-		expect(() => freshCrypto.getHashDigestLengthSync('sha256')).toThrowError(
+		expect(() => crypto.getHashDigestLengthSync('sha256')).toThrowError(
 			/not initialized/i,
 		);
 	});
 
-	it('error message includes module name', async () => {
-		vi.resetModules();
-		const freshCrypto = await import('@zig-wasm/crypto');
+	it('error message includes module name', () => {
+		const crypto = createCrypto();
 
 		try {
-			freshCrypto.sha256Sync('test');
-			expect.fail('Should have thrown');
+			crypto.sha256Sync('test');
+			throw new Error('Should have thrown');
 		} catch (e) {
 			expect(e).toBeInstanceOf(Error);
 			expect((e as Error).name).toBe('NotInitializedError');
 			expect((e as Error).message).toContain('crypto');
 		}
 	});
+
+	it('throws with correct error class', () => {
+		const crypto = createCrypto();
+
+		try {
+			crypto.sha256Sync('test');
+			throw new Error('Should have thrown');
+		} catch (e) {
+			expect((e as Error).name).toBe(NotInitializedError.name);
+		}
+	});
 });
 
 describe('Init with wasmPath option', () => {
 	it('initializes with custom wasmPath', async () => {
-		vi.resetModules();
-		const freshCrypto = await import('@zig-wasm/crypto');
-		const { fileURLToPath } = await import('node:url');
-		const { dirname, join } = await import('node:path');
+		const crypto = createCrypto();
 
-		const currentDir = dirname(fileURLToPath(import.meta.url));
-		const wasmPath = join(currentDir, '../wasm/crypto.wasm');
+		await crypto.init({ wasmPath });
 
-		await freshCrypto.init({ wasmPath });
-
-		expect(freshCrypto.isInitialized()).toBe(true);
-		const hash = freshCrypto.sha256Sync('test');
+		expect(crypto.isInitialized()).toBe(true);
+		const hash = crypto.sha256Sync('test');
 		expect(hash).toBeInstanceOf(Uint8Array);
 		expect(hash.length).toBe(32);
 	});
@@ -114,62 +114,60 @@ describe('Init with wasmPath option', () => {
 
 describe('Init with wasmBytes option', () => {
 	it('initializes with pre-loaded WASM bytes', async () => {
-		vi.resetModules();
-		const freshCrypto = await import('@zig-wasm/crypto');
-		const { readFile } = await import('node:fs/promises');
-		const { fileURLToPath } = await import('node:url');
-		const { dirname, join } = await import('node:path');
+		const crypto = createCrypto();
+		const wasmBytes = new Uint8Array(readFileSync(wasmPath));
 
-		const currentDir = dirname(fileURLToPath(import.meta.url));
-		const wasmPath = join(currentDir, '../wasm/crypto.wasm');
-		const wasmBytes = await readFile(wasmPath);
+		await crypto.init({ wasmBytes });
 
-		await freshCrypto.init({ wasmBytes });
-
-		expect(freshCrypto.isInitialized()).toBe(true);
-		const hash = freshCrypto.sha256Sync('hello');
+		expect(crypto.isInitialized()).toBe(true);
+		const hash = crypto.sha256Sync('hello');
 		expect(bytesToHex(hash)).toBe(
 			'2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824',
 		);
+	});
+
+	it('supports imports option with wasmBytes', async () => {
+		const crypto = createCrypto();
+		const wasmBytes = new Uint8Array(readFileSync(wasmPath));
+
+		await crypto.init({
+			wasmBytes,
+			imports: {}, // empty imports object
+		});
+
+		expect(crypto.isInitialized()).toBe(true);
 	});
 });
 
 describe('Init with wasmUrl option', () => {
 	it('initializes with wasmUrl and custom fetchFn', async () => {
-		vi.resetModules();
-		const freshCrypto = await import('@zig-wasm/crypto');
-		const { readFile } = await import('node:fs/promises');
-		const { fileURLToPath, pathToFileURL } = await import('node:url');
-		const { dirname, join } = await import('node:path');
+		const { pathToFileURL } = await import('node:url');
 
-		const currentDir = dirname(fileURLToPath(import.meta.url));
-		const wasmPath = join(currentDir, '../wasm/crypto.wasm');
+		const crypto = createCrypto();
 		const wasmUrl = pathToFileURL(wasmPath).href;
 
-		await freshCrypto.init({
+		await crypto.init({
 			wasmUrl,
 			fetchFn: async (url) => {
+				// Use Bun's native file API for reliable reads
 				const filePath = fileURLToPath(url);
-				const buffer = await readFile(filePath);
-				return buffer.buffer.slice(
-					buffer.byteOffset,
-					buffer.byteOffset + buffer.byteLength,
-				);
+				return Bun.file(filePath).arrayBuffer();
 			},
 		});
 
-		expect(freshCrypto.isInitialized()).toBe(true);
-		const hash = freshCrypto.sha256Sync('test');
+		expect(crypto.isInitialized()).toBe(true);
+		const hash = crypto.sha256Sync('test');
 		expect(hash).toBeInstanceOf(Uint8Array);
 		expect(hash.length).toBe(32);
 	});
 });
 
 describe('HMAC-SHA512 Sync', () => {
+	let crypto: CryptoInstance;
+
 	it('computes HMAC-SHA512 synchronously', async () => {
-		vi.resetModules();
-		const crypto = await import('@zig-wasm/crypto');
-		await crypto.init();
+		crypto = createCrypto();
+		await crypto.init({ wasmPath });
 
 		const result = crypto.hmacSha512Sync('key', 'data');
 		expect(result).toBeInstanceOf(Uint8Array);
@@ -177,9 +175,8 @@ describe('HMAC-SHA512 Sync', () => {
 	});
 
 	it('matches async HMAC-SHA512 result', async () => {
-		vi.resetModules();
-		const crypto = await import('@zig-wasm/crypto');
-		await crypto.init();
+		crypto = createCrypto();
+		await crypto.init({ wasmPath });
 
 		const syncResult = crypto.hmacSha512Sync('secret', 'message');
 		const asyncResult = await crypto.hmacSha512('secret', 'message');
@@ -187,9 +184,8 @@ describe('HMAC-SHA512 Sync', () => {
 	});
 
 	it('handles RFC 4231 Test Case 1 synchronously', async () => {
-		vi.resetModules();
-		const crypto = await import('@zig-wasm/crypto');
-		await crypto.init();
+		crypto = createCrypto();
+		await crypto.init({ wasmPath });
 
 		const key = hexToBytes('0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b');
 		const data = hexToBytes('4869205468657265'); // "Hi There"
@@ -200,9 +196,8 @@ describe('HMAC-SHA512 Sync', () => {
 	});
 
 	it('handles empty key synchronously', async () => {
-		vi.resetModules();
-		const crypto = await import('@zig-wasm/crypto');
-		await crypto.init();
+		crypto = createCrypto();
+		await crypto.init({ wasmPath });
 
 		const result = crypto.hmacSha512Sync('', 'data');
 		expect(result).toBeInstanceOf(Uint8Array);
@@ -210,9 +205,8 @@ describe('HMAC-SHA512 Sync', () => {
 	});
 
 	it('handles empty data synchronously', async () => {
-		vi.resetModules();
-		const crypto = await import('@zig-wasm/crypto');
-		await crypto.init();
+		crypto = createCrypto();
+		await crypto.init({ wasmPath });
 
 		const result = crypto.hmacSha512Sync('key', '');
 		expect(result).toBeInstanceOf(Uint8Array);
@@ -220,9 +214,8 @@ describe('HMAC-SHA512 Sync', () => {
 	});
 
 	it('handles long key (> block size) synchronously', async () => {
-		vi.resetModules();
-		const crypto = await import('@zig-wasm/crypto');
-		await crypto.init();
+		crypto = createCrypto();
+		await crypto.init({ wasmPath });
 
 		// Key longer than SHA-512 block size (128 bytes)
 		const longKey = 'k'.repeat(200);
@@ -232,9 +225,8 @@ describe('HMAC-SHA512 Sync', () => {
 	});
 
 	it('handles Uint8Array inputs synchronously', async () => {
-		vi.resetModules();
-		const crypto = await import('@zig-wasm/crypto');
-		await crypto.init();
+		crypto = createCrypto();
+		await crypto.init({ wasmPath });
 
 		const key = new TextEncoder().encode('secret');
 		const data = new TextEncoder().encode('message');
@@ -246,9 +238,8 @@ describe('HMAC-SHA512 Sync', () => {
 
 describe('Additional HMAC edge cases', () => {
 	it('handles HMAC-SHA512 with very long data', async () => {
-		vi.resetModules();
-		const crypto = await import('@zig-wasm/crypto');
-		await crypto.init();
+		const crypto = createCrypto();
+		await crypto.init({ wasmPath });
 
 		const longData = 'a'.repeat(10000);
 		const result = crypto.hmacSha512Sync('key', longData);
@@ -257,9 +248,8 @@ describe('Additional HMAC edge cases', () => {
 	});
 
 	it('handles HMAC with Unicode key and data', async () => {
-		vi.resetModules();
-		const crypto = await import('@zig-wasm/crypto');
-		await crypto.init();
+		const crypto = createCrypto();
+		await crypto.init({ wasmPath });
 
 		const result = crypto.hmacSha256Sync('secret', 'Hello');
 		expect(result).toBeInstanceOf(Uint8Array);
@@ -273,9 +263,8 @@ describe('Additional HMAC edge cases', () => {
 
 describe('Generic hmacSync with sha512', () => {
 	it('computes HMAC via hmacSync with sha512 algorithm', async () => {
-		vi.resetModules();
-		const crypto = await import('@zig-wasm/crypto');
-		await crypto.init();
+		const crypto = createCrypto();
+		await crypto.init({ wasmPath });
 
 		const result = crypto.hmacSync('sha512', 'key', 'data');
 		const direct = crypto.hmacSha512Sync('key', 'data');
@@ -283,9 +272,8 @@ describe('Generic hmacSync with sha512', () => {
 	});
 
 	it('computes hmacHexSync with sha512 algorithm', async () => {
-		vi.resetModules();
-		const crypto = await import('@zig-wasm/crypto');
-		await crypto.init();
+		const crypto = createCrypto();
+		await crypto.init({ wasmPath });
 
 		const result = crypto.hmacHexSync('sha512', 'key', 'data');
 		const bytes = crypto.hmacSha512Sync('key', 'data');
@@ -295,14 +283,13 @@ describe('Generic hmacSync with sha512', () => {
 
 describe('Init idempotency', () => {
 	it('calling init multiple times is safe', async () => {
-		vi.resetModules();
-		const crypto = await import('@zig-wasm/crypto');
+		const crypto = createCrypto();
 
-		await crypto.init();
+		await crypto.init({ wasmPath });
 		expect(crypto.isInitialized()).toBe(true);
 
 		// Second call should be a no-op
-		await crypto.init();
+		await crypto.init({ wasmPath });
 		expect(crypto.isInitialized()).toBe(true);
 
 		// Should still work
@@ -311,19 +298,36 @@ describe('Init idempotency', () => {
 	});
 
 	it('handles concurrent init calls', async () => {
-		vi.resetModules();
-		const crypto = await import('@zig-wasm/crypto');
+		const crypto = createCrypto();
 
 		const results = await Promise.all([
-			crypto.init(),
-			crypto.init(),
-			crypto.init(),
-			crypto.init(),
+			crypto.init({ wasmPath }),
+			crypto.init({ wasmPath }),
+			crypto.init({ wasmPath }),
+			crypto.init({ wasmPath }),
 		]);
 
 		expect(crypto.isInitialized()).toBe(true);
 		// All should resolve without error
 		expect(results).toHaveLength(4);
+	});
+
+	it('reuses initPromise for concurrent init calls', async () => {
+		const crypto = createCrypto();
+
+		// Start multiple init calls simultaneously
+		const promise1 = crypto.init({ wasmPath });
+		const promise2 = crypto.init({ wasmPath });
+		const promise3 = crypto.init({ wasmPath });
+
+		// All should resolve to the same initialization
+		await Promise.all([promise1, promise2, promise3]);
+
+		expect(crypto.isInitialized()).toBe(true);
+
+		// Verify functional after concurrent init
+		const result = crypto.sha256Sync('concurrent test');
+		expect(result).toBeInstanceOf(Uint8Array);
 	});
 });
 
@@ -332,9 +336,8 @@ describe('All hash algorithms with all input types', () => {
 	const testDataBytes = new TextEncoder().encode(testData);
 
 	it('all algorithms work with string input', async () => {
-		vi.resetModules();
-		const crypto = await import('@zig-wasm/crypto');
-		await crypto.init();
+		const crypto = createCrypto();
+		await crypto.init({ wasmPath });
 
 		const algorithms = [
 			'md5',
@@ -356,9 +359,8 @@ describe('All hash algorithms with all input types', () => {
 	});
 
 	it('all algorithms work with Uint8Array input', async () => {
-		vi.resetModules();
-		const crypto = await import('@zig-wasm/crypto');
-		await crypto.init();
+		const crypto = createCrypto();
+		await crypto.init({ wasmPath });
 
 		const algorithms = [
 			'md5',
@@ -378,5 +380,73 @@ describe('All hash algorithms with all input types', () => {
 			const bytesResult = crypto.hashSync(algo, testDataBytes);
 			expect(bytesToHex(stringResult)).toBe(bytesToHex(bytesResult));
 		}
+	});
+});
+
+describe('Dispose functionality', () => {
+	it('dispose resets initialization state', async () => {
+		const crypto = createCrypto();
+		await crypto.init({ wasmPath });
+		expect(crypto.isInitialized()).toBe(true);
+
+		crypto.dispose();
+		expect(crypto.isInitialized()).toBe(false);
+
+		// Sync functions should throw after dispose
+		expect(() => crypto.sha256Sync('test')).toThrowError(/not initialized/i);
+	});
+
+	it('can reinitialize after dispose', async () => {
+		const crypto = createCrypto();
+		await crypto.init({ wasmPath });
+		expect(crypto.isInitialized()).toBe(true);
+
+		const hash1 = crypto.sha256Sync('test');
+
+		crypto.dispose();
+		expect(crypto.isInitialized()).toBe(false);
+
+		await crypto.init({ wasmPath });
+		expect(crypto.isInitialized()).toBe(true);
+
+		const hash2 = crypto.sha256Sync('test');
+		expect(bytesToHex(hash1)).toBe(bytesToHex(hash2));
+	});
+});
+
+describe('Multiple independent instances', () => {
+	it('instances do not share state', async () => {
+		const crypto1 = createCrypto();
+		const crypto2 = createCrypto();
+
+		// Initialize only crypto1
+		await crypto1.init({ wasmPath });
+
+		expect(crypto1.isInitialized()).toBe(true);
+		expect(crypto2.isInitialized()).toBe(false);
+
+		// crypto1 works, crypto2 throws
+		const hash1 = crypto1.sha256Sync('test');
+		expect(hash1).toBeInstanceOf(Uint8Array);
+		expect(() => crypto2.sha256Sync('test')).toThrowError(/not initialized/i);
+	});
+
+	it('disposing one instance does not affect others', async () => {
+		const crypto1 = createCrypto();
+		const crypto2 = createCrypto();
+
+		await Promise.all([crypto1.init({ wasmPath }), crypto2.init({ wasmPath })]);
+
+		expect(crypto1.isInitialized()).toBe(true);
+		expect(crypto2.isInitialized()).toBe(true);
+
+		crypto1.dispose();
+
+		expect(crypto1.isInitialized()).toBe(false);
+		expect(crypto2.isInitialized()).toBe(true);
+
+		// crypto2 still works
+		const hash = crypto2.sha256Sync('test');
+		expect(hash).toBeInstanceOf(Uint8Array);
 	});
 });

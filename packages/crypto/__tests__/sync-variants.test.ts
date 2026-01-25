@@ -3,8 +3,8 @@
  * Uses deterministic test vectors generated from Zig's std.crypto.
  */
 
+import { beforeAll, describe, expect, it } from 'bun:test';
 import * as crypto from '@zig-wasm/crypto';
-import { beforeAll, describe, expect, it } from 'vitest';
 import testVectors from './fixtures/test-vectors.json';
 
 // Looser types to avoid strict key checking on dynamic JSON

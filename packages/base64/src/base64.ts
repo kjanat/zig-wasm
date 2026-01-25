@@ -96,138 +96,6 @@ import {
 import type { Base64WasmExports } from './types.ts';
 
 // ============================================================================
-// Module initialization
-// ============================================================================
-
-let wasmExports: Base64WasmExports | null = null;
-let wasmMemory: WasmMemory | null = null;
-let initPromise: Promise<void> | null = null;
-
-/**
- * Initialize the Base64 WebAssembly module.
- *
- * This function is **idempotent** and **concurrency-safe**. Multiple calls
- * will return the same promise, and the module is only loaded once.
- *
- * **When to call**: Required before using sync functions (`*Sync`).
- * Async functions call this automatically.
- *
- * @param options - Optional configuration for loading the WASM module
- * @returns A promise that resolves when initialization is complete
- *
- * @example Basic initialization
- * ```ts
- * import { init, encodeSync } from "@zig-wasm/base64";
- *
- * await init();
- * const result = encodeSync("Hello"); // Now works!
- * ```
- *
- * @example Custom WASM path
- * ```ts
- * import { init } from "@zig-wasm/base64";
- *
- * await init({ wasmPath: "/custom/path/base64.wasm" });
- * ```
- *
- * @example Pre-loaded WASM bytes
- * ```ts
- * import { init } from "@zig-wasm/base64";
- *
- * const wasmBytes = await fetch("/base64.wasm").then(r => r.arrayBuffer());
- * await init({ wasmBytes: new Uint8Array(wasmBytes) });
- * ```
- */
-export async function init(options?: InitOptions): Promise<void> {
-	if (wasmExports) return;
-
-	if (initPromise) {
-		await initPromise;
-		return;
-	}
-
-	initPromise = (async () => {
-		const env = getEnvironment();
-		let result: Awaited<ReturnType<typeof loadWasm<Base64WasmExports>>>;
-
-		if (options?.wasmBytes) {
-			result = await loadWasm<Base64WasmExports>({
-				wasmBytes: options.wasmBytes,
-				imports: options.imports,
-			});
-		} else if (options?.wasmPath) {
-			result = await loadWasm<Base64WasmExports>({
-				wasmPath: options.wasmPath,
-				imports: options.imports,
-			});
-		} else if (options?.wasmUrl) {
-			result = await loadWasm<Base64WasmExports>({
-				wasmUrl: options.wasmUrl,
-				imports: options.imports,
-				fetchFn: options.fetchFn,
-			});
-		} else if (env.isNode || env.isBun) {
-			const { fileURLToPath } = await import('node:url');
-			const { dirname, join } = await import('node:path');
-			const currentDir = dirname(fileURLToPath(import.meta.url));
-			const wasmPath = join(currentDir, '../wasm/base64.wasm');
-			result = await loadWasm<Base64WasmExports>({ wasmPath });
-		} else {
-			const wasmUrl = new URL('../wasm/base64.wasm', import.meta.url);
-			result = await loadWasm<Base64WasmExports>({ wasmUrl: wasmUrl.href });
-		}
-
-		wasmExports = result.exports;
-		wasmMemory = new WasmMemory(result.exports);
-	})();
-
-	await initPromise;
-}
-
-/**
- * Check if the Base64 module has been initialized.
- *
- * Useful for conditional logic or debugging. Returns `true` if {@link init}
- * has completed successfully.
- *
- * @returns `true` if the module is ready for use, `false` otherwise
- *
- * @example
- * ```ts
- * import { init, isInitialized, encodeSync } from "@zig-wasm/base64";
- *
- * console.log(isInitialized()); // false
- *
- * await init();
- * console.log(isInitialized()); // true
- *
- * // Safe to use sync API now
- * const result = encodeSync("test");
- * ```
- */
-export function isInitialized(): boolean {
-	return wasmExports !== null;
-}
-
-async function ensureInit(): Promise<{
-	exports: Base64WasmExports;
-	memory: WasmMemory;
-}> {
-	await init();
-	return {
-		exports: wasmExports as Base64WasmExports,
-		memory: wasmMemory as WasmMemory,
-	};
-}
-
-function getSyncState(): { exports: Base64WasmExports; memory: WasmMemory } {
-	if (!wasmExports || !wasmMemory) {
-		throw new NotInitializedError('base64');
-	}
-	return { exports: wasmExports, memory: wasmMemory };
-}
-
-// ============================================================================
 // Utilities
 // ============================================================================
 
@@ -427,7 +295,397 @@ function hexDecodeImpl(
 }
 
 // ============================================================================
-// Async API
+// Base64 Instance Interface
+// ============================================================================
+
+/**
+ * Interface for a Base64 encoder/decoder instance.
+ *
+ * Contains all encoding/decoding methods along with lifecycle management.
+ * Created by {@link createBase64}.
+ */
+export interface Base64Instance {
+	/** Initialize the WASM module */
+	init(options?: InitOptions): Promise<void>;
+	/** Check if the module is initialized */
+	isInitialized(): boolean;
+	/** Reset all state, allowing re-initialization */
+	dispose(): void;
+
+	// Async API
+	encode(data: string | Uint8Array): Promise<string>;
+	decode(str: string): Promise<Uint8Array>;
+	encodeNoPadding(data: string | Uint8Array): Promise<string>;
+	decodeNoPadding(str: string): Promise<Uint8Array>;
+	encodeUrl(data: string | Uint8Array): Promise<string>;
+	decodeUrl(str: string): Promise<Uint8Array>;
+	encodeUrlNoPadding(data: string | Uint8Array): Promise<string>;
+	decodeUrlNoPadding(str: string): Promise<Uint8Array>;
+	hexEncode(data: string | Uint8Array): Promise<string>;
+	hexDecode(str: string): Promise<Uint8Array>;
+
+	// Sync API
+	encodeSync(data: string | Uint8Array): string;
+	decodeSync(str: string): Uint8Array;
+	encodeNoPaddingSync(data: string | Uint8Array): string;
+	decodeNoPaddingSync(str: string): Uint8Array;
+	encodeUrlSync(data: string | Uint8Array): string;
+	decodeUrlSync(str: string): Uint8Array;
+	encodeUrlNoPaddingSync(data: string | Uint8Array): string;
+	decodeUrlNoPaddingSync(str: string): Uint8Array;
+	hexEncodeSync(data: string | Uint8Array): string;
+	hexDecodeSync(str: string): Uint8Array;
+}
+
+// ============================================================================
+// Factory Function
+// ============================================================================
+
+/**
+ * Create a new Base64 encoder/decoder instance.
+ *
+ * This factory function creates an isolated instance with its own WASM module state.
+ * Useful for scenarios requiring multiple independent instances or explicit lifecycle control.
+ *
+ * For most use cases, the default singleton exports are sufficient. Use this factory when:
+ * - You need multiple independent instances (e.g., different WASM configurations)
+ * - You want explicit control over instance lifecycle via `dispose()`
+ * - You're building libraries that shouldn't share global state
+ *
+ * @returns A new {@link Base64Instance} with all encoding/decoding methods
+ *
+ * @example Basic usage
+ * ```ts
+ * import { createBase64 } from "@zig-wasm/base64";
+ *
+ * const base64 = createBase64();
+ * await base64.init();
+ *
+ * const encoded = base64.encodeSync("Hello");
+ * console.log(encoded); // "SGVsbG8="
+ *
+ * // Clean up when done
+ * base64.dispose();
+ * ```
+ *
+ * @example Multiple independent instances
+ * ```ts
+ * import { createBase64 } from "@zig-wasm/base64";
+ *
+ * const instance1 = createBase64();
+ * const instance2 = createBase64();
+ *
+ * // Each instance has independent state
+ * await instance1.init({ wasmPath: "./custom1.wasm" });
+ * await instance2.init({ wasmPath: "./custom2.wasm" });
+ *
+ * // Dispose individually
+ * instance1.dispose();
+ * instance2.dispose();
+ * ```
+ */
+export function createBase64(): Base64Instance {
+	let wasmExports: Base64WasmExports | null = null;
+	let wasmMemory: WasmMemory | null = null;
+	let initPromise: Promise<void> | null = null;
+
+	async function init(options?: InitOptions): Promise<void> {
+		if (wasmExports) return;
+
+		if (initPromise) {
+			await initPromise;
+			return;
+		}
+
+		initPromise = (async () => {
+			const env = getEnvironment();
+			let result: Awaited<ReturnType<typeof loadWasm<Base64WasmExports>>>;
+
+			if (options?.wasmBytes) {
+				result = await loadWasm<Base64WasmExports>({
+					wasmBytes: options.wasmBytes,
+					imports: options.imports,
+				});
+			} else if (options?.wasmPath) {
+				result = await loadWasm<Base64WasmExports>({
+					wasmPath: options.wasmPath,
+					imports: options.imports,
+				});
+			} else if (options?.wasmUrl) {
+				result = await loadWasm<Base64WasmExports>({
+					wasmUrl: options.wasmUrl,
+					imports: options.imports,
+					fetchFn: options.fetchFn,
+				});
+			} else if (env.isNode || env.isBun) {
+				const { fileURLToPath } = await import('node:url');
+				const { dirname, join } = await import('node:path');
+				const currentDir = dirname(fileURLToPath(import.meta.url));
+				const wasmPath = join(currentDir, '../wasm/base64.wasm');
+				result = await loadWasm<Base64WasmExports>({ wasmPath });
+			} else {
+				const wasmUrl = new URL('../wasm/base64.wasm', import.meta.url);
+				result = await loadWasm<Base64WasmExports>({ wasmUrl: wasmUrl.href });
+			}
+
+			wasmExports = result.exports;
+			wasmMemory = new WasmMemory(result.exports);
+		})();
+
+		await initPromise;
+	}
+
+	function isInitialized(): boolean {
+		return wasmExports !== null;
+	}
+
+	function dispose(): void {
+		wasmExports = null;
+		wasmMemory = null;
+		initPromise = null;
+	}
+
+	async function ensureInit(): Promise<{
+		exports: Base64WasmExports;
+		memory: WasmMemory;
+	}> {
+		await init();
+		return {
+			exports: wasmExports as Base64WasmExports,
+			memory: wasmMemory as WasmMemory,
+		};
+	}
+
+	function getSyncState(): { exports: Base64WasmExports; memory: WasmMemory } {
+		if (!wasmExports || !wasmMemory) {
+			throw new NotInitializedError('base64');
+		}
+		return { exports: wasmExports, memory: wasmMemory };
+	}
+
+	// Async API
+	async function encode(data: string | Uint8Array): Promise<string> {
+		const { exports, memory } = await ensureInit();
+		return encodeImpl(exports, memory, toBytes(data));
+	}
+
+	async function decode(str: string): Promise<Uint8Array> {
+		const { exports, memory } = await ensureInit();
+		return decodeImpl(exports, memory, toBytes(str));
+	}
+
+	async function encodeNoPadding(data: string | Uint8Array): Promise<string> {
+		const { exports, memory } = await ensureInit();
+		return encodeNoPaddingImpl(exports, memory, toBytes(data));
+	}
+
+	async function decodeNoPadding(str: string): Promise<Uint8Array> {
+		const { exports, memory } = await ensureInit();
+		return decodeNoPaddingImpl(exports, memory, toBytes(str));
+	}
+
+	async function encodeUrl(data: string | Uint8Array): Promise<string> {
+		const { exports, memory } = await ensureInit();
+		return encodeUrlImpl(exports, memory, toBytes(data));
+	}
+
+	async function decodeUrl(str: string): Promise<Uint8Array> {
+		const { exports, memory } = await ensureInit();
+		return decodeUrlImpl(exports, memory, toBytes(str));
+	}
+
+	async function encodeUrlNoPadding(
+		data: string | Uint8Array,
+	): Promise<string> {
+		const { exports, memory } = await ensureInit();
+		return encodeUrlNoPaddingImpl(exports, memory, toBytes(data));
+	}
+
+	async function decodeUrlNoPadding(str: string): Promise<Uint8Array> {
+		const { exports, memory } = await ensureInit();
+		return decodeUrlNoPaddingImpl(exports, memory, toBytes(str));
+	}
+
+	async function hexEncode(data: string | Uint8Array): Promise<string> {
+		const { exports, memory } = await ensureInit();
+		return hexEncodeImpl(exports, memory, toBytes(data));
+	}
+
+	async function hexDecode(str: string): Promise<Uint8Array> {
+		const { exports, memory } = await ensureInit();
+		return hexDecodeImpl(exports, memory, toBytes(str));
+	}
+
+	// Sync API
+	function encodeSync(data: string | Uint8Array): string {
+		const { exports, memory } = getSyncState();
+		return encodeImpl(exports, memory, toBytes(data));
+	}
+
+	function decodeSync(str: string): Uint8Array {
+		const { exports, memory } = getSyncState();
+		return decodeImpl(exports, memory, toBytes(str));
+	}
+
+	function encodeNoPaddingSync(data: string | Uint8Array): string {
+		const { exports, memory } = getSyncState();
+		return encodeNoPaddingImpl(exports, memory, toBytes(data));
+	}
+
+	function decodeNoPaddingSync(str: string): Uint8Array {
+		const { exports, memory } = getSyncState();
+		return decodeNoPaddingImpl(exports, memory, toBytes(str));
+	}
+
+	function encodeUrlSync(data: string | Uint8Array): string {
+		const { exports, memory } = getSyncState();
+		return encodeUrlImpl(exports, memory, toBytes(data));
+	}
+
+	function decodeUrlSync(str: string): Uint8Array {
+		const { exports, memory } = getSyncState();
+		return decodeUrlImpl(exports, memory, toBytes(str));
+	}
+
+	function encodeUrlNoPaddingSync(data: string | Uint8Array): string {
+		const { exports, memory } = getSyncState();
+		return encodeUrlNoPaddingImpl(exports, memory, toBytes(data));
+	}
+
+	function decodeUrlNoPaddingSync(str: string): Uint8Array {
+		const { exports, memory } = getSyncState();
+		return decodeUrlNoPaddingImpl(exports, memory, toBytes(str));
+	}
+
+	function hexEncodeSync(data: string | Uint8Array): string {
+		const { exports, memory } = getSyncState();
+		return hexEncodeImpl(exports, memory, toBytes(data));
+	}
+
+	function hexDecodeSync(str: string): Uint8Array {
+		const { exports, memory } = getSyncState();
+		return hexDecodeImpl(exports, memory, toBytes(str));
+	}
+
+	return {
+		init,
+		isInitialized,
+		dispose,
+		encode,
+		decode,
+		encodeNoPadding,
+		decodeNoPadding,
+		encodeUrl,
+		decodeUrl,
+		encodeUrlNoPadding,
+		decodeUrlNoPadding,
+		hexEncode,
+		hexDecode,
+		encodeSync,
+		decodeSync,
+		encodeNoPaddingSync,
+		decodeNoPaddingSync,
+		encodeUrlSync,
+		decodeUrlSync,
+		encodeUrlNoPaddingSync,
+		decodeUrlNoPaddingSync,
+		hexEncodeSync,
+		hexDecodeSync,
+	};
+}
+
+// ============================================================================
+// Default singleton instance for backwards compatibility
+// ============================================================================
+
+const _defaultInstance = createBase64();
+
+/**
+ * Initialize the Base64 WebAssembly module.
+ *
+ * This function is **idempotent** and **concurrency-safe**. Multiple calls
+ * will return the same promise, and the module is only loaded once.
+ *
+ * **When to call**: Required before using sync functions (`*Sync`).
+ * Async functions call this automatically.
+ *
+ * @param options - Optional configuration for loading the WASM module
+ * @returns A promise that resolves when initialization is complete
+ *
+ * @example Basic initialization
+ * ```ts
+ * import { init, encodeSync } from "@zig-wasm/base64";
+ *
+ * await init();
+ * const result = encodeSync("Hello"); // Now works!
+ * ```
+ *
+ * @example Custom WASM path
+ * ```ts
+ * import { init } from "@zig-wasm/base64";
+ *
+ * await init({ wasmPath: "/custom/path/base64.wasm" });
+ * ```
+ *
+ * @example Pre-loaded WASM bytes
+ * ```ts
+ * import { init } from "@zig-wasm/base64";
+ *
+ * const wasmBytes = await fetch("/base64.wasm").then(r => r.arrayBuffer());
+ * await init({ wasmBytes: new Uint8Array(wasmBytes) });
+ * ```
+ */
+export const init = _defaultInstance.init;
+
+/**
+ * Check if the Base64 module has been initialized.
+ *
+ * Useful for conditional logic or debugging. Returns `true` if {@link init}
+ * has completed successfully.
+ *
+ * @returns `true` if the module is ready for use, `false` otherwise
+ *
+ * @example
+ * ```ts
+ * import { init, isInitialized, encodeSync } from "@zig-wasm/base64";
+ *
+ * console.log(isInitialized()); // false
+ *
+ * await init();
+ * console.log(isInitialized()); // true
+ *
+ * // Safe to use sync API now
+ * const result = encodeSync("test");
+ * ```
+ */
+export const isInitialized = _defaultInstance.isInitialized;
+
+/**
+ * Reset the default Base64 instance state.
+ *
+ * Clears all internal state including WASM exports, memory, and initialization promise.
+ * After calling dispose, the module must be re-initialized before use.
+ *
+ * Useful for testing or when you need to reinitialize with different options.
+ *
+ * @example
+ * ```ts
+ * import { init, dispose, isInitialized } from "@zig-wasm/base64";
+ *
+ * await init();
+ * console.log(isInitialized()); // true
+ *
+ * dispose();
+ * console.log(isInitialized()); // false
+ *
+ * // Can reinitialize with different options
+ * await init({ wasmPath: "./other.wasm" });
+ * ```
+ */
+export const dispose = _defaultInstance.dispose;
+
+// ============================================================================
+// Async API exports
 // ============================================================================
 
 /**
@@ -456,10 +714,7 @@ function hexDecodeImpl(
  * console.log(result); // "SGVsbG8="
  * ```
  */
-export async function encode(data: string | Uint8Array): Promise<string> {
-	const { exports, memory } = await ensureInit();
-	return encodeImpl(exports, memory, toBytes(data));
-}
+export const encode = _defaultInstance.encode;
 
 /**
  * Decode standard Base64 to bytes.
@@ -487,10 +742,7 @@ export async function encode(data: string | Uint8Array): Promise<string> {
  * console.log(bytes); // Uint8Array [0, 1, 2, 255]
  * ```
  */
-export async function decode(str: string): Promise<Uint8Array> {
-	const { exports, memory } = await ensureInit();
-	return decodeImpl(exports, memory, toBytes(str));
-}
+export const decode = _defaultInstance.decode;
 
 /**
  * Encode data to Base64 without padding.
@@ -509,12 +761,7 @@ export async function decode(str: string): Promise<Uint8Array> {
  * console.log(result); // "SGVsbG8" (no trailing =)
  * ```
  */
-export async function encodeNoPadding(
-	data: string | Uint8Array,
-): Promise<string> {
-	const { exports, memory } = await ensureInit();
-	return encodeNoPaddingImpl(exports, memory, toBytes(data));
-}
+export const encodeNoPadding = _defaultInstance.encodeNoPadding;
 
 /**
  * Decode Base64 without padding to bytes.
@@ -533,10 +780,7 @@ export async function encodeNoPadding(
  * console.log(new TextDecoder().decode(bytes)); // "Hello"
  * ```
  */
-export async function decodeNoPadding(str: string): Promise<Uint8Array> {
-	const { exports, memory } = await ensureInit();
-	return decodeNoPaddingImpl(exports, memory, toBytes(str));
-}
+export const decodeNoPadding = _defaultInstance.decodeNoPadding;
 
 /**
  * Encode data to URL-safe Base64.
@@ -556,10 +800,7 @@ export async function decodeNoPadding(str: string): Promise<Uint8Array> {
  * console.log(result); // Uses - and _ instead of + and /
  * ```
  */
-export async function encodeUrl(data: string | Uint8Array): Promise<string> {
-	const { exports, memory } = await ensureInit();
-	return encodeUrlImpl(exports, memory, toBytes(data));
-}
+export const encodeUrl = _defaultInstance.encodeUrl;
 
 /**
  * Decode URL-safe Base64 to bytes.
@@ -578,10 +819,7 @@ export async function encodeUrl(data: string | Uint8Array): Promise<string> {
  * console.log(new TextDecoder().decode(bytes));
  * ```
  */
-export async function decodeUrl(str: string): Promise<Uint8Array> {
-	const { exports, memory } = await ensureInit();
-	return decodeUrlImpl(exports, memory, toBytes(str));
-}
+export const decodeUrl = _defaultInstance.decodeUrl;
 
 /**
  * Encode data to URL-safe Base64 without padding.
@@ -601,12 +839,7 @@ export async function decodeUrl(str: string): Promise<Uint8Array> {
  * // Use in JWT: encoded is URL-safe with no padding
  * ```
  */
-export async function encodeUrlNoPadding(
-	data: string | Uint8Array,
-): Promise<string> {
-	const { exports, memory } = await ensureInit();
-	return encodeUrlNoPaddingImpl(exports, memory, toBytes(data));
-}
+export const encodeUrlNoPadding = _defaultInstance.encodeUrlNoPadding;
 
 /**
  * Decode URL-safe Base64 without padding to bytes.
@@ -626,10 +859,7 @@ export async function encodeUrlNoPadding(
  * console.log(json); // { alg: "HS256" }
  * ```
  */
-export async function decodeUrlNoPadding(str: string): Promise<Uint8Array> {
-	const { exports, memory } = await ensureInit();
-	return decodeUrlNoPaddingImpl(exports, memory, toBytes(str));
-}
+export const decodeUrlNoPadding = _defaultInstance.decodeUrlNoPadding;
 
 /**
  * Encode data to lowercase hexadecimal string.
@@ -651,10 +881,7 @@ export async function decodeUrlNoPadding(str: string): Promise<Uint8Array> {
  * console.log(await hexEncode(bytes)); // "00ff10"
  * ```
  */
-export async function hexEncode(data: string | Uint8Array): Promise<string> {
-	const { exports, memory } = await ensureInit();
-	return hexEncodeImpl(exports, memory, toBytes(data));
-}
+export const hexEncode = _defaultInstance.hexEncode;
 
 /**
  * Decode hexadecimal string to bytes.
@@ -676,13 +903,10 @@ export async function hexEncode(data: string | Uint8Array): Promise<string> {
  * console.log(binary); // Uint8Array [0, 255, 16]
  * ```
  */
-export async function hexDecode(str: string): Promise<Uint8Array> {
-	const { exports, memory } = await ensureInit();
-	return hexDecodeImpl(exports, memory, toBytes(str));
-}
+export const hexDecode = _defaultInstance.hexDecode;
 
 // ============================================================================
-// Sync API
+// Sync API exports
 // ============================================================================
 
 /**
@@ -704,10 +928,7 @@ export async function hexDecode(str: string): Promise<Uint8Array> {
  * console.log(result); // "SGVsbG8sIFdvcmxkIQ=="
  * ```
  */
-export function encodeSync(data: string | Uint8Array): string {
-	const { exports, memory } = getSyncState();
-	return encodeImpl(exports, memory, toBytes(data));
-}
+export const encodeSync = _defaultInstance.encodeSync;
 
 /**
  * Decode standard Base64 to bytes (synchronous).
@@ -728,10 +949,7 @@ export function encodeSync(data: string | Uint8Array): string {
  * console.log(new TextDecoder().decode(bytes)); // "Hello"
  * ```
  */
-export function decodeSync(str: string): Uint8Array {
-	const { exports, memory } = getSyncState();
-	return decodeImpl(exports, memory, toBytes(str));
-}
+export const decodeSync = _defaultInstance.decodeSync;
 
 /**
  * Encode data to Base64 without padding (synchronous).
@@ -751,10 +969,7 @@ export function decodeSync(str: string): Uint8Array {
  * console.log(result); // "SGVsbG8"
  * ```
  */
-export function encodeNoPaddingSync(data: string | Uint8Array): string {
-	const { exports, memory } = getSyncState();
-	return encodeNoPaddingImpl(exports, memory, toBytes(data));
-}
+export const encodeNoPaddingSync = _defaultInstance.encodeNoPaddingSync;
 
 /**
  * Decode Base64 without padding to bytes (synchronous).
@@ -774,10 +989,7 @@ export function encodeNoPaddingSync(data: string | Uint8Array): string {
  * console.log(new TextDecoder().decode(bytes)); // "Hello"
  * ```
  */
-export function decodeNoPaddingSync(str: string): Uint8Array {
-	const { exports, memory } = getSyncState();
-	return decodeNoPaddingImpl(exports, memory, toBytes(str));
-}
+export const decodeNoPaddingSync = _defaultInstance.decodeNoPaddingSync;
 
 /**
  * Encode data to URL-safe Base64 (synchronous).
@@ -797,10 +1009,7 @@ export function decodeNoPaddingSync(str: string): Uint8Array {
  * console.log(result); // URL-safe encoding
  * ```
  */
-export function encodeUrlSync(data: string | Uint8Array): string {
-	const { exports, memory } = getSyncState();
-	return encodeUrlImpl(exports, memory, toBytes(data));
-}
+export const encodeUrlSync = _defaultInstance.encodeUrlSync;
 
 /**
  * Decode URL-safe Base64 to bytes (synchronous).
@@ -819,10 +1028,7 @@ export function encodeUrlSync(data: string | Uint8Array): string {
  * const bytes = decodeUrlSync("SGVsbG8_");
  * ```
  */
-export function decodeUrlSync(str: string): Uint8Array {
-	const { exports, memory } = getSyncState();
-	return decodeUrlImpl(exports, memory, toBytes(str));
-}
+export const decodeUrlSync = _defaultInstance.decodeUrlSync;
 
 /**
  * Encode data to URL-safe Base64 without padding (synchronous).
@@ -841,10 +1047,7 @@ export function decodeUrlSync(str: string): Uint8Array {
  * const jwt = encodeUrlNoPaddingSync(JSON.stringify({ alg: "HS256" }));
  * ```
  */
-export function encodeUrlNoPaddingSync(data: string | Uint8Array): string {
-	const { exports, memory } = getSyncState();
-	return encodeUrlNoPaddingImpl(exports, memory, toBytes(data));
-}
+export const encodeUrlNoPaddingSync = _defaultInstance.encodeUrlNoPaddingSync;
 
 /**
  * Decode URL-safe Base64 without padding to bytes (synchronous).
@@ -863,10 +1066,7 @@ export function encodeUrlNoPaddingSync(data: string | Uint8Array): string {
  * const bytes = decodeUrlNoPaddingSync("eyJhbGciOiJIUzI1NiJ9");
  * ```
  */
-export function decodeUrlNoPaddingSync(str: string): Uint8Array {
-	const { exports, memory } = getSyncState();
-	return decodeUrlNoPaddingImpl(exports, memory, toBytes(str));
-}
+export const decodeUrlNoPaddingSync = _defaultInstance.decodeUrlNoPaddingSync;
 
 /**
  * Encode data to hexadecimal string (synchronous).
@@ -886,10 +1086,7 @@ export function decodeUrlNoPaddingSync(str: string): Uint8Array {
  * console.log(hex); // "68656c6c6f"
  * ```
  */
-export function hexEncodeSync(data: string | Uint8Array): string {
-	const { exports, memory } = getSyncState();
-	return hexEncodeImpl(exports, memory, toBytes(data));
-}
+export const hexEncodeSync = _defaultInstance.hexEncodeSync;
 
 /**
  * Decode hexadecimal string to bytes (synchronous).
@@ -909,7 +1106,4 @@ export function hexEncodeSync(data: string | Uint8Array): string {
  * console.log(new TextDecoder().decode(bytes)); // "hello"
  * ```
  */
-export function hexDecodeSync(str: string): Uint8Array {
-	const { exports, memory } = getSyncState();
-	return hexDecodeImpl(exports, memory, toBytes(str));
-}
+export const hexDecodeSync = _defaultInstance.hexDecodeSync;

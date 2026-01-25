@@ -3,8 +3,8 @@
  * Focuses on F32, U64, and less commonly used sync functions
  */
 
+import { beforeAll, describe, expect, it } from 'bun:test';
 import * as math from '@zig-wasm/math';
-import { beforeAll, describe, expect, it } from 'vitest';
 
 beforeAll(async () => {
 	await math.init();

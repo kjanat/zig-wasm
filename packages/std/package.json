@@ -20,26 +20,32 @@
   "type": "module",
   "exports": {
     ".": {
+      "bun": "./src/index.ts",
       "require": "./dist/index.cjs",
       "import": "./dist/index.mjs"
     },
     "./base64": {
+      "bun": "./src/base64.ts",
       "require": "./dist/base64.cjs",
       "import": "./dist/base64.mjs"
     },
     "./compress": {
+      "bun": "./src/compress.ts",
       "require": "./dist/compress.cjs",
       "import": "./dist/compress.mjs"
     },
     "./crypto": {
+      "bun": "./src/crypto.ts",
       "require": "./dist/crypto.cjs",
       "import": "./dist/crypto.mjs"
     },
     "./hash": {
+      "bun": "./src/hash.ts",
       "require": "./dist/hash.cjs",
       "import": "./dist/hash.mjs"
     },
     "./math": {
+      "bun": "./src/math.ts",
       "require": "./dist/math.cjs",
       "import": "./dist/math.mjs"
     },
@@ -58,7 +64,7 @@
     "lint": "biome lint",
     "lint:fix": "biome check --write && pnpm fmt",
     "publish:jsr": "pnpm dlx jsr publish --allow-dirty",
-    "test": "vitest run",
+    "test": "bun test",
     "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
@@ -75,5 +81,34 @@
     "@zig-wasm/tooling": "workspace:*",
     "dprint": "catalog:",
     "tsdown": "catalog:"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "require": "./dist/index.cjs",
+        "import": "./dist/index.mjs"
+      },
+      "./base64": {
+        "require": "./dist/base64.cjs",
+        "import": "./dist/base64.mjs"
+      },
+      "./compress": {
+        "require": "./dist/compress.cjs",
+        "import": "./dist/compress.mjs"
+      },
+      "./crypto": {
+        "require": "./dist/crypto.cjs",
+        "import": "./dist/crypto.mjs"
+      },
+      "./hash": {
+        "require": "./dist/hash.cjs",
+        "import": "./dist/hash.mjs"
+      },
+      "./math": {
+        "require": "./dist/math.cjs",
+        "import": "./dist/math.mjs"
+      },
+      "./package.json": "./package.json"
+    }
   }
 }

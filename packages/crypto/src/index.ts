@@ -95,8 +95,11 @@
  * @module
  */
 
+// Factory and types
+export { createCrypto, type CryptoInstance } from './crypto.ts';
+
 // Lifecycle
-export { init, isInitialized } from './crypto.ts';
+export { dispose, init, isInitialized } from './crypto.ts';
 
 // Async API
 // dprint-ignore

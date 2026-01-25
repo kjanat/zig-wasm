@@ -97,7 +97,10 @@
  */
 
 // Lifecycle
-export { init, isInitialized } from './hash.ts';
+export { dispose, init, isInitialized } from './hash.ts';
+
+// Factory API
+export { createHasher, type Hasher } from './hash.ts';
 
 // Async API
 // dprint-ignore

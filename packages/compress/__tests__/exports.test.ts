@@ -1,7 +1,7 @@
+import { describe, expect, it } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as compress from '@zig-wasm/compress';
-import { describe, expect, it } from 'vitest';
 
 const fixturesDir = join(import.meta.dirname, 'fixtures');
 
@@ -11,8 +11,13 @@ function loadFixture(filename: string): Uint8Array {
 
 describe('@zig-wasm/compress exports', () => {
 	it('exposes lifecycle helpers', () => {
-		expect(compress.isInitialized()).toBe(false);
 		expect(compress.init).toBeTypeOf('function');
+		expect(compress.isInitialized).toBeTypeOf('function');
+		expect(compress.dispose).toBeTypeOf('function');
+	});
+
+	it('exposes factory function', () => {
+		expect(compress.createCompressor).toBeTypeOf('function');
 	});
 
 	it('exposes async decompressors', () => {
@@ -27,6 +32,64 @@ describe('@zig-wasm/compress exports', () => {
 
 	it('exposes error types', () => {
 		expect(compress.NotInitializedError).toBeTypeOf('function');
+	});
+});
+
+describe('createCompressor factory', () => {
+	it('creates independent instances', () => {
+		const instance1 = compress.createCompressor();
+		const instance2 = compress.createCompressor();
+
+		expect(instance1).not.toBe(instance2);
+		expect(instance1.isInitialized()).toBe(false);
+		expect(instance2.isInitialized()).toBe(false);
+	});
+
+	it('instance has all expected methods', () => {
+		const instance = compress.createCompressor();
+
+		expect(instance.init).toBeTypeOf('function');
+		expect(instance.isInitialized).toBeTypeOf('function');
+		expect(instance.dispose).toBeTypeOf('function');
+		expect(instance.decompressXz).toBeTypeOf('function');
+		expect(instance.decompressXzSync).toBeTypeOf('function');
+		expect(instance.decompressLzma).toBeTypeOf('function');
+		expect(instance.decompressLzmaSync).toBeTypeOf('function');
+	});
+
+	it('instances maintain independent state', async () => {
+		const instance1 = compress.createCompressor();
+		const instance2 = compress.createCompressor();
+
+		// Initialize only instance1
+		const compressed = loadFixture('hello.txt.xz');
+		await instance1.decompressXz(compressed);
+
+		expect(instance1.isInitialized()).toBe(true);
+		expect(instance2.isInitialized()).toBe(false);
+	});
+
+	it('dispose resets instance state', async () => {
+		const instance = compress.createCompressor();
+		const compressed = loadFixture('hello.txt.xz');
+
+		await instance.decompressXz(compressed);
+		expect(instance.isInitialized()).toBe(true);
+
+		instance.dispose();
+		expect(instance.isInitialized()).toBe(false);
+	});
+
+	it('instance can be re-initialized after dispose', async () => {
+		const instance = compress.createCompressor();
+		const compressed = loadFixture('hello.txt.xz');
+
+		await instance.decompressXz(compressed);
+		instance.dispose();
+
+		const result = await instance.decompressXz(compressed);
+		expect(new TextDecoder().decode(result)).toBe('Hello, World!');
+		expect(instance.isInitialized()).toBe(true);
 	});
 });
 

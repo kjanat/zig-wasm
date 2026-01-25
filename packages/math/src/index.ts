@@ -78,7 +78,17 @@
  */
 
 // Lifecycle
-export { getExports, getExportsSync, init, isInitialized } from './math.ts';
+export {
+	dispose,
+	getExports,
+	getExportsSync,
+	init,
+	isInitialized,
+} from './math.ts';
+
+// Factory pattern
+export { createMath } from './math.ts';
+export type { MathInstance } from './math.ts';
 
 // Async API
 // dprint-ignore
