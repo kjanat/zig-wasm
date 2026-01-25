@@ -1,7 +1,22 @@
-import { beforeAll, describe, expect, it } from 'bun:test';
+import {
+	afterEach,
+	beforeAll,
+	beforeEach,
+	describe,
+	expect,
+	it,
+} from 'bun:test';
 import * as base64 from '@zig-wasm/base64';
 
 describe('@zig-wasm/base64 exports', () => {
+	beforeEach(() => {
+		base64.dispose();
+	});
+
+	afterEach(() => {
+		base64.dispose();
+	});
+
 	it('exposes lifecycle helpers', () => {
 		expect(base64.isInitialized()).toBe(false);
 		expect(base64.init).toBeTypeOf('function');
@@ -23,6 +38,14 @@ describe('@zig-wasm/base64 exports', () => {
 });
 
 describe('@zig-wasm/base64 initialization', () => {
+	beforeEach(() => {
+		base64.dispose();
+	});
+
+	afterEach(() => {
+		base64.dispose();
+	});
+
 	it('auto-initializes on async API usage', async () => {
 		expect(base64.isInitialized()).toBe(false);
 		await base64.encode('test');

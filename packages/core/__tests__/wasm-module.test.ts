@@ -98,7 +98,7 @@ describe('createWasmModule', () => {
 			const wasmBytes = createMinimalWasmWithMemory();
 
 			await module.init({ wasmBytes });
-			module.getExports();
+			const exports1 = module.getExports();
 
 			// Second init should be no-op
 			await module.init({ wasmBytes });
