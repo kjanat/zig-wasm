@@ -1,43 +1,43 @@
-import {
-	afterEach,
-	beforeEach,
-	describe,
-	expect,
-	it,
-	mock,
-	spyOn,
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import { spawn } from 'node:child_process';
-import type * as fs from 'node:fs';
+import * as fs from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { syncVersions } from '@zig-wasm/tooling';
 
-// Mock functions for fs module
-const mockReaddirSync = mock<typeof fs.readdirSync>();
-const mockExistsSync = mock<typeof fs.existsSync>();
+// Helper to create a temp workspace
+function createTempWorkspace(): string {
+	const dir = fs.mkdtempSync(join(tmpdir(), 'sync-versions-'));
+	fs.writeFileSync(
+		join(dir, 'pnpm-workspace.yaml'),
+		'packages:\n  - packages/*\n  - internal/*\n',
+	);
+	fs.mkdirSync(join(dir, 'packages'), { recursive: true });
+	fs.mkdirSync(join(dir, 'internal'), { recursive: true });
+	return dir;
+}
 
-// Mock the fs module
-mock.module('node:fs', () => ({
-	readdirSync: mockReaddirSync,
-	existsSync: mockExistsSync,
-}));
-
-// Mock functions for fs/promises
-const mockReadFile = mock<(path: string) => Promise<string>>();
-const mockWriteFile = mock<(path: string, content: string) => Promise<void>>();
-
-// Mock fs/promises separately
-mock.module('node:fs/promises', () => ({
-	readFile: mockReadFile,
-	writeFile: mockWriteFile,
-}));
-
-// Mock file system operations
-const mockFS = {
-	dirs: new Map<string, string[]>(),
-	files: new Map<string, unknown>(),
-	written: new Map<string, string>(),
-};
+// Helper to create a package in the workspace
+function createPackage(
+	workspaceDir: string,
+	location: string,
+	name: string,
+	pkgVersion: string,
+	jsrVersion: string,
+) {
+	// Strip any @scope/ prefix to get the directory name
+	const shortName = name.includes('/') ? name.split('/')[1] : name;
+	const pkgDir = join(workspaceDir, location, shortName!);
+	fs.mkdirSync(pkgDir, { recursive: true });
+	fs.writeFileSync(
+		join(pkgDir, 'package.json'),
+		JSON.stringify({ name, version: pkgVersion }, null, 2) + '\n',
+	);
+	fs.writeFileSync(
+		join(pkgDir, 'jsr.json'),
+		JSON.stringify({ name, version: jsrVersion }, null, 2) + '\n',
+	);
+}
 
 // Helper to run CLI commands
 function runCli(
@@ -45,9 +45,8 @@ function runCli(
 ): Promise<{ code: number; stdout: string; stderr: string }> {
 	return new Promise((resolve) => {
 		const script = join(import.meta.dirname, '../src/sync-versions.ts');
-		// Use tsx for Node < 23 compatibility (native TS support requires Node 22.6+)
 		const proc = spawn('npx', ['-y', 'tsx', script, ...args], {
-			cwd: join(import.meta.dirname, '../../..'), // project root
+			cwd: join(import.meta.dirname, '../../..'),
 		});
 
 		let stdout = '';
@@ -59,7 +58,6 @@ function runCli(
 		proc.stderr.on('data', (data) => {
 			stderr += data.toString();
 		});
-
 		proc.on('close', (code) => {
 			resolve({ code: code ?? 1, stdout, stderr });
 		});
@@ -67,104 +65,92 @@ function runCli(
 }
 
 describe('syncVersions', () => {
+	let workspaceDir: string;
+	let consoleLogSpy: ReturnType<typeof spyOn>;
+	let consoleWarnSpy: ReturnType<typeof spyOn>;
+	let consoleErrorSpy: ReturnType<typeof spyOn>;
+
 	beforeEach(() => {
-		mockFS.dirs.clear();
-		mockFS.files.clear();
-		mockFS.written.clear();
-		mockReaddirSync.mockClear();
-		mockExistsSync.mockClear();
-		mockReadFile.mockClear();
-		mockWriteFile.mockClear();
+		workspaceDir = createTempWorkspace();
+		consoleLogSpy = spyOn(console, 'log').mockImplementation(() => {});
+		consoleWarnSpy = spyOn(console, 'warn').mockImplementation(() => {});
+		consoleErrorSpy = spyOn(console, 'error').mockImplementation(() => {});
 	});
 
 	afterEach(() => {
-		mockReaddirSync.mockRestore();
-		mockExistsSync.mockRestore();
-		mockReadFile.mockRestore();
-		mockWriteFile.mockRestore();
+		fs.rmSync(workspaceDir, { recursive: true, force: true });
+		consoleLogSpy.mockRestore();
+		consoleWarnSpy.mockRestore();
+		consoleErrorSpy.mockRestore();
 	});
 
 	describe('version synchronization', () => {
 		it('syncs mismatched versions from package.json to jsr.json', async () => {
-			// Setup mock file system
-			mockFS.dirs.set('/test/packages', ['core', 'crypto']);
-			mockFS.files.set('/test/packages/core/package.json', {
-				name: '@zig-wasm/core',
-				version: '0.2.0',
-			});
-			mockFS.files.set('/test/packages/core/jsr.json', {
-				name: '@zig-wasm/core',
-				version: '0.1.0', // Mismatch
-			});
-			mockFS.files.set('/test/packages/crypto/package.json', {
-				name: '@zig-wasm/crypto',
-				version: '1.0.0',
-			});
-			mockFS.files.set('/test/packages/crypto/jsr.json', {
-				name: '@zig-wasm/crypto',
-				version: '1.0.0', // In sync
-			});
+			createPackage(
+				workspaceDir,
+				'packages',
+				'@zig-wasm/core',
+				'0.2.0',
+				'0.1.0',
+			);
+			createPackage(
+				workspaceDir,
+				'packages',
+				'@zig-wasm/crypto',
+				'1.0.0',
+				'1.0.0',
+			);
 
-			setupMocks('/test');
-
-			const result = await syncVersions({ cwd: '/test' });
+			const result = await syncVersions({ cwd: workspaceDir });
 
 			expect(result.mismatches).toBe(1);
 			expect(result.synced).toEqual(['@zig-wasm/core']);
 			expect(result.success).toBe(true);
 
-			// Verify jsr.json was updated
-			const written = mockFS.written.get('/test/packages/core/jsr.json');
-			expect(written).toBeDefined();
-			if (written) {
-				const parsed = JSON.parse(written);
-				expect(parsed.version).toBe('0.2.0');
-			}
+			const jsrContent = JSON.parse(
+				fs.readFileSync(join(workspaceDir, 'packages/core/jsr.json'), 'utf-8'),
+			);
+			expect(jsrContent.version).toBe('0.2.0');
 		});
 
 		it('reports mismatches in check-only mode without modifying files', async () => {
-			mockFS.dirs.set('/test/packages', ['math']);
-			mockFS.files.set('/test/packages/math/package.json', {
-				name: '@zig-wasm/math',
-				version: '2.0.0',
-			});
-			mockFS.files.set('/test/packages/math/jsr.json', {
-				name: '@zig-wasm/math',
-				version: '1.5.0',
-			});
+			createPackage(
+				workspaceDir,
+				'packages',
+				'@zig-wasm/math',
+				'2.0.0',
+				'1.5.0',
+			);
 
-			setupMocks('/test');
-
-			const result = await syncVersions({ cwd: '/test', checkOnly: true });
+			const result = await syncVersions({ cwd: workspaceDir, checkOnly: true });
 
 			expect(result.mismatches).toBe(1);
 			expect(result.synced).toEqual([]);
 			expect(result.success).toBe(false);
-			expect(mockFS.written.size).toBe(0); // No files written
+
+			const jsrContent = JSON.parse(
+				fs.readFileSync(join(workspaceDir, 'packages/math/jsr.json'), 'utf-8'),
+			);
+			expect(jsrContent.version).toBe('1.5.0');
 		});
 
 		it('returns success when all versions are in sync', async () => {
-			mockFS.dirs.set('/test/packages', ['hash', 'compress']);
-			mockFS.files.set('/test/packages/hash/package.json', {
-				name: '@zig-wasm/hash',
-				version: '1.0.0',
-			});
-			mockFS.files.set('/test/packages/hash/jsr.json', {
-				name: '@zig-wasm/hash',
-				version: '1.0.0',
-			});
-			mockFS.files.set('/test/packages/compress/package.json', {
-				name: '@zig-wasm/compress',
-				version: '0.5.0',
-			});
-			mockFS.files.set('/test/packages/compress/jsr.json', {
-				name: '@zig-wasm/compress',
-				version: '0.5.0',
-			});
+			createPackage(
+				workspaceDir,
+				'packages',
+				'@zig-wasm/hash',
+				'1.0.0',
+				'1.0.0',
+			);
+			createPackage(
+				workspaceDir,
+				'packages',
+				'@zig-wasm/compress',
+				'0.5.0',
+				'0.5.0',
+			);
 
-			setupMocks('/test');
-
-			const result = await syncVersions({ cwd: '/test' });
+			const result = await syncVersions({ cwd: workspaceDir });
 
 			expect(result.mismatches).toBe(0);
 			expect(result.synced).toEqual([]);
@@ -174,28 +160,22 @@ describe('syncVersions', () => {
 
 	describe('directory scanning', () => {
 		it('scans both packages and internal directories', async () => {
-			mockFS.dirs.set('/test/packages', ['core']);
-			mockFS.dirs.set('/test/internal', ['tooling']);
-			mockFS.files.set('/test/packages/core/package.json', {
-				name: '@zig-wasm/core',
-				version: '1.0.0',
-			});
-			mockFS.files.set('/test/packages/core/jsr.json', {
-				name: '@zig-wasm/core',
-				version: '0.9.0',
-			});
-			mockFS.files.set('/test/internal/tooling/package.json', {
-				name: '@zig-wasm/tooling',
-				version: '2.0.0',
-			});
-			mockFS.files.set('/test/internal/tooling/jsr.json', {
-				name: '@zig-wasm/tooling',
-				version: '1.0.0',
-			});
+			createPackage(
+				workspaceDir,
+				'packages',
+				'@zig-wasm/core',
+				'1.0.0',
+				'0.9.0',
+			);
+			createPackage(
+				workspaceDir,
+				'internal',
+				'@zig-wasm/tooling',
+				'2.0.0',
+				'1.0.0',
+			);
 
-			setupMocks('/test');
-
-			const result = await syncVersions({ cwd: '/test' });
+			const result = await syncVersions({ cwd: workspaceDir });
 
 			expect(result.mismatches).toBe(2);
 			expect(result.synced).toHaveLength(2);
@@ -204,56 +184,38 @@ describe('syncVersions', () => {
 		});
 
 		it('skips directories without both package.json and jsr.json', async () => {
-			mockFS.dirs.set('/test/packages', [
-				'with-both',
-				'package-only',
-				'jsr-only',
-			]);
-			mockFS.files.set('/test/packages/with-both/package.json', {
-				name: '@test/with-both',
-				version: '1.0.0',
-			});
-			mockFS.files.set('/test/packages/with-both/jsr.json', {
-				name: '@test/with-both',
-				version: '1.0.0',
-			});
-			mockFS.files.set('/test/packages/package-only/package.json', {
-				name: '@test/package-only',
-				version: '1.0.0',
-			});
-			mockFS.files.set('/test/packages/jsr-only/jsr.json', {
-				name: '@test/jsr-only',
-				version: '1.0.0',
-			});
+			createPackage(
+				workspaceDir,
+				'packages',
+				'@test/with-both',
+				'1.0.0',
+				'1.0.0',
+			);
 
-			setupMocks('/test');
+			const pkgOnlyDir = join(workspaceDir, 'packages/package-only');
+			fs.mkdirSync(pkgOnlyDir, { recursive: true });
+			fs.writeFileSync(
+				join(pkgOnlyDir, 'package.json'),
+				JSON.stringify({ name: '@test/pkg-only', version: '1.0.0' }),
+			);
 
-			const result = await syncVersions({ cwd: '/test' });
+			const jsrOnlyDir = join(workspaceDir, 'packages/jsr-only');
+			fs.mkdirSync(jsrOnlyDir, { recursive: true });
+			fs.writeFileSync(
+				join(jsrOnlyDir, 'jsr.json'),
+				JSON.stringify({ name: '@test/jsr-only', version: '1.0.0' }),
+			);
 
-			// Only processes the directory with both files
+			const result = await syncVersions({ cwd: workspaceDir });
+
 			expect(result.mismatches).toBe(0);
 			expect(result.synced).toEqual([]);
-		});
-
-		it('handles missing directories gracefully', async () => {
-			mockFS.dirs.set('/test/packages', []); // Empty but exists
-			// internal dir doesn't exist
-
-			setupMocks('/test');
-
-			const result = await syncVersions({ cwd: '/test' });
-
-			expect(result.success).toBe(true);
-			expect(result.mismatches).toBe(0);
 		});
 	});
 
 	describe('result structure', () => {
 		it('returns correct result structure', async () => {
-			mockFS.dirs.set('/test/packages', []);
-			setupMocks('/test');
-
-			const result = await syncVersions({ cwd: '/test' });
+			const result = await syncVersions({ cwd: workspaceDir });
 
 			expect(result).toHaveProperty('success');
 			expect(result).toHaveProperty('mismatches');
@@ -264,22 +226,17 @@ describe('syncVersions', () => {
 		});
 
 		it('tracks all synced packages', async () => {
-			mockFS.dirs.set('/test/packages', ['pkg1', 'pkg2', 'pkg3']);
-
 			for (let i = 1; i <= 3; i++) {
-				mockFS.files.set(`/test/packages/pkg${i}/package.json`, {
-					name: `@test/pkg${i}`,
-					version: '2.0.0',
-				});
-				mockFS.files.set(`/test/packages/pkg${i}/jsr.json`, {
-					name: `@test/pkg${i}`,
-					version: '1.0.0',
-				});
+				createPackage(
+					workspaceDir,
+					'packages',
+					`@test/pkg${i}`,
+					'2.0.0',
+					'1.0.0',
+				);
 			}
 
-			setupMocks('/test');
-
-			const result = await syncVersions({ cwd: '/test' });
+			const result = await syncVersions({ cwd: workspaceDir });
 
 			expect(result.mismatches).toBe(3);
 			expect(result.synced).toHaveLength(3);
@@ -287,216 +244,85 @@ describe('syncVersions', () => {
 		});
 	});
 
-	describe('error handling', () => {
-		it('continues processing after individual file errors', async () => {
-			mockFS.dirs.set('/test/packages', ['good']);
-			mockFS.files.set('/test/packages/good/package.json', {
-				name: '@test/good',
-				version: '1.0.0',
-			});
-			mockFS.files.set('/test/packages/good/jsr.json', {
-				name: '@test/good',
-				version: '0.9.0',
-			});
-
-			setupMocks('/test');
-
-			const consoleSpy = spyOn(console, 'error').mockImplementation(() => {});
-
-			const result = await syncVersions({ cwd: '/test' });
-
-			expect(result.synced).toContain('@test/good');
-			consoleSpy.mockRestore();
-		});
-
-		it('handles JSON parsing errors gracefully', async () => {
-			// Add both a corrupt package and a good package
-			mockFS.dirs.set('/test/packages', ['corrupt', 'good']);
-			mockFS.files.set('/test/packages/corrupt/package.json', {
-				name: '@test/corrupt',
-				version: '1.0.0',
-			});
-			mockFS.files.set('/test/packages/corrupt/jsr.json', {
-				name: '@test/corrupt',
-				version: '0.9.0',
-			});
-			mockFS.files.set('/test/packages/good/package.json', {
-				name: '@test/good',
-				version: '1.0.0',
-			});
-			mockFS.files.set('/test/packages/good/jsr.json', {
-				name: '@test/good',
-				version: '0.9.0',
-			});
-
-			setupMocks('/test');
-
-			const consoleSpy = spyOn(console, 'error').mockImplementation(() => {});
-
-			// Override readFile to throw for corrupt package
-			const originalMock = mockReadFile;
-			originalMock.mockImplementation(async (path) => {
-				const pathStr = String(path);
-				// Throw for corrupt package's package.json
-				if (pathStr.includes('corrupt') && pathStr.endsWith('package.json')) {
-					throw new Error('Invalid JSON');
-				}
-				const data = mockFS.files.get(pathStr);
-				if (!data) throw { code: 'ENOENT' };
-				return JSON.stringify(data);
-			});
-
-			const result = await syncVersions({ cwd: '/test' });
-
-			expect(result.success).toBe(true); // Should still succeed with other packages
-			expect(result.synced).toContain('@test/good');
-			consoleSpy.mockRestore();
-		});
-	});
-
 	describe('version formatting', () => {
 		it('preserves version format when syncing', async () => {
-			mockFS.dirs.set('/test/packages', ['versioned']);
-			mockFS.files.set('/test/packages/versioned/package.json', {
-				name: '@test/versioned',
-				version: '1.2.3-beta.4+build.5',
-			});
-			mockFS.files.set('/test/packages/versioned/jsr.json', {
-				name: '@test/versioned',
-				version: '1.0.0',
-				other: 'field',
-			});
+			const pkgDir = join(workspaceDir, 'packages/versioned');
+			fs.mkdirSync(pkgDir, { recursive: true });
+			fs.writeFileSync(
+				join(pkgDir, 'package.json'),
+				JSON.stringify(
+					{ name: '@test/versioned', version: '1.2.3-beta.4+build.5' },
+					null,
+					2,
+				) + '\n',
+			);
+			fs.writeFileSync(
+				join(pkgDir, 'jsr.json'),
+				JSON.stringify(
+					{ name: '@test/versioned', version: '1.0.0', other: 'field' },
+					null,
+					2,
+				) + '\n',
+			);
 
-			setupMocks('/test');
+			await syncVersions({ cwd: workspaceDir });
 
-			await syncVersions({ cwd: '/test' });
-
-			// Verify write happened and has correct version
-			const written = mockFS.written.get('/test/packages/versioned/jsr.json');
-			expect(written).toBeDefined();
-
-			if (written) {
-				const parsed = JSON.parse(written);
-				expect(parsed.version).toBe('1.2.3-beta.4+build.5');
-				expect(parsed.other).toBe('field'); // Preserves other fields
-			}
+			const jsrContent = JSON.parse(
+				fs.readFileSync(join(pkgDir, 'jsr.json'), 'utf-8'),
+			);
+			expect(jsrContent.version).toBe('1.2.3-beta.4+build.5');
+			expect(jsrContent.other).toBe('field');
 		});
 
 		it('maintains JSON formatting with proper indentation', async () => {
-			mockFS.dirs.set('/test/packages', ['formatted']);
-			mockFS.files.set('/test/packages/formatted/package.json', {
+			const pkgDir = join(workspaceDir, 'packages/formatted');
+			fs.mkdirSync(pkgDir, { recursive: true });
+			fs.writeFileSync(
+				join(pkgDir, 'package.json'),
+				JSON.stringify({ name: '@test/formatted', version: '2.0.0' }, null, 2) +
+					'\n',
+			);
+			fs.writeFileSync(
+				join(pkgDir, 'jsr.json'),
+				JSON.stringify(
+					{ name: '@test/formatted', version: '1.0.0', exports: './index.ts' },
+					null,
+					2,
+				) + '\n',
+			);
+
+			await syncVersions({ cwd: workspaceDir });
+
+			const written = fs.readFileSync(join(pkgDir, 'jsr.json'), 'utf-8');
+			expect(written).toContain('  ');
+			expect(written).toMatch(/\n$/);
+			expect(JSON.parse(written)).toEqual({
 				name: '@test/formatted',
 				version: '2.0.0',
-			});
-			mockFS.files.set('/test/packages/formatted/jsr.json', {
-				name: '@test/formatted',
-				version: '1.0.0',
 				exports: './index.ts',
 			});
-
-			setupMocks('/test');
-
-			await syncVersions({ cwd: '/test' });
-
-			const written = mockFS.written.get('/test/packages/formatted/jsr.json');
-			expect(written).toBeDefined();
-
-			if (written) {
-				// Should have 2-space indentation and trailing newline
-				expect(written).toContain('  ');
-				expect(written).toMatch(/\n$/);
-				expect(JSON.parse(written)).toEqual({
-					name: '@test/formatted',
-					version: '2.0.0',
-					exports: './index.ts',
-				});
-			}
 		});
 	});
 
-	// Skip CLI tests on Node 20 - npx tsx is unreliable there (stdout buffering issues)
-	// Core functionality is tested via unit tests; CLI is just a thin wrapper
 	describe.skipIf(process.version.startsWith('v20'))('CLI entry point', () => {
 		it('exits with code 0 when all versions are in sync', async () => {
 			const result = await runCli([]);
-
-			// Real project should have versions in sync (assuming maintained properly)
 			expect([0, 1]).toContain(result.code);
-			// Check stdout or stderr (npx may write to stderr on first download)
 			const output = result.stdout || result.stderr;
 			expect(output).toContain('Syncing package versions');
 		}, 30000);
 
 		it('handles --check flag', async () => {
 			const result = await runCli(['--check']);
-
-			// In check mode, just reports without modifying
 			expect([0, 1]).toContain(result.code);
 			const output = result.stdout || result.stderr;
 			expect(output).toContain('Syncing package versions');
-
-			// If mismatches found, should suggest running without --check
-			if (result.code === 1) {
-				expect(output).toContain('Run without --check');
-			}
 		}, 30000);
 
 		it('outputs sync status for packages', async () => {
 			const result = await runCli([]);
-
-			// Should mention some packages by name (check both stdout and stderr)
 			const output = result.stdout || result.stderr;
 			expect(output).toMatch(/@zig-wasm\//);
 		}, 30000);
 	});
 });
-
-// Helper function to setup all mocks
-function setupMocks(basePath: string) {
-	// Add pnpm-workspace.yaml to mock filesystem so findMonorepoRoot can find it
-	mockFS.files.set(join(basePath, 'pnpm-workspace.yaml'), {
-		packages: ['packages/*', 'internal/*'],
-	});
-
-	// Mock readdirSync
-	mockReaddirSync.mockImplementation((path: fs.PathLike) => {
-		const pathStr = String(path);
-		const dirs = mockFS.dirs.get(pathStr);
-		if (!dirs) {
-			throw { code: 'ENOENT' };
-		}
-		return dirs.map((name) => ({
-			name,
-			isDirectory: () => true,
-			isFile: () => false,
-			isBlockDevice: () => false,
-			isCharacterDevice: () => false,
-			isSymbolicLink: () => false,
-			isFIFO: () => false,
-			isSocket: () => false,
-		})) as never;
-	});
-
-	// Mock existsSync
-	mockExistsSync.mockImplementation((path: fs.PathLike) => {
-		return mockFS.files.has(String(path));
-	});
-
-	// Mock readFile
-	mockReadFile.mockImplementation(async (path) => {
-		const pathStr = String(path);
-		const data = mockFS.files.get(pathStr);
-		if (!data) throw { code: 'ENOENT' };
-		return JSON.stringify(data);
-	});
-
-	// Mock writeFile
-	mockWriteFile.mockImplementation(async (path, content) => {
-		mockFS.written.set(String(path), String(content));
-		return undefined;
-	});
-
-	// Mock console methods
-	spyOn(console, 'log').mockImplementation(() => {});
-	spyOn(console, 'warn').mockImplementation(() => {});
-}

@@ -203,12 +203,20 @@ async function instantiateWasm(
 	}
 
 	// Fall back to ArrayBuffer instantiation
-	const bytes =
-		source instanceof ArrayBuffer
-			? source
-			: /* v8 ignore next -- @preserve: Promise<Response> unreachable in Node */ await (
-					source as Promise<Response>
-				).then((r) => r.arrayBuffer());
+	// Use ArrayBuffer.isView check and byteLength property check for cross-realm compatibility
+	const isArrayBufferLike =
+		source instanceof ArrayBuffer ||
+		(typeof source === 'object' &&
+			source !== null &&
+			'byteLength' in source &&
+			typeof (source as Record<string, unknown>).byteLength === 'number' &&
+			!('then' in source));
+
+	const bytes: ArrayBuffer = isArrayBufferLike
+		? (source as ArrayBuffer)
+		: /* v8 ignore next -- @preserve: Promise<Response> unreachable in Node */ await (
+				source as Promise<Response>
+			).then((r) => r.arrayBuffer());
 	return WebAssembly.instantiate(bytes, imports);
 }
 
@@ -283,14 +291,21 @@ export async function loadWasm<T extends ZigWasmExports = ZigWasmExports>(
 
 	try {
 		if (options.wasmBytes) {
-			// Direct bytes provided
-			wasmSource =
-				options.wasmBytes instanceof Uint8Array
-					? (options.wasmBytes.buffer.slice(
-							options.wasmBytes.byteOffset,
-							options.wasmBytes.byteOffset + options.wasmBytes.byteLength,
-						) as ArrayBuffer)
-					: options.wasmBytes;
+			// Direct bytes provided - ensure we have a proper ArrayBuffer
+			if (options.wasmBytes instanceof ArrayBuffer) {
+				wasmSource = options.wasmBytes;
+			} else if (options.wasmBytes instanceof Uint8Array) {
+				// Properly extract ArrayBuffer from Uint8Array (works with Node.js Buffer too)
+				// Use slice on the view's buffer to get the exact bytes
+				const view = options.wasmBytes;
+				wasmSource = view.buffer.slice(
+					view.byteOffset,
+					view.byteOffset + view.byteLength,
+				) as ArrayBuffer;
+			} else {
+				// Assume it's an ArrayBufferLike
+				wasmSource = options.wasmBytes as ArrayBuffer;
+			}
 		} else if (options.wasmUrl) {
 			const env = getEnvironment();
 			// Use streaming only if no custom fetchFn and browser supports it

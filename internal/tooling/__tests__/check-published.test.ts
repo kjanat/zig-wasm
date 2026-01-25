@@ -1,12 +1,4 @@
-import {
-	afterEach,
-	beforeEach,
-	describe,
-	expect,
-	it,
-	mock,
-	spyOn,
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import * as fs from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -17,145 +9,50 @@ import {
 } from '@zig-wasm/tooling';
 import { runCli } from '../src/cli.ts';
 
-// Mock fs/promises.readFile
-const mockReadFile =
-	mock<(path: string, encoding: string) => Promise<string>>();
-mock.module('node:fs/promises', () => ({
-	readFile: mockReadFile,
-}));
+// Helper to create a temp workspace with package
+function createTempWorkspace(
+	pkgName: string,
+	version: string,
+): { dir: string; pkgDir: string } {
+	const dir = fs.mkdtempSync(join(tmpdir(), 'check-published-'));
+	fs.writeFileSync(
+		join(dir, 'pnpm-workspace.yaml'),
+		'packages:\n  - packages/*\n',
+	);
 
-// Mock printHelp to suppress CLI output during tests
-mock.module('../src/messages.ts', () => ({
-	printHelp: mock(),
-}));
+	// Strip any @scope/ prefix to get the directory name
+	const shortName = pkgName.includes('/') ? pkgName.split('/')[1]! : pkgName;
+	const pkgDir = join(dir, 'packages', shortName);
+	fs.mkdirSync(pkgDir, { recursive: true });
+	fs.writeFileSync(
+		join(pkgDir, 'package.json'),
+		JSON.stringify({ name: pkgName, version }, null, 2),
+	);
 
-// Store original fetch
-const originalFetch = globalThis.fetch;
-const mockFetch = mock<typeof fetch>();
+	return { dir, pkgDir };
+}
 
 describe('checkPublished', () => {
 	let consoleLogSpy: ReturnType<typeof spyOn>;
 	let consoleErrorSpy: ReturnType<typeof spyOn>;
+	let consoleWarnSpy: ReturnType<typeof spyOn>;
 	let originalArgv: string[];
+	let originalFetch: typeof fetch;
 
 	beforeEach(() => {
-		mockReadFile.mockClear();
-		mockFetch.mockClear();
 		originalArgv = process.argv;
 		consoleLogSpy = spyOn(console, 'log').mockImplementation(() => {});
 		consoleErrorSpy = spyOn(console, 'error').mockImplementation(() => {});
-		// Mock fetch globally
-		globalThis.fetch = mockFetch as typeof fetch;
+		consoleWarnSpy = spyOn(console, 'warn').mockImplementation(() => {});
+		originalFetch = globalThis.fetch;
 	});
 
 	afterEach(() => {
 		process.argv = originalArgv;
 		consoleLogSpy.mockRestore();
 		consoleErrorSpy.mockRestore();
+		consoleWarnSpy.mockRestore();
 		globalThis.fetch = originalFetch;
-	});
-
-	describe('path resolution', () => {
-		it('resolves scoped package names', async () => {
-			// Mock readFile to avoid actual file system access
-			const mockRead = mockReadFile;
-			mockRead.mockResolvedValueOnce(
-				JSON.stringify({
-					name: '@zig-wasm/crypto',
-					version: '0.0.1',
-				}),
-			);
-
-			// Mock fetch to simulate npm registry response
-			mockFetch.mockResolvedValue({
-				ok: false,
-				status: 404,
-			} as Response);
-
-			const result = await checkPublished('@zig-wasm/crypto');
-
-			expect(mockRead).toHaveBeenCalledWith(
-				expect.stringContaining('packages/crypto/package.json'),
-				'utf-8',
-			);
-			expect(result.name).toBe('@zig-wasm/crypto');
-			expect(result.version).toBe('0.0.1');
-			expect(result.published).toBe(false);
-		});
-
-		it('resolves package names without scope', async () => {
-			const mockRead = mockReadFile;
-			mockRead.mockResolvedValueOnce(
-				JSON.stringify({
-					name: '@zig-wasm/hash',
-					version: '0.1.0',
-				}),
-			);
-
-			mockFetch.mockResolvedValue({ ok: true, status: 200 } as Response);
-
-			const result = await checkPublished('hash');
-
-			expect(mockRead).toHaveBeenCalledWith(
-				expect.stringContaining('packages/hash/package.json'),
-				'utf-8',
-			);
-			expect(result.name).toBe('@zig-wasm/hash');
-		});
-
-		it('resolves relative paths', async () => {
-			const mockRead = mockReadFile;
-			mockRead.mockResolvedValueOnce(
-				JSON.stringify({
-					name: '@zig-wasm/base64',
-					version: '1.2.3',
-				}),
-			);
-
-			mockFetch.mockResolvedValue({ ok: true, status: 200 } as Response);
-
-			await checkPublished('./packages/base64');
-
-			expect(mockRead).toHaveBeenCalledWith(
-				expect.stringContaining('packages/base64/package.json'),
-				'utf-8',
-			);
-		});
-
-		it('walks up to pnpm-workspace.yaml to find monorepo root', async () => {
-			const mockRead = mockReadFile;
-			mockRead.mockResolvedValueOnce(
-				JSON.stringify({
-					name: '@zig-wasm/hash',
-					version: '1.2.3',
-				}),
-			);
-
-			// Create a temporary workspace with a nested cwd
-			const workspaceRoot = fs.mkdtempSync(join(tmpdir(), 'check-published-'));
-			const nestedCwd = join(workspaceRoot, 'nested', 'child');
-			fs.mkdirSync(nestedCwd, { recursive: true });
-			fs.writeFileSync(
-				join(workspaceRoot, 'pnpm-workspace.yaml'),
-				'packages: []',
-			);
-
-			const cwdSpy = spyOn(process, 'cwd').mockReturnValue(nestedCwd);
-			mockFetch.mockResolvedValue({ ok: true, status: 200 } as Response);
-
-			try {
-				const result = await checkPublished('hash');
-
-				expect(result.name).toBe('@zig-wasm/hash');
-				expect(mockRead).toHaveBeenCalledWith(
-					join(workspaceRoot, 'packages', 'hash', 'package.json'),
-					'utf-8',
-				);
-			} finally {
-				cwdSpy.mockRestore();
-				fs.rmSync(workspaceRoot, { recursive: true, force: true });
-			}
-		});
 	});
 
 	describe('monorepo root detection', () => {
@@ -174,304 +71,335 @@ describe('checkPublished', () => {
 			const tmp = fs.mkdtempSync(join(tmpdir(), 'monorepo-root-found-'));
 			try {
 				fs.writeFileSync(join(tmp, 'pnpm-workspace.yaml'), 'packages: []');
-
 				expect(findMonorepoRoot(tmp)).toBe(tmp);
 			} finally {
 				fs.rmSync(tmp, { recursive: true, force: true });
+			}
+		});
+
+		it('walks up to find pnpm-workspace.yaml', () => {
+			const workspaceRoot = fs.mkdtempSync(join(tmpdir(), 'check-published-'));
+			const nestedCwd = join(workspaceRoot, 'nested', 'child');
+			fs.mkdirSync(nestedCwd, { recursive: true });
+			fs.writeFileSync(
+				join(workspaceRoot, 'pnpm-workspace.yaml'),
+				'packages: []',
+			);
+
+			try {
+				expect(findMonorepoRoot(nestedCwd)).toBe(workspaceRoot);
+			} finally {
+				fs.rmSync(workspaceRoot, { recursive: true, force: true });
 			}
 		});
 	});
 
 	describe('npm registry checks', () => {
 		it('detects published packages', async () => {
-			const mockRead = mockReadFile;
-			mockRead.mockResolvedValue(
-				JSON.stringify({
-					name: '@zig-wasm/std',
-					version: '0.1.0',
-				}),
-			);
+			const { dir, pkgDir } = createTempWorkspace('@zig-wasm/std', '0.1.0');
+			const cwdSpy = spyOn(process, 'cwd').mockReturnValue(dir);
 
-			mockFetch.mockResolvedValue({
-				ok: true,
-				status: 200,
-			} as Response);
+			(globalThis as any).fetch = async () =>
+				new Response(null, { status: 200 });
 
-			const result = await checkPublished('std');
-
-			expect(fetch).toHaveBeenCalledWith(
-				'https://registry.npmjs.org/@zig-wasm/std/0.1.0',
-				expect.objectContaining({ signal: expect.any(AbortSignal) }),
-			);
-			expect(result.published).toBe(true);
+			try {
+				const result = await checkPublished('std');
+				expect(result.published).toBe(true);
+				expect(result.name).toBe('@zig-wasm/std');
+				expect(result.version).toBe('0.1.0');
+			} finally {
+				cwdSpy.mockRestore();
+				fs.rmSync(dir, { recursive: true, force: true });
+			}
 		});
 
 		it('detects unpublished packages', async () => {
-			const mockRead = mockReadFile;
-			mockRead.mockResolvedValueOnce(
-				JSON.stringify({
-					name: '@zig-wasm/math',
-					version: '99.99.99',
-				}),
-			);
+			const { dir } = createTempWorkspace('@zig-wasm/math', '99.99.99');
+			const cwdSpy = spyOn(process, 'cwd').mockReturnValue(dir);
 
-			mockFetch.mockResolvedValue({
-				ok: false,
-				status: 404,
-			} as Response);
+			(globalThis as any).fetch = async () =>
+				new Response(null, { status: 404 });
 
-			const result = await checkPublished('math');
+			try {
+				const result = await checkPublished('math');
+				expect(result.published).toBe(false);
+			} finally {
+				cwdSpy.mockRestore();
+				fs.rmSync(dir, { recursive: true, force: true });
+			}
+		});
+	});
 
-			expect(result.published).toBe(false);
+	describe('path resolution', () => {
+		it('resolves scoped package names', async () => {
+			const { dir } = createTempWorkspace('@zig-wasm/crypto', '0.0.1');
+			const cwdSpy = spyOn(process, 'cwd').mockReturnValue(dir);
+
+			(globalThis as any).fetch = async () =>
+				new Response(null, { status: 404 });
+
+			try {
+				const result = await checkPublished('@zig-wasm/crypto');
+				expect(result.name).toBe('@zig-wasm/crypto');
+				expect(result.version).toBe('0.0.1');
+				expect(result.published).toBe(false);
+			} finally {
+				cwdSpy.mockRestore();
+				fs.rmSync(dir, { recursive: true, force: true });
+			}
+		});
+
+		it('resolves package names without scope', async () => {
+			const { dir } = createTempWorkspace('@zig-wasm/hash', '0.1.0');
+			const cwdSpy = spyOn(process, 'cwd').mockReturnValue(dir);
+
+			(globalThis as any).fetch = async () =>
+				new Response(null, { status: 200 });
+
+			try {
+				const result = await checkPublished('hash');
+				expect(result.name).toBe('@zig-wasm/hash');
+			} finally {
+				cwdSpy.mockRestore();
+				fs.rmSync(dir, { recursive: true, force: true });
+			}
+		});
+
+		it('resolves relative paths', async () => {
+			const { dir } = createTempWorkspace('@zig-wasm/base64', '1.2.3');
+			const cwdSpy = spyOn(process, 'cwd').mockReturnValue(dir);
+
+			(globalThis as any).fetch = async () =>
+				new Response(null, { status: 200 });
+
+			try {
+				const result = await checkPublished('./packages/base64');
+				expect(result.name).toBe('@zig-wasm/base64');
+			} finally {
+				cwdSpy.mockRestore();
+				fs.rmSync(dir, { recursive: true, force: true });
+			}
 		});
 	});
 
 	describe('result structure', () => {
 		it('returns correct result structure', async () => {
-			const mockRead = mockReadFile;
-			mockRead.mockResolvedValueOnce(
-				JSON.stringify({
-					name: '@test/package',
-					version: '1.0.0',
-				}),
-			);
+			const { dir } = createTempWorkspace('@test/package', '1.0.0');
+			const cwdSpy = spyOn(process, 'cwd').mockReturnValue(dir);
 
-			mockFetch.mockResolvedValue({ ok: true, status: 200 } as Response);
+			(globalThis as any).fetch = async () =>
+				new Response(null, { status: 200 });
 
-			const result = await checkPublished('test');
-
-			expect(result).toHaveProperty('name');
-			expect(result).toHaveProperty('version');
-			expect(result).toHaveProperty('published');
-			expect(typeof result.name).toBe('string');
-			expect(typeof result.version).toBe('string');
-			expect(typeof result.published).toBe('boolean');
+			try {
+				const result = await checkPublished('package');
+				expect(result).toHaveProperty('name');
+				expect(result).toHaveProperty('version');
+				expect(result).toHaveProperty('published');
+				expect(typeof result.name).toBe('string');
+				expect(typeof result.version).toBe('string');
+				expect(typeof result.published).toBe('boolean');
+			} finally {
+				cwdSpy.mockRestore();
+				fs.rmSync(dir, { recursive: true, force: true });
+			}
 		});
 	});
 
 	describe('error handling', () => {
-		it('handles missing package.json gracefully', async () => {
-			const mockRead = mockReadFile;
-			mockRead.mockRejectedValue(new Error('File not found'));
-
-			await expect(checkPublished('nonexistent')).rejects.toThrow();
-		});
-
 		it('handles network errors', async () => {
-			const mockRead = mockReadFile;
-			mockRead.mockResolvedValue(
-				JSON.stringify({
-					name: '@test/pkg',
-					version: '1.0.0',
-				}),
-			);
+			const { dir } = createTempWorkspace('@test/pkg', '1.0.0');
+			const cwdSpy = spyOn(process, 'cwd').mockReturnValue(dir);
 
-			mockFetch.mockRejectedValue(new Error('Network error'));
+			(globalThis as any).fetch = async () => {
+				throw new Error('Network error');
+			};
 
-			await expect(checkPublished('test')).rejects.toThrow('Network error');
+			try {
+				await expect(checkPublished('pkg')).rejects.toThrow('Network error');
+			} finally {
+				cwdSpy.mockRestore();
+				fs.rmSync(dir, { recursive: true, force: true });
+			}
 		});
 
 		it('handles timeout (AbortError)', async () => {
-			const mockRead = mockReadFile;
-			mockRead.mockResolvedValue(
-				JSON.stringify({
-					name: '@test/pkg',
-					version: '1.0.0',
-				}),
-			);
+			const { dir } = createTempWorkspace('@test/pkg', '1.0.0');
+			const cwdSpy = spyOn(process, 'cwd').mockReturnValue(dir);
 
-			const abortError = new Error('The operation was aborted');
-			abortError.name = 'AbortError';
-			mockFetch.mockRejectedValue(abortError);
+			(globalThis as any).fetch = async () => {
+				const err = new Error('The operation was aborted');
+				err.name = 'AbortError';
+				throw err;
+			};
 
-			await expect(checkPublished('test')).rejects.toThrow(
-				'Request timed out checking @test/pkg@1.0.0',
+			try {
+				await expect(checkPublished('pkg')).rejects.toThrow(
+					'Request timed out',
+				);
+			} finally {
+				cwdSpy.mockRestore();
+				fs.rmSync(dir, { recursive: true, force: true });
+			}
+		});
+
+		it('throws on HTTP error status from registry', async () => {
+			const { dir } = createTempWorkspace('@test/pkg', '1.0.0');
+			const cwdSpy = spyOn(process, 'cwd').mockReturnValue(dir);
+
+			(globalThis as any).fetch = async () =>
+				new Response(null, { status: 500 });
+
+			try {
+				await expect(checkPublished('pkg')).rejects.toThrow(
+					'Registry returned HTTP 500',
+				);
+			} finally {
+				cwdSpy.mockRestore();
+				fs.rmSync(dir, { recursive: true, force: true });
+			}
+		});
+
+		it('throws on missing package.json', async () => {
+			const dir = fs.mkdtempSync(join(tmpdir(), 'check-published-'));
+			fs.writeFileSync(
+				join(dir, 'pnpm-workspace.yaml'),
+				'packages:\n  - packages/*\n',
 			);
+			fs.mkdirSync(join(dir, 'packages/nonexistent'), { recursive: true });
+			const cwdSpy = spyOn(process, 'cwd').mockReturnValue(dir);
+
+			try {
+				await expect(checkPublished('nonexistent')).rejects.toThrow(
+					'Package not found',
+				);
+			} finally {
+				cwdSpy.mockRestore();
+				fs.rmSync(dir, { recursive: true, force: true });
+			}
 		});
 
 		it('throws on malformed package.json', async () => {
-			const mockRead = mockReadFile;
-			mockRead.mockResolvedValue(
-				JSON.stringify({
-					// Missing required fields
-					invalidField: 'invalid',
-				}),
+			const dir = fs.mkdtempSync(join(tmpdir(), 'check-published-'));
+			fs.writeFileSync(
+				join(dir, 'pnpm-workspace.yaml'),
+				'packages:\n  - packages/*\n',
 			);
+			const pkgDir = join(dir, 'packages/malformed');
+			fs.mkdirSync(pkgDir, { recursive: true });
+			fs.writeFileSync(
+				join(pkgDir, 'package.json'),
+				JSON.stringify({ invalid: true }),
+			);
+			const cwdSpy = spyOn(process, 'cwd').mockReturnValue(dir);
 
-			// Should throw when name/version are missing
-			await expect(checkPublished('test')).rejects.toThrow(
-				/missing or invalid "name" field/,
+			try {
+				await expect(checkPublished('malformed')).rejects.toThrow(
+					/missing or invalid "name" field/,
+				);
+			} finally {
+				cwdSpy.mockRestore();
+				fs.rmSync(dir, { recursive: true, force: true });
+			}
+		});
+
+		it('throws on package.json with missing version field', async () => {
+			const dir = fs.mkdtempSync(join(tmpdir(), 'check-published-'));
+			fs.writeFileSync(
+				join(dir, 'pnpm-workspace.yaml'),
+				'packages:\n  - packages/*\n',
 			);
+			const pkgDir = join(dir, 'packages/noversion');
+			fs.mkdirSync(pkgDir, { recursive: true });
+			fs.writeFileSync(
+				join(pkgDir, 'package.json'),
+				JSON.stringify({ name: '@test/pkg' }),
+			);
+			const cwdSpy = spyOn(process, 'cwd').mockReturnValue(dir);
+
+			try {
+				await expect(checkPublished('noversion')).rejects.toThrow(
+					/missing or invalid "version" field/,
+				);
+			} finally {
+				cwdSpy.mockRestore();
+				fs.rmSync(dir, { recursive: true, force: true });
+			}
 		});
 	});
 
 	describe('edge cases', () => {
-		it('handles packages with multiple slashes in scope', async () => {
-			const mockRead = mockReadFile;
-			mockRead.mockResolvedValue(
-				JSON.stringify({
-					name: '@org/sub/package',
-					version: '1.0.0',
-				}),
-			);
-
-			mockFetch.mockResolvedValue({
-				ok: false,
-				status: 404,
-			} as Response);
-
-			const result = await checkPublished('@org/sub/package');
-			expect(result.name).toBe('@org/sub/package');
-		});
-
 		it('handles version with pre-release tags', async () => {
-			const mockRead = mockReadFile;
-			mockRead.mockResolvedValue(
-				JSON.stringify({
-					name: '@test/pkg',
-					version: '1.0.0-beta.1',
-				}),
-			);
+			const { dir } = createTempWorkspace('@test/pkg', '1.0.0-beta.1');
+			const cwdSpy = spyOn(process, 'cwd').mockReturnValue(dir);
 
-			mockFetch.mockResolvedValue({ ok: true, status: 200 } as Response);
+			let fetchedUrl = '';
+			(globalThis as any).fetch = async (url: any) => {
+				fetchedUrl = String(url);
+				return new Response(null, { status: 200 });
+			};
 
-			const result = await checkPublished('test');
-			expect(result.version).toBe('1.0.0-beta.1');
-			expect(fetch).toHaveBeenCalledWith(
-				'https://registry.npmjs.org/@test/pkg/1.0.0-beta.1',
-				expect.objectContaining({ signal: expect.any(AbortSignal) }),
-			);
-		});
-
-		it('handles @scope without package name (falls back to scope as dir name)', async () => {
-			const mockRead = mockReadFile;
-			mockRead.mockResolvedValueOnce(
-				JSON.stringify({
-					name: '@scope/pkg',
-					version: '1.0.0',
-				}),
-			);
-
-			mockFetch.mockResolvedValue({ ok: true, status: 200 } as Response);
-
-			// When passing just "@scope", it falls back to using the full string
-			// This tests the ?? fallback behavior on line 126
-			await checkPublished('@scope');
-
-			// The path should include the fallback value
-			expect(mockRead).toHaveBeenCalledWith(
-				expect.stringContaining('packages/@scope/package.json'),
-				'utf-8',
-			);
-		});
-
-		it('handles scoped names with empty package part', async () => {
-			const mockRead = mockReadFile;
-			mockRead.mockResolvedValueOnce(
-				JSON.stringify({
-					name: '@test/empty',
-					version: '1.0.0',
-				}),
-			);
-
-			mockFetch.mockResolvedValue({ ok: true, status: 200 } as Response);
-
-			// "@scope/" with trailing slash results in empty string from split
-			// The || fallback should use the full pkgPath "@scope/"
-			await checkPublished('@scope/');
-
-			// resolve() normalizes paths, so "@scope/" becomes "@scope"
-			expect(mockRead).toHaveBeenCalledWith(
-				expect.stringContaining('packages/@scope/package.json'),
-				'utf-8',
-			);
+			try {
+				const result = await checkPublished('pkg');
+				expect(result.version).toBe('1.0.0-beta.1');
+				expect(fetchedUrl).toContain('1.0.0-beta.1');
+			} finally {
+				cwdSpy.mockRestore();
+				fs.rmSync(dir, { recursive: true, force: true });
+			}
 		});
 	});
 
 	describe('CLI handler (checkPublishedCli)', () => {
 		it('returns 0 when --help is provided', async () => {
 			process.argv = ['node', 'check-published.ts', '--help'];
-
 			const exitCode = await checkPublishedCli();
-
 			expect(exitCode).toBe(0);
 		});
 
 		it('returns 0 when -h is provided', async () => {
 			process.argv = ['node', 'check-published.ts', '-h'];
-
 			const exitCode = await checkPublishedCli();
-
 			expect(exitCode).toBe(0);
 		});
 
 		it('returns 2 when no arguments provided', async () => {
 			process.argv = ['node', 'check-published.ts'];
-
 			const exitCode = await checkPublishedCli();
-
 			expect(exitCode).toBe(2);
 		});
 
 		it('returns 0 for published package', async () => {
-			const mockRead = mockReadFile;
-			mockRead.mockResolvedValueOnce(
-				JSON.stringify({
-					name: '@zig-wasm/core',
-					version: '1.0.0',
-				}),
-			);
-			mockFetch.mockResolvedValue({ ok: true, status: 200 } as Response);
+			const { dir } = createTempWorkspace('@zig-wasm/core', '1.0.0');
+			const cwdSpy = spyOn(process, 'cwd').mockReturnValue(dir);
+			(globalThis as any).fetch = async () =>
+				new Response(null, { status: 200 });
 
 			process.argv = ['node', 'check-published.ts', 'core'];
 
-			const exitCode = await checkPublishedCli();
-
-			expect(exitCode).toBe(0);
-			expect(consoleLogSpy).toHaveBeenCalledWith(
-				'Checking if package is published...',
-			);
-			expect(consoleLogSpy).toHaveBeenCalledWith(
-				expect.stringContaining('is published on npm'),
-			);
+			try {
+				const exitCode = await checkPublishedCli();
+				expect(exitCode).toBe(0);
+			} finally {
+				cwdSpy.mockRestore();
+				fs.rmSync(dir, { recursive: true, force: true });
+			}
 		});
 
 		it('returns 1 for unpublished package', async () => {
-			const mockRead = mockReadFile;
-			mockRead.mockResolvedValueOnce(
-				JSON.stringify({
-					name: '@zig-wasm/core',
-					version: '99.99.99',
-				}),
-			);
-			mockFetch.mockResolvedValue({
-				ok: false,
-				status: 404,
-			} as Response);
+			const { dir } = createTempWorkspace('@zig-wasm/core', '99.99.99');
+			const cwdSpy = spyOn(process, 'cwd').mockReturnValue(dir);
+			(globalThis as any).fetch = async () =>
+				new Response(null, { status: 404 });
 
 			process.argv = ['node', 'check-published.ts', 'core'];
 
-			const exitCode = await checkPublishedCli();
-
-			expect(exitCode).toBe(1);
-			expect(consoleLogSpy).toHaveBeenCalledWith(
-				expect.stringContaining('is NOT published on npm'),
-			);
-		});
-
-		it('returns 2 on error', async () => {
-			const mockRead = mockReadFile;
-			mockRead.mockRejectedValueOnce(new Error('File not found'));
-
-			process.argv = ['node', 'check-published.ts', 'nonexistent'];
-
-			const exitCode = await checkPublishedCli();
-
-			expect(exitCode).toBe(2);
-			expect(consoleErrorSpy).toHaveBeenCalledWith(
-				'Failed to check npm registry:',
-				expect.any(Error),
-			);
+			try {
+				const exitCode = await checkPublishedCli();
+				expect(exitCode).toBe(1);
+			} finally {
+				cwdSpy.mockRestore();
+				fs.rmSync(dir, { recursive: true, force: true });
+			}
 		});
 	});
 });

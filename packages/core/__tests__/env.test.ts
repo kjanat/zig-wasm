@@ -255,7 +255,7 @@ describe('getEnvironment', () => {
 	it('returns consistent results', () => {
 		const results = Array.from({ length: 100 }, () => getEnvironment());
 
-		const first = results[0];
+		const first = results[0]!;
 		results.forEach((result) => {
 			expect(result).toBe(first);
 		});

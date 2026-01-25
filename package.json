@@ -39,7 +39,6 @@
     "sync:versions": "bun scripts/sync-versions.ts",
     "test": "bun test",
     "test:cov": "bun test --coverage",
-    "test:run": "bun test",
     "typecheck": "pnpm --parallel --aggregate-output -r typecheck",
     "validate:jsr": "bun scripts/validate-jsr-versions.ts",
     "validate:jsr:fix": "bun scripts/validate-jsr-versions.ts --fix"

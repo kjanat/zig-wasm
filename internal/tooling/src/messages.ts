@@ -3,12 +3,6 @@ export type UsageMessage = string[] | string;
 /** Type representing the severity status. */
 export type SeverityStatus = 'info' | 'warning' | 'error';
 
-const printers: Record<SeverityStatus, typeof console.log> = {
-	info: console.log,
-	warning: console.warn,
-	error: console.error,
-};
-
 /**
  * Print a usage message to the console.
  * @param usage The message to print
@@ -18,8 +12,17 @@ export const printHelp = (
 	usage: UsageMessage,
 	status: SeverityStatus = 'info',
 ) => {
-	const print = printers[status];
-	print(Array.isArray(usage) ? usage.join('\n') : usage);
+	const message = Array.isArray(usage) ? usage.join('\n') : usage;
+	switch (status) {
+		case 'warning':
+			console.warn(message);
+			break;
+		case 'error':
+			console.error(message);
+			break;
+		default:
+			console.log(message);
+	}
 };
 
 export const CHECK_PUBLISHED_USAGE: UsageMessage = [

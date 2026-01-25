@@ -365,12 +365,16 @@ describe('Generic hashSync and hashHexSync', () => {
 
 		it('hmacHexSync(sha256, key, test) matches expected', () => {
 			const keyVectors = hmac256Vectors.short as HashVectors;
-			expect(crypto.hmacHexSync('sha256', 'key', 'test')).toBe(keyVectors.test);
+			expect(crypto.hmacHexSync('sha256', 'key', 'test')).toBe(
+				keyVectors.test!,
+			);
 		});
 
 		it('hmacHexSync(sha512, key, test) matches expected', () => {
 			const keyVectors = hmac512Vectors.short as HashVectors;
-			expect(crypto.hmacHexSync('sha512', 'key', 'test')).toBe(keyVectors.test);
+			expect(crypto.hmacHexSync('sha512', 'key', 'test')).toBe(
+				keyVectors.test!,
+			);
 		});
 	});
 });
@@ -409,7 +413,7 @@ describe('Edge Cases', () => {
 	it('HMAC with empty key works correctly', () => {
 		const keyVectors = (testVectors.hmac_sha256 as HmacVectors)
 			.empty as HashVectors;
-		expect(toHex(crypto.hmacSha256Sync('', 'test'))).toBe(keyVectors.test);
+		expect(toHex(crypto.hmacSha256Sync('', 'test'))).toBe(keyVectors.test!);
 	});
 });
 

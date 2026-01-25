@@ -655,3 +655,66 @@ describe('Async hyperbolic F32 coverage', () => {
 		expect(await math.atanhF32(0.5)).toBeCloseTo(0.549306, 4);
 	});
 });
+
+/**
+ * Tests for async min/max/clamp F32 variants (line coverage)
+ */
+describe('Async min/max/clamp F32 coverage', () => {
+	it('minF32 async variant works', async () => {
+		expect(await math.minF32(5.5, 10.5)).toBeCloseTo(5.5, 5);
+		expect(await math.minF32(-5.5, -10.5)).toBeCloseTo(-10.5, 5);
+	});
+
+	it('maxF32 async variant works', async () => {
+		expect(await math.maxF32(5.5, 10.5)).toBeCloseTo(10.5, 5);
+		expect(await math.maxF32(-5.5, -10.5)).toBeCloseTo(-5.5, 5);
+	});
+
+	it('clampF32 async variant works', async () => {
+		expect(await math.clampF32(5.0, 0.0, 10.0)).toBeCloseTo(5.0, 5);
+		expect(await math.clampF32(-5.0, 0.0, 10.0)).toBeCloseTo(0.0, 5);
+		expect(await math.clampF32(15.0, 0.0, 10.0)).toBeCloseTo(10.0, 5);
+	});
+});
+
+/**
+ * Tests for async deg/rad F32 and lcmU64 (line coverage)
+ */
+describe('Async angle conversion F32 and lcmU64 coverage', () => {
+	it('deg2radF32 async variant works', async () => {
+		expect(await math.deg2radF32(0)).toBeCloseTo(0, 5);
+		expect(await math.deg2radF32(90)).toBeCloseTo(Math.PI / 2, 5);
+		expect(await math.deg2radF32(180)).toBeCloseTo(Math.PI, 5);
+	});
+
+	it('rad2degF32 async variant works', async () => {
+		expect(await math.rad2degF32(0)).toBeCloseTo(0, 5);
+		expect(await math.rad2degF32(Math.PI / 2)).toBeCloseTo(90, 4);
+		expect(await math.rad2degF32(Math.PI)).toBeCloseTo(180, 4);
+	});
+
+	it('lcmU64 async variant works', async () => {
+		expect(await math.lcmU64(12n, 8n)).toBe(24n);
+		expect(await math.lcmU64(21n, 14n)).toBe(42n);
+		expect(await math.lcmU64(123456n, 789012n)).toBe(8117355456n);
+	});
+});
+
+/**
+ * Tests for global module getExports functions
+ */
+describe('Global module getExports coverage', () => {
+	it('getExports returns WASM exports after init', async () => {
+		const exports = await math.getExports();
+		expect(exports).toBeDefined();
+		expect(exports.memory).toBeInstanceOf(WebAssembly.Memory);
+		expect(exports.abs_f64).toBeTypeOf('function');
+	});
+
+	it('getExportsSync returns WASM exports after init', () => {
+		const exports = math.getExportsSync();
+		expect(exports).toBeDefined();
+		expect(exports.memory).toBeInstanceOf(WebAssembly.Memory);
+		expect(exports.abs_f64).toBeTypeOf('function');
+	});
+});

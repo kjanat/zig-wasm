@@ -12,12 +12,8 @@
 - **Lint:** `pnpm lint` (Biome), `pnpm lint:fix` (auto-fix)
 - **Format:** `pnpm fmt` (dprint - TS/JSON/MD/Zig), `pnpm fmt:check` (CI)
 - **Test all:** `pnpm test`
-- **Test single pkg from the configured vitest projects:**\
-  `pnpm test --run [--project <name(as in package.json)>]...`, e.g.\
-  `pnpm test --run --project @zig-wasm/core --project @zig-wasm/tooling`.\
-  The traditional pnpm --filter doesn't work, as we only have a single config
-  file for vitest.\
-  See [docs](https://vitest.dev/guide/projects "vitest.dev/guide/projects").
+- **Test single pkg:** `bun test packages/<name>` or filter with
+  `bun test --filter "pattern"`
 - **Typecheck:** `pnpm typecheck`
 
 ## Code Style

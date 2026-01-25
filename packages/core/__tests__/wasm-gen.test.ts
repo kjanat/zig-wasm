@@ -140,7 +140,7 @@ describe('wasm-gen fixtures', () => {
 
 			it('doPanic calls _panic with correct arguments', async () => {
 				const wasm = createWasmThatCallsPanic();
-				let capturedArgs: [number, number] | null = null;
+				let capturedArgs: number[] | null = null;
 
 				const instance = await instantiate(wasm, {
 					env: {
@@ -151,7 +151,7 @@ describe('wasm-gen fixtures', () => {
 				});
 
 				(instance.exports.doPanic as () => void)();
-				expect(capturedArgs).toEqual([100, 10]);
+				expect(capturedArgs!).toEqual([100, 10]);
 			});
 		});
 
