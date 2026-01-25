@@ -1,5 +1,5 @@
+import { describe, expect, it } from 'bun:test';
 import { isValidWasmHeader, parseWasmSections, Section } from '@zig-wasm/core';
-import { describe, expect, it } from 'vitest';
 import {
 	createAddFunction,
 	createEmptyModule,

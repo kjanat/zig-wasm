@@ -1,10 +1,10 @@
+import { describe, expect, it } from 'bun:test';
 import {
 	decodeSleb128,
 	decodeUleb128,
 	encodeSleb128,
 	encodeUleb128,
 } from '@zig-wasm/core';
-import { describe, expect, it } from 'vitest';
 
 describe('leb128', () => {
 	describe('encodeUleb128', () => {

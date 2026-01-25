@@ -1,5 +1,5 @@
+import { describe, expect, it } from 'bun:test';
 import * as core from '@zig-wasm/core';
-import { describe, expect, it } from 'vitest';
 
 describe('@zig-wasm/core exports', () => {
 	it('exposes environment helpers', () => {

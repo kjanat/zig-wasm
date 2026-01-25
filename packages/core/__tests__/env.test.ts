@@ -1,5 +1,5 @@
+import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import { detectEnvironment, getEnvironment } from '@zig-wasm/core';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('detectEnvironment', () => {
 	let originalProcess: typeof globalThis.process | undefined;
@@ -36,14 +36,18 @@ describe('detectEnvironment', () => {
 
 	describe('Node.js detection', () => {
 		it('detects Node.js environment', () => {
-			// In actual test environment (vitest with Node), this should be true
+			// Test actual detection result
 			const env = detectEnvironment();
 
-			if (typeof process !== 'undefined' && process.versions?.node) {
+			// Bun has process.versions.node for compatibility but should detect as Bun, not Node
+			if (typeof process !== 'undefined' && process.versions?.bun) {
+				expect(env.isBun).toBe(true);
+				expect(env.isNode).toBe(false);
+			} else if (typeof process !== 'undefined' && process.versions?.node) {
 				expect(env.isNode).toBe(true);
-				expect(env.isBrowser).toBe(false);
-				expect(env.isDeno).toBe(false);
 			}
+			expect(env.isBrowser).toBe(false);
+			expect(env.isDeno).toBe(false);
 		});
 
 		it('requires process.versions.node', () => {
@@ -190,8 +194,11 @@ describe('detectEnvironment', () => {
 		it('detects current test environment correctly', () => {
 			const env = detectEnvironment();
 
-			// In vitest with Node, should detect Node
-			if (typeof process !== 'undefined' && process.versions?.node) {
+			// Bun has process.versions.node for compatibility but should detect as Bun
+			if (typeof process !== 'undefined' && process.versions?.bun) {
+				expect(env.isBun).toBe(true);
+				expect(env.isNode).toBe(false);
+			} else if (typeof process !== 'undefined' && process.versions?.node) {
 				expect(env.isNode).toBe(true);
 			}
 
@@ -233,7 +240,7 @@ describe('getEnvironment', () => {
 	});
 
 	it('only detects once', () => {
-		const _spy = vi.spyOn({ detectEnvironment }, 'detectEnvironment');
+		const _spy = spyOn({ detectEnvironment }, 'detectEnvironment');
 
 		getEnvironment();
 		getEnvironment();

@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'bun:test';
 import {
 	bytesToString,
 	compareBytes,
@@ -6,7 +7,6 @@ import {
 	stringToBytes,
 	toHex,
 } from '@zig-wasm/core';
-import { describe, expect, it } from 'vitest';
 
 describe('toHex', () => {
 	it('converts empty array to empty string', () => {
@@ -104,13 +104,7 @@ describe('fromHex', () => {
 	});
 
 	it('provides position in error for truly invalid hex', () => {
-		try {
-			fromHex('zzzz'); // All invalid - parseInt("zz", 16) = NaN
-			expect.fail('Should have thrown');
-		} catch (err) {
-			expect((err as Error).message).toContain('Invalid hex character');
-			expect((err as Error).message).toContain('position');
-		}
+		expect(() => fromHex('zzzz')).toThrow(/Invalid hex character.*position/);
 	});
 
 	it('round-trip with toHex', () => {

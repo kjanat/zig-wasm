@@ -159,9 +159,22 @@ async function loadFromUrl(
 async function loadFromPath(path: string): Promise<ArrayBuffer> {
 	const env = getEnvironment();
 
-	if (env.isNode || env.isBun) {
+	if (env.isBun) {
+		// Use Bun's native file API for more reliable reads
+		const file = Bun.file(path);
+		const exists = await file.exists();
+		if (!exists) {
+			throw new WasmLoadError(path, new Error(`WASM file not found: ${path}`));
+		}
+		return file.arrayBuffer();
+	}
+
+	if (env.isNode) {
 		const fs = await import('node:fs/promises');
 		const buffer = await fs.readFile(path);
+
+		// Node.js Buffer extends Uint8Array and has .buffer property
+		// pointing to the underlying ArrayBuffer
 		return buffer.buffer.slice(
 			buffer.byteOffset,
 			buffer.byteOffset + buffer.byteLength,

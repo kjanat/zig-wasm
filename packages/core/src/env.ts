@@ -83,15 +83,17 @@ import type { RuntimeEnvironment } from './types.ts';
  * ```
  */
 export function detectEnvironment(): RuntimeEnvironment {
-	const isNode =
-		typeof process !== 'undefined' &&
-		process.versions != null &&
-		process.versions.node != null;
-
+	// Check Bun first - it also has process.versions.node for compatibility
 	const isBun =
 		typeof process !== 'undefined' &&
 		process.versions != null &&
 		process.versions.bun != null;
+
+	const isNode =
+		typeof process !== 'undefined' &&
+		process.versions != null &&
+		process.versions.node != null &&
+		!isBun;
 
 	const isDeno =
 		// @ts-expect-error - Deno global

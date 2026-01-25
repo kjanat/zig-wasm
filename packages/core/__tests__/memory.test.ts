@@ -1,6 +1,6 @@
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import type { WasmMemoryExports } from '@zig-wasm/core';
 import { AllocationScope, WasmMemory } from '@zig-wasm/core';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
  * Create a mock WASM memory environment for testing
@@ -13,14 +13,14 @@ function createMockMemory(): WasmMemoryExports {
 
 	return {
 		memory,
-		alloc: vi.fn((size: number) => {
+		alloc: mock((size: number) => {
 			if (size <= 0) return 0;
 			const ptr = nextPtr;
 			nextPtr += size;
 			allocations.set(ptr, size);
 			return ptr;
 		}),
-		free: vi.fn((ptr: number, _size: number) => {
+		free: mock((ptr: number, _size: number) => {
 			allocations.delete(ptr);
 			// In real WASM, this would update allocator state
 		}),
@@ -54,7 +54,7 @@ describe('WasmMemory', () => {
 		});
 
 		it('throws when allocation fails (returns 0)', () => {
-			mockExports.alloc = vi.fn(() => 0);
+			mockExports.alloc = mock(() => 0);
 			mem = new WasmMemory(mockExports);
 			expect(() => mem.allocate(100)).toThrow('Failed to allocate 100 bytes');
 		});
@@ -405,10 +405,12 @@ describe('AllocationScope', () => {
 			scope.alloc(100);
 
 			scope.dispose();
-			const firstCallCount = vi.mocked(mockExports.free).mock.calls.length;
+			const firstCallCount = (mockExports.free as ReturnType<typeof mock>).mock
+				.calls.length;
 
 			scope.dispose();
-			const secondCallCount = vi.mocked(mockExports.free).mock.calls.length;
+			const secondCallCount = (mockExports.free as ReturnType<typeof mock>).mock
+				.calls.length;
 
 			expect(secondCallCount).toBe(firstCallCount); // No additional frees
 		});

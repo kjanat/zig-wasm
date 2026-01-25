@@ -1,12 +1,12 @@
+import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import type { WasmModule, ZigWasmExports } from '@zig-wasm/core';
-import * as envModule from '@zig-wasm/core/env.ts';
+import * as envModule from '../src/env.ts';
 import {
 	createWasmModule,
 	NotInitializedError,
 	resolveWasmPathForNode,
 	resolveWasmUrlForBrowser,
-} from '@zig-wasm/core/wasm-module.ts';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+} from '../src/wasm-module.ts';
 import { createMinimalWasmWithMemory } from './wasm-gen/index.ts';
 
 // Mock WASM exports for testing
@@ -98,7 +98,7 @@ describe('createWasmModule', () => {
 			const wasmBytes = createMinimalWasmWithMemory();
 
 			await module.init({ wasmBytes });
-			const exports1 = module.getExports();
+			module.getExports();
 
 			// Second init should be no-op
 			await module.init({ wasmBytes });
@@ -186,7 +186,7 @@ describe('createWasmModule', () => {
 
 		it('accepts custom imports', async () => {
 			const wasmBytes = createMinimalWasmWithMemory();
-			const customFn = vi.fn();
+			const customFn = mock();
 
 			await module.init({
 				wasmBytes,
@@ -200,7 +200,7 @@ describe('createWasmModule', () => {
 
 		it('accepts custom fetchFn', async () => {
 			const wasmBytes = createMinimalWasmWithMemory();
-			const customFetch = vi.fn();
+			const customFetch = mock();
 
 			// Using wasmBytes, fetchFn won't be called but should be accepted
 			await module.init({
@@ -231,6 +231,86 @@ describe('createWasmModule', () => {
 
 		it('provides ensureInitialized method', () => {
 			expect(module.ensureInitialized).toBeTypeOf('function');
+		});
+
+		it('provides dispose method', () => {
+			expect(module.dispose).toBeTypeOf('function');
+		});
+	});
+
+	describe('dispose', () => {
+		it('resets module to uninitialized state', async () => {
+			const wasmBytes = createMinimalWasmWithMemory();
+			await module.init({ wasmBytes });
+
+			expect(module.isInitialized()).toBe(true);
+
+			module.dispose();
+
+			expect(module.isInitialized()).toBe(false);
+		});
+
+		it('allows re-initialization after dispose', async () => {
+			const wasmBytes = createMinimalWasmWithMemory();
+
+			await module.init({ wasmBytes });
+			expect(module.isInitialized()).toBe(true);
+
+			module.dispose();
+			expect(module.isInitialized()).toBe(false);
+
+			await module.init({ wasmBytes });
+			expect(module.isInitialized()).toBe(true);
+		});
+
+		it('getExports throws after dispose', async () => {
+			const wasmBytes = createMinimalWasmWithMemory();
+			await module.init({ wasmBytes });
+
+			module.dispose();
+
+			expect(() => module.getExports()).toThrow(NotInitializedError);
+		});
+
+		it('getMemory throws after dispose', async () => {
+			const wasmBytes = createMinimalWasmWithMemory();
+			await module.init({ wasmBytes });
+
+			module.dispose();
+
+			expect(() => module.getMemory()).toThrow(NotInitializedError);
+		});
+
+		it('dispose is safe to call multiple times', async () => {
+			const wasmBytes = createMinimalWasmWithMemory();
+			await module.init({ wasmBytes });
+
+			module.dispose();
+			module.dispose();
+			module.dispose();
+
+			expect(module.isInitialized()).toBe(false);
+		});
+
+		it('dispose is safe to call on uninitialized module', () => {
+			expect(module.isInitialized()).toBe(false);
+			module.dispose();
+			expect(module.isInitialized()).toBe(false);
+		});
+
+		it('new instances after dispose are independent', async () => {
+			const wasmBytes = createMinimalWasmWithMemory();
+
+			await module.init({ wasmBytes });
+			module.getExports();
+
+			module.dispose();
+			await module.init({ wasmBytes });
+			const exports2 = module.getExports();
+
+			// After dispose and re-init, we get a fresh WASM instance
+			expect(exports2.memory).toBeInstanceOf(WebAssembly.Memory);
+			// Note: exports1 reference may be stale/invalid after dispose
 		});
 	});
 
@@ -596,7 +676,7 @@ describe('init without explicit options', () => {
 
 	it('uses wasmUrl in browser environment when no options provided', async () => {
 		// Mock browser environment
-		const envSpy = vi.spyOn(envModule, 'getEnvironment').mockReturnValue({
+		const envSpy = spyOn(envModule, 'getEnvironment').mockReturnValue({
 			isNode: false,
 			isBun: false,
 			isBrowser: true,
@@ -606,7 +686,7 @@ describe('init without explicit options', () => {
 
 		// Mock fetch to return valid WASM
 		const wasmBytes = createMinimalWasmWithMemory();
-		const mockFetch = vi.fn().mockResolvedValue({
+		const mockFetch = mock().mockResolvedValue({
 			ok: true,
 			arrayBuffer: () =>
 				Promise.resolve(

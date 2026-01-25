@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import type { WasmLoadOptions, ZigWasmExports } from '@zig-wasm/core';
 import {
 	createModuleLoader,
@@ -6,8 +7,7 @@ import {
 	resolveWasmPath,
 	WasmLoadError,
 } from '@zig-wasm/core';
-import * as envModule from '@zig-wasm/core/env.ts';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import * as envModule from '../src/env.ts';
 import {
 	createGarbageBytes,
 	createMinimalWasmWithMemory,
@@ -108,7 +108,7 @@ describe('loadWasm', () => {
 	describe('custom imports', () => {
 		it('merges custom imports with defaults', async () => {
 			const wasmBytes = createMinimalWasmWithMemory();
-			const customFn = vi.fn();
+			const customFn = mock();
 
 			const result = await loadWasm({
 				wasmBytes,
@@ -124,7 +124,7 @@ describe('loadWasm', () => {
 
 		it('allows overriding env imports', async () => {
 			const wasmBytes = createMinimalWasmWithMemory();
-			const customPanic = vi.fn();
+			const customPanic = mock();
 
 			const result = await loadWasm({
 				wasmBytes,
@@ -206,7 +206,7 @@ describe('loadWasm', () => {
 
 		it('allows custom _panic handler via imports', async () => {
 			const wasmBytes = createWasmWithPanicImport();
-			const customPanic = vi.fn();
+			const customPanic = mock();
 
 			const result = await loadWasm({
 				wasmBytes,
@@ -248,7 +248,7 @@ describe('createModuleLoader', () => {
 	let getWasmSource: () => WasmLoadOptions;
 
 	beforeEach(() => {
-		getWasmSource = vi.fn(() => ({
+		getWasmSource = mock(() => ({
 			wasmBytes: createMinimalWasmWithMemory(),
 		}));
 	});
@@ -319,7 +319,7 @@ describe('createModuleLoader', () => {
 
 	describe('error propagation', () => {
 		it('propagates errors from loadWasm', async () => {
-			const invalidFactory = vi.fn(() => ({
+			const invalidFactory = mock(() => ({
 				wasmBytes: createGarbageBytes().wasm,
 			}));
 			const loader = createModuleLoader(invalidFactory);
@@ -451,7 +451,7 @@ describe('loadWasm with wasmUrl', () => {
 describe('loadWasm environment edge cases', () => {
 	it('throws WasmLoadError when wasmPath used in non-Node/Bun environment', async () => {
 		// Mock getEnvironment to return non-Node/Bun environment
-		const spy = vi.spyOn(envModule, 'getEnvironment').mockReturnValue({
+		const spy = spyOn(envModule, 'getEnvironment').mockReturnValue({
 			isNode: false,
 			isBun: false,
 			isBrowser: true,
@@ -474,7 +474,7 @@ describe('loadWasm environment edge cases', () => {
 
 describe('defaultFetchFn', () => {
 	it('throws on non-ok response', async () => {
-		const mockFetch = vi.fn().mockResolvedValue({
+		const mockFetch = mock().mockResolvedValue({
 			ok: false,
 			status: 404,
 			statusText: 'Not Found',
@@ -493,7 +493,7 @@ describe('defaultFetchFn', () => {
 
 	it('returns arrayBuffer on successful response', async () => {
 		const wasmBytes = createMinimalWasmWithMemory();
-		const mockFetch = vi.fn().mockResolvedValue({
+		const mockFetch = mock().mockResolvedValue({
 			ok: true,
 			arrayBuffer: () =>
 				Promise.resolve(
@@ -520,7 +520,7 @@ describe('loadWasm with URL and no fetchFn', () => {
 		const wasmBytes = createMinimalWasmWithMemory();
 
 		// Mock global fetch to return valid WASM
-		const mockFetch = vi.fn().mockResolvedValue({
+		const mockFetch = mock().mockResolvedValue({
 			ok: true,
 			arrayBuffer: () =>
 				Promise.resolve(
@@ -532,7 +532,7 @@ describe('loadWasm with URL and no fetchFn', () => {
 		});
 
 		// Also need to mock env to not support streaming (to avoid streaming path)
-		const envSpy = vi.spyOn(envModule, 'getEnvironment').mockReturnValue({
+		const envSpy = spyOn(envModule, 'getEnvironment').mockReturnValue({
 			isNode: false,
 			isBun: false,
 			isBrowser: true,
@@ -573,10 +573,10 @@ describe('loadWasm with URL and no fetchFn', () => {
 				),
 		};
 
-		const mockFetch = vi.fn().mockResolvedValue(mockResponse);
+		const mockFetch = mock().mockResolvedValue(mockResponse);
 
 		// Mock env to support streaming
-		const envSpy = vi.spyOn(envModule, 'getEnvironment').mockReturnValue({
+		const envSpy = spyOn(envModule, 'getEnvironment').mockReturnValue({
 			isNode: false,
 			isBun: false,
 			isBrowser: true,
@@ -586,7 +586,7 @@ describe('loadWasm with URL and no fetchFn', () => {
 
 		// Mock WebAssembly.instantiateStreaming
 		const originalInstantiateStreaming = WebAssembly.instantiateStreaming;
-		const mockInstantiateStreaming = vi.fn().mockImplementation(async () => {
+		const mockInstantiateStreaming = mock().mockImplementation(async () => {
 			// Fall back to non-streaming instantiation for the mock
 			const bytes = await mockResponse.arrayBuffer();
 			return WebAssembly.instantiate(bytes, {});

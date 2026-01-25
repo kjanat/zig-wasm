@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'bun:test';
 import {
 	ExportKind,
 	encodeFuncType,
@@ -17,7 +18,6 @@ import {
 	WASM_MAGIC,
 	WASM_VERSION,
 } from '@zig-wasm/core';
-import { describe, expect, it } from 'vitest';
 
 describe('wasm-binary', () => {
 	describe('constants', () => {

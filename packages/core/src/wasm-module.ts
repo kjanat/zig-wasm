@@ -192,6 +192,30 @@ export interface WasmModule<TExports extends ZigWasmExports> {
 	ensureInitialized(
 		options?: InitOptions,
 	): Promise<{ exports: TExports; memory: WasmMemory }>;
+
+	/**
+	 * Dispose of the module instance and reset all internal state.
+	 *
+	 * After calling dispose(), the module can be re-initialized with `init()`.
+	 * This is useful for:
+	 * - Test isolation (creating fresh instances between tests)
+	 * - Resource cleanup in long-running applications
+	 * - Resetting state after errors
+	 *
+	 * @example
+	 * ```ts
+	 * // In tests
+	 * beforeEach(() => {
+	 *   module.dispose();
+	 * });
+	 *
+	 * // In application cleanup
+	 * process.on('exit', () => {
+	 *   module.dispose();
+	 * });
+	 * ```
+	 */
+	dispose(): void;
 }
 
 /**
@@ -322,12 +346,19 @@ export function createWasmModule<TExports extends ZigWasmExports>(
 		return { exports: getExports(), memory: getMemory() };
 	}
 
+	function dispose(): void {
+		result = null;
+		memory = null;
+		initPromise = null;
+	}
+
 	return {
 		init,
 		isInitialized,
 		getExports,
 		getMemory,
 		ensureInitialized,
+		dispose,
 	};
 }
 
