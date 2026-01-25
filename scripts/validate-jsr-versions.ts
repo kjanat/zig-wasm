@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /**
  * Validates that jsr.json versions and import mappings match what pnpm pack would produce.
  *

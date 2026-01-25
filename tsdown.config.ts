@@ -1,8 +1,8 @@
-import { codecovRollupPlugin } from '@codecov/rollup-plugin';
 import { execSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { codecovRollupPlugin } from '@codecov/rollup-plugin';
 import { defineConfig, type UserConfig } from 'tsdown';
 import rootPkg from './package.json' with { type: 'json' };
 
@@ -160,7 +160,9 @@ export const baseConfig: UserConfig = {
 	clean: false,
 	sourcemap: true,
 	treeshake: true,
-	exports: true,
+	exports: {
+		devExports: 'bun',
+	},
 	publint: true,
 };
 
@@ -235,6 +237,7 @@ export function wasmConfig(
 		banner,
 		plugins: mergedPlugins,
 		exports: {
+			devExports: 'bun',
 			customExports(pkg) {
 				const wasmDir = getWasmDir();
 				pkg[`./${packageName}.wasm`] = `./${wasmDir}/${packageName}.wasm`;

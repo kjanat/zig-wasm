@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /**
  * Syncs versions across package.json and jsr.json files in the monorepo.
  *
