@@ -1,5 +1,5 @@
+import { describe, expect, it } from 'bun:test';
 import * as tooling from '@zig-wasm/tooling';
-import { describe, expect, it } from 'vitest';
 
 describe('@zig-wasm/tooling exports', () => {
 	it('exposes version', () => {

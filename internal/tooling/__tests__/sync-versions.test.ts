@@ -1,22 +1,36 @@
+import {
+	afterEach,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	mock,
+	spyOn,
+} from 'bun:test';
 import { spawn } from 'node:child_process';
-import * as fs from 'node:fs';
+import type * as fs from 'node:fs';
 import { join } from 'node:path';
 import { syncVersions } from '@zig-wasm/tooling';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// Mock functions for fs module
+const mockReaddirSync = mock<typeof fs.readdirSync>();
+const mockExistsSync = mock<typeof fs.existsSync>();
 
 // Mock the fs module
-vi.mock('node:fs', () => ({
-	readdirSync: vi.fn(),
-	existsSync: vi.fn(),
+mock.module('node:fs', () => ({
+	readdirSync: mockReaddirSync,
+	existsSync: mockExistsSync,
 }));
+
+// Mock functions for fs/promises
+const mockReadFile = mock<(path: string) => Promise<string>>();
+const mockWriteFile = mock<(path: string, content: string) => Promise<void>>();
 
 // Mock fs/promises separately
-vi.mock('node:fs/promises', () => ({
-	readFile: vi.fn(),
-	writeFile: vi.fn(),
+mock.module('node:fs/promises', () => ({
+	readFile: mockReadFile,
+	writeFile: mockWriteFile,
 }));
-
-import { readFile, writeFile } from 'node:fs/promises';
 
 // Mock file system operations
 const mockFS = {
@@ -57,11 +71,17 @@ describe('syncVersions', () => {
 		mockFS.dirs.clear();
 		mockFS.files.clear();
 		mockFS.written.clear();
-		vi.clearAllMocks();
+		mockReaddirSync.mockClear();
+		mockExistsSync.mockClear();
+		mockReadFile.mockClear();
+		mockWriteFile.mockClear();
 	});
 
 	afterEach(() => {
-		vi.restoreAllMocks();
+		mockReaddirSync.mockRestore();
+		mockExistsSync.mockRestore();
+		mockReadFile.mockRestore();
+		mockWriteFile.mockRestore();
 	});
 
 	describe('version synchronization', () => {
@@ -281,9 +301,7 @@ describe('syncVersions', () => {
 
 			setupMocks('/test');
 
-			const consoleSpy = vi
-				.spyOn(console, 'error')
-				.mockImplementation(() => {});
+			const consoleSpy = spyOn(console, 'error').mockImplementation(() => {});
 
 			const result = await syncVersions({ cwd: '/test' });
 
@@ -313,12 +331,10 @@ describe('syncVersions', () => {
 
 			setupMocks('/test');
 
-			const consoleSpy = vi
-				.spyOn(console, 'error')
-				.mockImplementation(() => {});
+			const consoleSpy = spyOn(console, 'error').mockImplementation(() => {});
 
 			// Override readFile to throw for corrupt package
-			const originalMock = vi.mocked(readFile);
+			const originalMock = mockReadFile;
 			originalMock.mockImplementation(async (path) => {
 				const pathStr = String(path);
 				// Throw for corrupt package's package.json
@@ -443,7 +459,7 @@ function setupMocks(basePath: string) {
 	});
 
 	// Mock readdirSync
-	vi.mocked(fs.readdirSync).mockImplementation((path: fs.PathLike) => {
+	mockReaddirSync.mockImplementation((path: fs.PathLike) => {
 		const pathStr = String(path);
 		const dirs = mockFS.dirs.get(pathStr);
 		if (!dirs) {
@@ -462,12 +478,12 @@ function setupMocks(basePath: string) {
 	});
 
 	// Mock existsSync
-	vi.mocked(fs.existsSync).mockImplementation((path: fs.PathLike) => {
+	mockExistsSync.mockImplementation((path: fs.PathLike) => {
 		return mockFS.files.has(String(path));
 	});
 
 	// Mock readFile
-	vi.mocked(readFile).mockImplementation(async (path) => {
+	mockReadFile.mockImplementation(async (path) => {
 		const pathStr = String(path);
 		const data = mockFS.files.get(pathStr);
 		if (!data) throw { code: 'ENOENT' };
@@ -475,12 +491,12 @@ function setupMocks(basePath: string) {
 	});
 
 	// Mock writeFile
-	vi.mocked(writeFile).mockImplementation(async (path, content) => {
+	mockWriteFile.mockImplementation(async (path, content) => {
 		mockFS.written.set(String(path), String(content));
 		return undefined;
 	});
 
 	// Mock console methods
-	vi.spyOn(console, 'log').mockImplementation(() => {});
-	vi.spyOn(console, 'warn').mockImplementation(() => {});
+	spyOn(console, 'log').mockImplementation(() => {});
+	spyOn(console, 'warn').mockImplementation(() => {});
 }

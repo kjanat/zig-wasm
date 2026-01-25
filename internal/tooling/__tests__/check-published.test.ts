@@ -1,3 +1,12 @@
+import {
+	afterEach,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	mock,
+	spyOn,
+} from 'bun:test';
 import * as fs from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -6,52 +15,50 @@ import {
 	checkPublishedCli,
 	findMonorepoRoot,
 } from '@zig-wasm/tooling';
-import { runCli } from '@zig-wasm/tooling/cli.ts';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { runCli } from '../src/cli.ts';
 
 // Mock fs/promises.readFile
-vi.mock('node:fs/promises', () => ({
-	readFile: vi.fn(),
+const mockReadFile =
+	mock<(path: string, encoding: string) => Promise<string>>();
+mock.module('node:fs/promises', () => ({
+	readFile: mockReadFile,
 }));
 
 // Mock printHelp to suppress CLI output during tests
-vi.mock('@zig-wasm/tooling/messages.ts', async (importOriginal) => {
-	const mod =
-		await importOriginal<typeof import('@zig-wasm/tooling/messages.ts')>();
-	return {
-		...mod,
-		printHelp: vi.fn(),
-	};
-});
+mock.module('../src/messages.ts', () => ({
+	printHelp: mock(),
+}));
 
-import { readFile } from 'node:fs/promises';
+// Store original fetch
+const originalFetch = globalThis.fetch;
+const mockFetch = mock<typeof fetch>();
 
 describe('checkPublished', () => {
-	let consoleLogSpy: ReturnType<typeof vi.spyOn>;
-	let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+	let consoleLogSpy: ReturnType<typeof spyOn>;
+	let consoleErrorSpy: ReturnType<typeof spyOn>;
 	let originalArgv: string[];
 
 	beforeEach(() => {
-		vi.clearAllMocks();
+		mockReadFile.mockClear();
+		mockFetch.mockClear();
 		originalArgv = process.argv;
-		consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-		consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-		// Use stubGlobal so Vitest can auto-restore fetch between tests
-		vi.stubGlobal('fetch', vi.fn());
+		consoleLogSpy = spyOn(console, 'log').mockImplementation(() => {});
+		consoleErrorSpy = spyOn(console, 'error').mockImplementation(() => {});
+		// Mock fetch globally
+		globalThis.fetch = mockFetch as typeof fetch;
 	});
 
 	afterEach(() => {
 		process.argv = originalArgv;
 		consoleLogSpy.mockRestore();
 		consoleErrorSpy.mockRestore();
-		vi.restoreAllMocks();
-		vi.resetModules();
+		globalThis.fetch = originalFetch;
 	});
 
 	describe('path resolution', () => {
 		it('resolves scoped package names', async () => {
 			// Mock readFile to avoid actual file system access
-			const mockRead = vi.mocked(readFile);
+			const mockRead = mockReadFile;
 			mockRead.mockResolvedValueOnce(
 				JSON.stringify({
 					name: '@zig-wasm/crypto',
@@ -60,7 +67,7 @@ describe('checkPublished', () => {
 			);
 
 			// Mock fetch to simulate npm registry response
-			vi.mocked(fetch).mockResolvedValue({
+			mockFetch.mockResolvedValue({
 				ok: false,
 				status: 404,
 			} as Response);
@@ -77,7 +84,7 @@ describe('checkPublished', () => {
 		});
 
 		it('resolves package names without scope', async () => {
-			const mockRead = vi.mocked(readFile);
+			const mockRead = mockReadFile;
 			mockRead.mockResolvedValueOnce(
 				JSON.stringify({
 					name: '@zig-wasm/hash',
@@ -85,7 +92,7 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			vi.mocked(fetch).mockResolvedValue({ ok: true, status: 200 } as Response);
+			mockFetch.mockResolvedValue({ ok: true, status: 200 } as Response);
 
 			const result = await checkPublished('hash');
 
@@ -97,7 +104,7 @@ describe('checkPublished', () => {
 		});
 
 		it('resolves relative paths', async () => {
-			const mockRead = vi.mocked(readFile);
+			const mockRead = mockReadFile;
 			mockRead.mockResolvedValueOnce(
 				JSON.stringify({
 					name: '@zig-wasm/base64',
@@ -105,7 +112,7 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			vi.mocked(fetch).mockResolvedValue({ ok: true, status: 200 } as Response);
+			mockFetch.mockResolvedValue({ ok: true, status: 200 } as Response);
 
 			await checkPublished('./packages/base64');
 
@@ -116,7 +123,7 @@ describe('checkPublished', () => {
 		});
 
 		it('walks up to pnpm-workspace.yaml to find monorepo root', async () => {
-			const mockRead = vi.mocked(readFile);
+			const mockRead = mockReadFile;
 			mockRead.mockResolvedValueOnce(
 				JSON.stringify({
 					name: '@zig-wasm/hash',
@@ -133,8 +140,8 @@ describe('checkPublished', () => {
 				'packages: []',
 			);
 
-			const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue(nestedCwd);
-			vi.mocked(fetch).mockResolvedValue({ ok: true, status: 200 } as Response);
+			const cwdSpy = spyOn(process, 'cwd').mockReturnValue(nestedCwd);
+			mockFetch.mockResolvedValue({ ok: true, status: 200 } as Response);
 
 			try {
 				const result = await checkPublished('hash');
@@ -177,7 +184,7 @@ describe('checkPublished', () => {
 
 	describe('npm registry checks', () => {
 		it('detects published packages', async () => {
-			const mockRead = vi.mocked(readFile);
+			const mockRead = mockReadFile;
 			mockRead.mockResolvedValue(
 				JSON.stringify({
 					name: '@zig-wasm/std',
@@ -185,7 +192,7 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			vi.mocked(fetch).mockResolvedValue({
+			mockFetch.mockResolvedValue({
 				ok: true,
 				status: 200,
 			} as Response);
@@ -200,7 +207,7 @@ describe('checkPublished', () => {
 		});
 
 		it('detects unpublished packages', async () => {
-			const mockRead = vi.mocked(readFile);
+			const mockRead = mockReadFile;
 			mockRead.mockResolvedValueOnce(
 				JSON.stringify({
 					name: '@zig-wasm/math',
@@ -208,7 +215,7 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			vi.mocked(fetch).mockResolvedValue({
+			mockFetch.mockResolvedValue({
 				ok: false,
 				status: 404,
 			} as Response);
@@ -221,7 +228,7 @@ describe('checkPublished', () => {
 
 	describe('result structure', () => {
 		it('returns correct result structure', async () => {
-			const mockRead = vi.mocked(readFile);
+			const mockRead = mockReadFile;
 			mockRead.mockResolvedValueOnce(
 				JSON.stringify({
 					name: '@test/package',
@@ -229,7 +236,7 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			vi.mocked(fetch).mockResolvedValue({ ok: true, status: 200 } as Response);
+			mockFetch.mockResolvedValue({ ok: true, status: 200 } as Response);
 
 			const result = await checkPublished('test');
 
@@ -244,14 +251,14 @@ describe('checkPublished', () => {
 
 	describe('error handling', () => {
 		it('handles missing package.json gracefully', async () => {
-			const mockRead = vi.mocked(readFile);
+			const mockRead = mockReadFile;
 			mockRead.mockRejectedValue(new Error('File not found'));
 
 			await expect(checkPublished('nonexistent')).rejects.toThrow();
 		});
 
 		it('handles network errors', async () => {
-			const mockRead = vi.mocked(readFile);
+			const mockRead = mockReadFile;
 			mockRead.mockResolvedValue(
 				JSON.stringify({
 					name: '@test/pkg',
@@ -259,13 +266,13 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			vi.mocked(fetch).mockRejectedValue(new Error('Network error'));
+			mockFetch.mockRejectedValue(new Error('Network error'));
 
 			await expect(checkPublished('test')).rejects.toThrow('Network error');
 		});
 
 		it('handles timeout (AbortError)', async () => {
-			const mockRead = vi.mocked(readFile);
+			const mockRead = mockReadFile;
 			mockRead.mockResolvedValue(
 				JSON.stringify({
 					name: '@test/pkg',
@@ -275,7 +282,7 @@ describe('checkPublished', () => {
 
 			const abortError = new Error('The operation was aborted');
 			abortError.name = 'AbortError';
-			vi.mocked(fetch).mockRejectedValue(abortError);
+			mockFetch.mockRejectedValue(abortError);
 
 			await expect(checkPublished('test')).rejects.toThrow(
 				'Request timed out checking @test/pkg@1.0.0',
@@ -283,7 +290,7 @@ describe('checkPublished', () => {
 		});
 
 		it('throws on malformed package.json', async () => {
-			const mockRead = vi.mocked(readFile);
+			const mockRead = mockReadFile;
 			mockRead.mockResolvedValue(
 				JSON.stringify({
 					// Missing required fields
@@ -300,7 +307,7 @@ describe('checkPublished', () => {
 
 	describe('edge cases', () => {
 		it('handles packages with multiple slashes in scope', async () => {
-			const mockRead = vi.mocked(readFile);
+			const mockRead = mockReadFile;
 			mockRead.mockResolvedValue(
 				JSON.stringify({
 					name: '@org/sub/package',
@@ -308,7 +315,7 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			vi.mocked(fetch).mockResolvedValue({
+			mockFetch.mockResolvedValue({
 				ok: false,
 				status: 404,
 			} as Response);
@@ -318,7 +325,7 @@ describe('checkPublished', () => {
 		});
 
 		it('handles version with pre-release tags', async () => {
-			const mockRead = vi.mocked(readFile);
+			const mockRead = mockReadFile;
 			mockRead.mockResolvedValue(
 				JSON.stringify({
 					name: '@test/pkg',
@@ -326,7 +333,7 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			vi.mocked(fetch).mockResolvedValue({ ok: true, status: 200 } as Response);
+			mockFetch.mockResolvedValue({ ok: true, status: 200 } as Response);
 
 			const result = await checkPublished('test');
 			expect(result.version).toBe('1.0.0-beta.1');
@@ -337,7 +344,7 @@ describe('checkPublished', () => {
 		});
 
 		it('handles @scope without package name (falls back to scope as dir name)', async () => {
-			const mockRead = vi.mocked(readFile);
+			const mockRead = mockReadFile;
 			mockRead.mockResolvedValueOnce(
 				JSON.stringify({
 					name: '@scope/pkg',
@@ -345,7 +352,7 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			vi.mocked(fetch).mockResolvedValue({ ok: true, status: 200 } as Response);
+			mockFetch.mockResolvedValue({ ok: true, status: 200 } as Response);
 
 			// When passing just "@scope", it falls back to using the full string
 			// This tests the ?? fallback behavior on line 126
@@ -359,7 +366,7 @@ describe('checkPublished', () => {
 		});
 
 		it('handles scoped names with empty package part', async () => {
-			const mockRead = vi.mocked(readFile);
+			const mockRead = mockReadFile;
 			mockRead.mockResolvedValueOnce(
 				JSON.stringify({
 					name: '@test/empty',
@@ -367,7 +374,7 @@ describe('checkPublished', () => {
 				}),
 			);
 
-			vi.mocked(fetch).mockResolvedValue({ ok: true, status: 200 } as Response);
+			mockFetch.mockResolvedValue({ ok: true, status: 200 } as Response);
 
 			// "@scope/" with trailing slash results in empty string from split
 			// The || fallback should use the full pkgPath "@scope/"
@@ -407,14 +414,14 @@ describe('checkPublished', () => {
 		});
 
 		it('returns 0 for published package', async () => {
-			const mockRead = vi.mocked(readFile);
+			const mockRead = mockReadFile;
 			mockRead.mockResolvedValueOnce(
 				JSON.stringify({
 					name: '@zig-wasm/core',
 					version: '1.0.0',
 				}),
 			);
-			vi.mocked(fetch).mockResolvedValue({ ok: true, status: 200 } as Response);
+			mockFetch.mockResolvedValue({ ok: true, status: 200 } as Response);
 
 			process.argv = ['node', 'check-published.ts', 'core'];
 
@@ -430,14 +437,14 @@ describe('checkPublished', () => {
 		});
 
 		it('returns 1 for unpublished package', async () => {
-			const mockRead = vi.mocked(readFile);
+			const mockRead = mockReadFile;
 			mockRead.mockResolvedValueOnce(
 				JSON.stringify({
 					name: '@zig-wasm/core',
 					version: '99.99.99',
 				}),
 			);
-			vi.mocked(fetch).mockResolvedValue({
+			mockFetch.mockResolvedValue({
 				ok: false,
 				status: 404,
 			} as Response);
@@ -453,7 +460,7 @@ describe('checkPublished', () => {
 		});
 
 		it('returns 2 on error', async () => {
-			const mockRead = vi.mocked(readFile);
+			const mockRead = mockReadFile;
 			mockRead.mockRejectedValueOnce(new Error('File not found'));
 
 			process.argv = ['node', 'check-published.ts', 'nonexistent'];
@@ -470,11 +477,11 @@ describe('checkPublished', () => {
 });
 
 describe('runCli', () => {
-	let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+	let consoleErrorSpy: ReturnType<typeof spyOn>;
 	let originalExitCode: typeof process.exitCode;
 
 	beforeEach(() => {
-		consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		consoleErrorSpy = spyOn(console, 'error').mockImplementation(() => {});
 		originalExitCode = process.exitCode;
 		process.exitCode = undefined;
 	});

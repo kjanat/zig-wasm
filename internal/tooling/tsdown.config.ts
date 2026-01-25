@@ -6,4 +6,12 @@ export default defineConfig({
  * @license MIT
  */
 `,
+	exports: {
+		devExports: 'bun',
+		customExports(pkg) {
+			pkg['./biome'] = './configs/biome.base.json';
+			pkg['./tsconfig'] = './configs/tsconfig.base.json';
+			return pkg;
+		},
+	},
 });

@@ -1,7 +1,7 @@
+import { describe, expect, it } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import ts from 'typescript';
-import { describe, expect, it } from 'vitest';
 
 // Root tsconfig.base.json is the shared base config for all packages
 const rootTsconfigPath = resolve(
@@ -237,7 +237,8 @@ describe('Configuration Files', () => {
 			const configPath = resolve(import.meta.dirname, '../package.json');
 			const pkg = JSON.parse(readFileSync(configPath, 'utf-8'));
 
-			expect(pkg.exports['.']).toBe('./dist/index.mjs');
+			expect(pkg.exports['.'].bun).toBe('./src/index.ts');
+			expect(pkg.exports['.'].default).toBe('./dist/index.mjs');
 			expect(pkg.exports['./biome']).toBe('./configs/biome.base.json');
 			expect(pkg.exports['./tsconfig']).toBe('./configs/tsconfig.base.json');
 		});
