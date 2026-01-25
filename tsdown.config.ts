@@ -2,7 +2,6 @@ import { execSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { codecovRollupPlugin } from '@codecov/rollup-plugin';
 import { defineConfig, type UserConfig } from 'tsdown';
 import rootPkg from './package.json' with { type: 'json' };
 
@@ -140,19 +139,6 @@ export function getBanner(packageName: string): string {
 	return lines.join('\n');
 }
 
-export function getCodecovPlugin(bundleName: string) {
-	const token = process.env.CODECOV_TOKEN;
-	if (!token) return [];
-
-	return [
-		codecovRollupPlugin({
-			enableBundleAnalysis: true,
-			bundleName,
-			uploadToken: token,
-		}),
-	];
-}
-
 export const baseConfig: UserConfig = {
 	entry: ['./src/index.ts'],
 	format: ['esm', 'cjs'],
@@ -221,21 +207,18 @@ export function wasmConfig(
 	const { plugins: overridePlugins, ...restOverrides } = overrides;
 	const merged = { ...baseConfig, ...restOverrides } satisfies UserConfig;
 
-	const mergedPlugins = [
-		...getCodecovPlugin(`@zig-wasm/${packageName}`),
-		...(overridePlugins
-			? Array.isArray(overridePlugins)
-				? overridePlugins
-				: [overridePlugins]
-			: []),
-	];
+	const mergedPlugins = overridePlugins
+		? Array.isArray(overridePlugins)
+			? overridePlugins
+			: [overridePlugins]
+		: [];
 
 	const banner = overrides.banner ?? getBanner(packageName);
 
 	return {
 		...merged,
 		banner,
-		plugins: mergedPlugins,
+		...(mergedPlugins.length > 0 && { plugins: mergedPlugins }),
 		exports: {
 			devExports: 'bun',
 			customExports(pkg) {
@@ -254,14 +237,11 @@ export function packageConfig(
 	const { plugins: overridePlugins, ...restOverrides } = overrides;
 	const merged = { ...baseConfig, ...restOverrides } satisfies UserConfig;
 
-	const mergedPlugins = [
-		...getCodecovPlugin(`@zig-wasm/${packageName}`),
-		...(overridePlugins
-			? Array.isArray(overridePlugins)
-				? overridePlugins
-				: [overridePlugins]
-			: []),
-	];
+	const mergedPlugins = overridePlugins
+		? Array.isArray(overridePlugins)
+			? overridePlugins
+			: [overridePlugins]
+		: [];
 
 	const banner = overrides.banner ?? getBanner(packageName);
 	const packageRoot = join(repoRoot, 'packages', packageName);
@@ -275,7 +255,7 @@ export function packageConfig(
 	return {
 		...merged,
 		banner,
-		plugins: mergedPlugins,
+		...(mergedPlugins.length > 0 && { plugins: mergedPlugins }),
 	};
 }
 

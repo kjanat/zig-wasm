@@ -419,10 +419,12 @@ describe('runCli', () => {
 		process.exitCode = originalExitCode;
 	});
 
-	it('sets process.exitCode to returned value on success', async () => {
+	it('sets process.exitCode to 0 on success', async () => {
 		await runCli(async () => 0);
 		expect(process.exitCode).toBe(0);
+	});
 
+	it('sets process.exitCode to 1 on failure', async () => {
 		await runCli(async () => 1);
 		expect(process.exitCode).toBe(1);
 	});

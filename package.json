@@ -63,7 +63,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@codecov/rollup-plugin": "catalog:",
     "@types/node": "catalog:",
     "@zig-wasm/tooling": "workspace:*",
     "dprint": "catalog:",
