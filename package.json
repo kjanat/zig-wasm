@@ -37,11 +37,9 @@
     "publish:jsr": "pnpm -r publish:jsr",
     "publish:jsr:dry": "pnpm --parallel --aggregate-output -r publish:jsr --dry-run",
     "sync:versions": "bun scripts/sync-versions.ts",
-    "pretest": "zig build gen-test-vectors -Doptimize=ReleaseSmall",
-    "test": "vitest",
-    "test:cov": "vitest --coverage",
-    "test:run": "vitest run",
-    "test:ui": "vitest --ui --coverage",
+    "test": "bun test",
+    "test:cov": "bun test --coverage",
+    "test:run": "bun test",
     "typecheck": "pnpm --parallel --aggregate-output -r typecheck",
     "validate:jsr": "bun scripts/validate-jsr-versions.ts",
     "validate:jsr:fix": "bun scripts/validate-jsr-versions.ts --fix"
@@ -68,8 +66,6 @@
     "@biomejs/biome": "catalog:",
     "@codecov/rollup-plugin": "catalog:",
     "@types/node": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "@vitest/ui": "catalog:",
     "@zig-wasm/tooling": "workspace:*",
     "dprint": "catalog:",
     "glob": "catalog:",
@@ -78,9 +74,7 @@
     "publint": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
-    "unplugin-unused": "catalog:",
-    "vite-tsconfig-paths": "catalog:",
-    "vitest": "catalog:"
+    "unplugin-unused": "catalog:"
   },
   "packageManager": "pnpm@10.28.0",
   "engines": {
