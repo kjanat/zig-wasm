@@ -224,7 +224,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Upload pnpm publish summary
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: pnpm-publish-summary
           path: pnpm-publish-summary.json
