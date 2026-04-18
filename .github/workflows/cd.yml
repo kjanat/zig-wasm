@@ -63,7 +63,7 @@ jobs:
     steps:
       - name: Check trigger conditions
         id: check
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const { eventName, ref } = context;
@@ -224,7 +224,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Upload pnpm publish summary
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: pnpm-publish-summary
           path: pnpm-publish-summary.json
@@ -289,7 +289,7 @@ jobs:
           path: packages
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           generate_release_notes: true
           files: |
